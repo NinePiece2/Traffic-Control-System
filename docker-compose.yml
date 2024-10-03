@@ -14,3 +14,4 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/ssl.key
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
     command: ["dotnet", "Traffic-Control-System.dll"]
+    restart: always
