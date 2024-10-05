@@ -44,6 +44,6 @@ jobs:
 
       - name: Deploy with Docker Compose
         env:
-          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_ENVIRONMENT: ${{ secrets.ASPNETCORE_ENVIRONMENT }}
           SyncfusionLicense: ${{ secrets.SyncfusionLicense }}
         run: docker-compose up -d
