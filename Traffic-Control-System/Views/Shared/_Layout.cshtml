@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using Syncfusion.EJ2
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -6,7 +7,13 @@
     <title>@ViewData["Title"] - Traffic Control System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Traffic_Control_System.styles.css" asp-append-version="true" />
+    @* <link rel="stylesheet" href="~/Traffic_Control_System.styles.css" asp-append-version="true" /> *@
+
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+
+    <!-- Syncfusion ASP.NET Core controls scripts -->
+    <script src="https://cdn.syncfusion.com/ej2/27.1.51/dist/ej2.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/27.1.51/bootstrap4.css" />
 </head>
 <body>
     <header>
@@ -23,7 +30,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Admin</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -45,6 +52,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    @Html.EJS().ScriptManager()
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

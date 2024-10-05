@@ -1,0 +1,52 @@
+﻿@using Syncfusion.EJ2.Navigations
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.Grids
+@{
+    ViewData["Title"] = "Admin - Accounts";
+    var isAdmin = User.IsInRole("Admin") ? "true" : "false"; // Check if the user is an admin
+}
+
+<h2>Admin - Accounts</h2>
+<div class="container">
+    @(Html.EJS().Tab("tabs")
+        .ContentTemplate(
+        @<div>
+            <div class="e-tab-header">
+                <div>Admin Users</div>
+                <div>Users</div>
+                @if (ViewBag.NumberOfPendingUsers > 0)
+                {
+                    <div>
+                        User Requests<span class="badge badge-danger spacer">@ViewBag.NumberOfPendingUsers</span>
+                    </div>
+                }
+                else
+                {
+                    <div>User Requests</div>
+                }
+            </div>
+            <div class="e-content">
+                <div>
+                    @(Html.EJS().Grid("ej2grid")
+                        .Height("400px")
+                        .DataSource(dataManger => {
+                            dataManger.Url("/Admin/AdminUsersList").Key("id").CrossDomain(false);
+                        })
+                        .Columns(col => {
+                            col.Field("name").HeaderText("Name").Width("120").Add();
+                            col.Field("emailId").HeaderText("Email").Width("150").Add();
+                            
+                        })
+                        .AllowPaging()
+                        .Render()
+                    )
+                </div>
+            
+            </div>
+        </div>
+        )
+        .HeightAdjustMode(HeightStyles.Content)
+        .OverflowMode(OverflowMode.Scrollable)
+        .Render()
+    )
+ </div>

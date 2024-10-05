@@ -1,3 +1,4 @@
+using dotenv.net;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Traffic_Control_System.Data;
@@ -11,18 +12,29 @@ namespace Traffic_Control_System
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            if (builder.Environment.IsDevelopment())
+            {
+                DotEnv.Load();
+            }
+            else
+            {
+                builder.Configuration.AddEnvironmentVariables();
+            }
+
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("TrafficControlSystemContextConnection");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+/ ";
                 options.User.RequireUniqueEmail = true;
                 //options.SignIn.RequireConfirmedAccount = true;
             })
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders()
+            .AddDefaultUI(); 
 
             builder.Services.AddControllersWithViews();
 
@@ -34,6 +46,10 @@ namespace Traffic_Control_System
                 options.ExpireTimeSpan = TimeSpan.FromDays(60);
                 options.SlidingExpiration = true;
             });
+
+            // Syncfusion License Registration
+            var syncfusionLicense = Environment.GetEnvironmentVariable("SyncfusionLicense");
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
 
             var app = builder.Build();
 
@@ -54,6 +70,7 @@ namespace Traffic_Control_System
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
