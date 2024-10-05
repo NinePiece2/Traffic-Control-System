@@ -26,6 +26,15 @@ namespace Traffic_Control_System
 
             builder.Services.AddControllersWithViews();
 
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.Name = "TrafficControlSystem";
+                options.Cookie.MaxAge = TimeSpan.FromDays(60);
+                options.LoginPath = "/Identity/Account/Login";
+                options.ExpireTimeSpan = TimeSpan.FromDays(60);
+                options.SlidingExpiration = true;
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

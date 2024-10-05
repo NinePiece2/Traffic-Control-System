@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 using Traffic_Control_System.Models;
 
 namespace Traffic_Control_System.Data
@@ -11,6 +12,9 @@ namespace Traffic_Control_System.Data
             : base(options)
         {
         }
+
+        public DbSet<PendingUserRequests> PendingUserRequests { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -24,6 +28,12 @@ namespace Traffic_Control_System.Data
             builder.Entity<IdentityUserLogin<string>>(entity => entity.ToTable("UserLogins"));
             builder.Entity<IdentityRoleClaim<string>>(entity => entity.ToTable("RoleClaims"));
             builder.Entity<IdentityUserToken<string>>(entity => entity.ToTable("UserTokens"));
+
+            builder.Entity<PendingUserRequests>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("PendingUserRequests");
+            });
         }
     }
 }
