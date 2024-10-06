@@ -6,6 +6,66 @@
     var isAdmin = User.IsInRole("Admin") ? "true" : "false"; // Check if the user is an admin
 }
 
+<style>
+    ::-webkit-scrollbar {
+        width: 10px !important;
+    }
+   
+    ::-webkit-scrollbar-thumb {
+        background: #808080 !important;
+    }
+
+    .container {
+        padding-top: 25px;
+        max-width: 95%;
+    }
+
+    h2 {
+        padding-left: 10px
+    }
+
+    .spacer {
+        margin-left: 5px; 
+    }
+
+    .custom-approve{
+        color: #fff !important;
+        background-color: #1D7AFC;
+        border-color: #1D7AFC;
+    }
+
+    .custom-approve:focus {
+        background-color: #1D7AFC;
+        border-color: #1D7AFC !important;
+    }
+
+    .custom-approve:focus:active {
+        background-color: #1D7AFC;
+        border-color: #1D7AFC !important;
+        box-shadow: 0 0 2px 1px #1D7AFC !important;
+    }
+
+    .custom-deny{
+        color: #fff !important;
+        background-color: #E64655;
+        border-color: #E64655;
+    }
+
+    .custom-deny:focus {
+        border-color: #E64655;
+        background-color: #E64655 !important;
+    }
+
+    .custom-deny:focus:active {
+        border-color: #E64655;
+        background-color: #E64655 !important;
+        box-shadow: 0 0 2px 1px #E64655 !important;
+    }
+
+
+
+</style>
+
 <h2>Admin - Accounts</h2>
 <div class="container">
     @(Html.EJS().Tab("tabs")
@@ -27,7 +87,7 @@
             </div>
             <div class="e-content">
                 <div>
-                    @(Html.EJS().Grid("ej2grid")
+                    @(Html.EJS().Grid("adminGrid")
                         .Height("400px")
                         .DataSource(dataManger => {
                             dataManger.Url("/Admin/AdminUsersList").Key("id").CrossDomain(false);
@@ -38,10 +98,47 @@
                             
                         })
                         .AllowPaging()
+                        .EditSettings(editSettings => editSettings
+                            .AllowAdding(true)
+                            .AllowEditing(true)
+                            .AllowDeleting(true)
+                            .Mode(EditMode.Batch) 
+                        )
                         .Render()
                     )
                 </div>
-            
+         
+                <div>
+                    @(Html.EJS().Grid("userGrid")
+                        .Height("400px")
+                        .DataSource(dataManger => {
+                            dataManger.Url("/Admin/UsersList").Key("id").CrossDomain(false);
+                        })
+                        .Columns(col => {
+                            col.Field("name").HeaderText("Name").Width("120").Add();
+                            col.Field("emailId").HeaderText("Email").Width("150").Add();
+                            
+                        })
+                        .AllowPaging()
+                        .Render()
+                    )
+                </div>
+
+                <div>
+                    @(Html.EJS().Grid("pendingUserGrid")
+                        .Height("400px")
+                        .DataSource(dataManger => {
+                            dataManger.Url("/Admin/PendingUsersList").Key("id").CrossDomain(false);
+                        })
+                        .Columns(col => {
+                            col.Field("name").HeaderText("Name").Width("120").Add();
+                            col.Field("emailId").HeaderText("Email").Width("150").Add();
+                            
+                        })
+                        .AllowPaging()
+                        .Render()
+                    )
+                </div>
             </div>
         </div>
         )
@@ -50,3 +147,4 @@
         .Render()
     )
  </div>
+

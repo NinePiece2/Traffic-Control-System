@@ -70,5 +70,62 @@ namespace Traffic_Control_System.Controllers
 
             return Json(new { result = userListObjects, count = userListObjects.Count});
         }
+
+        public IActionResult UsersList()
+        {
+            var userList = _userManager.Users
+                .Where(u => u.EmailConfirmed)
+                .ToList();
+
+            var userListObjects = userList.Select(user =>
+            {
+                // Fetch user roles
+                var roles = _userManager.GetRolesAsync(user).Result;
+
+                // Check if the user has the Admin role
+                if (!roles.Contains("User"))
+                {
+                    return null; // Skip this user if not an Admin
+                }
+
+                var userListObject = new UserList
+                {
+                    Id = user.Id,
+                    EmailId = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    Role = "User",
+                    Name = user.Name
+                };
+
+                return userListObject; // Return the userListObject if valid
+            }).Where(user => user != null) // Filter out any null values
+            .ToList();
+
+            return Json(new { result = userListObjects, count = userListObjects.Count });
+        }
+
+        public IActionResult PendingUsersList()
+        {
+            var userList = _applicationDbContext.PendingUserRequests
+                .ToList();
+
+            var userListObjects = userList.Select(user =>
+            {
+                
+                var userListObject = new UserList
+                {
+                    Id = user.Id,
+                    EmailId = user.Email,
+                    PhoneNumber = user.PhoneNumber,
+                    Role = "User",
+                    Name = user.Name
+                };
+
+                return userListObject; // Return the userListObject if valid
+            }).Where(user => user != null) // Filter out any null values
+            .ToList();
+
+            return Json(new { result = userListObjects, count = userListObjects.Count });
+        }
     }
 }
