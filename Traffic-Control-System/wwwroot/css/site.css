@@ -1,22 +1,148 @@
+/* General Reset */
+
 html {
-  font-size: 14px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    background-color: #1e1e22;
+    color: #e5e5e5;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-  margin-bottom: 60px;
+    background-color: #1e1e22;
+    margin-bottom: 60px;
+    color: #e5e5e5;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+p {
+    color: #d3d3d3;
+}
+
+/* Navbar styles */
+.navbar {
+    background-color: #2a2a2a !important; /* Dark background color */
+    border-bottom: 2px solid #4CAF50; /* Add a border to the bottom of the navbar */
+    padding: 10px 0; /* Add padding to the top and bottom */
+}
+
+/* Navbar links */
+.navbar-nav .nav-link {
+    color: white !important; /* White text color */
+    transition: color 0.3s ease; /* Smooth transition for text color change */
+    padding: 10px 15px; /* Add padding to the links */
+    border-radius: 5px; /* Add border-radius for rounded corners */
+    text-decoration: none; /* Remove underline by default */
+}
+
+    /* Navbar link hover effect */
+    .navbar-nav .nav-link:hover {
+        background-color: #4CAF50;
+        color: white !important; /* White text color */
+        text-decoration: none; /* Remove underline on hover */
+    }
+
+/* Active navigation item style */
+.navbar-nav .nav-item.active .nav-link {
+    background-color: #4CAF50;
+}
+
+/* Optional: Add some margin to the right of the navbar items */
+.navbar-nav .nav-item:not(:last-child) {
+    margin-right: 20px;
+}
+
+.navbar-brand{
+    color: white !important;
+}
+
+.e-tab-text {
+    color: white !important;
+}
+
+.e-active {
+    background-color: #1e1e22 !important;
+}
+
+
+
+/* Dark Mode styles */
+.e-grid .e-headercell,
+.e-grid .e-cell,
+.e-grid .e-summarycell,
+.e-grid .e-headercontent,
+.e-rowcell,
+.e-gridpager,
+.e-icons {
+    background-color: #1e1e22 !important; /* Set background color to #121212 */
+    color: #ffffff !important; /* Set text color to white */
+}
+
+.e-pager .e-firstpagedisabled, .e-pager .e-prevpagedisabled, .e-pager .e-nextpagedisabled, .e-pager .e-lastpagedisabled {
+    opacity: 1 !important;
+}
+
+.e-pager .e-currentitem, .e-pager .e-currentitem:hover {
+    background: #4CAF50 !important;
+    color: #FFFFFF !important;
+}
+
+.e-sortfilterdiv .e-icons {
+    color: #FFFFFF !important;
+}
+/* Additional styles for Syncfusion Grid container */
+.e-grid {
+    background-color: #1e1e22 !important; /* Set background color to #121212 */
+    border-radius: 5px; /* Add rounded corners */
+    overflow: hidden; /* Ensure overflow content is hidden within rounded corners */
+    border-radius: 10px !important; /* Add rounded corners */
+    border-width: 1.5px !important;
+}
+
+.e-gridheader {
+    overflow: hidden; /* Ensure overflow content is hidden within rounded corners */
+    border-top-width: 1.5px !important; /* Add rounded corners */
+    border-top-right-radius: 10px !important; /* Add rounded corners */
+    border-top-left-radius: 10px !important;
+}
+
+.e-content {
+    background-color: #1e1e22 !important;
+}
+
+.e-grid .e-gridheader {
+    background-color: #1e1e22 !important;
+    padding: 0 !important;
+}
+
+.e-tab .e-tab-header::before{
+    border-style: none !important;
+}
+
+.e-tab-header{
+    padding-left: 10px !important;
+}
+
+.e-active{
+    border-bottom: none !important;
+}
+
+input {
+    background-color: #1e1e22 !important;
+}
+
+.form-control{
+    color: white !important;
 }
