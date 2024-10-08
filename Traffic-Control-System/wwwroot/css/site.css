@@ -146,3 +146,8 @@ input {
 .form-control{
     color: white !important;
 }
+
+.form-check-input {
+    border-color: #FFFFFF !important;
+    background-color: #1e1e22 !important;
+}
