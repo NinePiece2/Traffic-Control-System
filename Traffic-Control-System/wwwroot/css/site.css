@@ -34,7 +34,7 @@ p {
 /* Navbar styles */
 .navbar {
     background-color: #2a2a2a !important; /* Dark background color */
-    border-bottom: 2px solid #4CAF50; /* Add a border to the bottom of the navbar */
+    border-bottom: 2px solid #42A5F5; /* Add a border to the bottom of the navbar */
     padding: 10px 0; /* Add padding to the top and bottom */
 }
 
@@ -49,14 +49,14 @@ p {
 
     /* Navbar link hover effect */
     .navbar-nav .nav-link:hover {
-        background-color: #4CAF50;
+        background-color: #42A5F5;
         color: white !important; /* White text color */
         text-decoration: none; /* Remove underline on hover */
     }
 
 /* Active navigation item style */
 .navbar-nav .nav-item.active .nav-link {
-    background-color: #4CAF50;
+    background-color: #42A5F5;
 }
 
 /* Optional: Add some margin to the right of the navbar items */
@@ -95,7 +95,7 @@ p {
 }
 
 .e-pager .e-currentitem, .e-pager .e-currentitem:hover {
-    background: #4CAF50 !important;
+    background: #42A5F5 !important;
     color: #FFFFFF !important;
 }
 
