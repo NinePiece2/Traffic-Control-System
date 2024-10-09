@@ -15,6 +15,8 @@ namespace Traffic_Control_System.Data
 
         public DbSet<PendingUserRequests> PendingUserRequests { get; set; }
 
+        public DbSet<PowerSettings> PowerSettings { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -33,6 +35,11 @@ namespace Traffic_Control_System.Data
             {
                 entity.HasNoKey();
                 entity.ToView("PendingUserRequests");
+            });
+
+            builder.Entity<PowerSettings>(entity =>
+            {
+                entity.HasKey(e => e.Key);
             });
         }
     }
