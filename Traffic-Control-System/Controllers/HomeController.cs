@@ -4,6 +4,7 @@ using Traffic_Control_System.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using Traffic_Control_System.Services;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -12,11 +13,13 @@ namespace Traffic_Control_System.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService emailService;
 
-        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager)
+        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IEmailService _emailService)
         {
             _logger = logger;
             _userManager = userManager;
+            emailService = _emailService;
         }
 
         public async Task<IActionResult> Index()
@@ -30,6 +33,7 @@ namespace Traffic_Control_System.Controllers
             }
 
             TempData["UsersName"] = user.Name;
+
             return View();
         }
 

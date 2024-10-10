@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Traffic_Control_System.Data;
 using Traffic_Control_System.Models;
+using Traffic_Control_System.Services;
 
 namespace Traffic_Control_System
 {
@@ -50,6 +51,8 @@ namespace Traffic_Control_System
             // Syncfusion License Registration
             var syncfusionLicense = Environment.GetEnvironmentVariable("SyncfusionLicense");
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
+
+            builder.Services.AddTransient<IEmailService, EmailService>();
 
             var app = builder.Build();
 
