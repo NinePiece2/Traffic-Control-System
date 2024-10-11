@@ -124,6 +124,12 @@ namespace Traffic_Control_System.Areas.Identity.Pages.Account
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
+                    if (!user.AccountApproved)
+                    {
+                        await _signInManager.SignOutAsync();
+                        return RedirectToPage("./AccountUnderReview");
+                    }
+
                     _logger.LogInformation("User logged in.");
                     return LocalRedirect(returnUrl);
                 }

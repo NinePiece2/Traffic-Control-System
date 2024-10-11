@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Traffic_Control_System.Models;
+using Traffic_Control_System.Services;
 
 namespace Traffic_Control_System.Areas.Identity.Pages.Account
 {
@@ -20,11 +21,13 @@ namespace Traffic_Control_System.Areas.Identity.Pages.Account
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailSender _sender;
+        private readonly IEmailService _emailService;
 
-        public RegisterConfirmationModel(UserManager<ApplicationUser> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<ApplicationUser> userManager, IEmailSender sender, IEmailService emailService)
         {
             _userManager = userManager;
             _sender = sender;
+            _emailService = emailService;
         }
 
         /// <summary>

@@ -95,6 +95,12 @@ namespace Traffic_Control_System.Areas.Identity.Pages.Account
 
             if (result.Succeeded)
             {
+                if (!user.AccountApproved)
+                {
+                    await _signInManager.SignOutAsync();
+                    RedirectToPage("./AccountUnderReview");
+                }
+
                 _logger.LogInformation("User with ID '{UserId}' logged in with a recovery code.", user.Id);
                 return LocalRedirect(returnUrl ?? Url.Content("~/"));
             }

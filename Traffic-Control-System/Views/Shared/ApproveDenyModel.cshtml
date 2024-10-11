@@ -1,0 +1,84 @@
+﻿@model Traffic_Control_System.Models.ApproveDenyModel
+@{
+    string BtnName = Model.ID + "Btn";
+    string CancelBtnName = Model.ID + "CancelBtn";
+}
+<style>
+    .modal-content {
+        font-family: 'Poppins', Verdana, sans-serif;
+        font-size: 20px;
+        color: black;
+    }
+
+    #questionMark {
+        color: #ff0000;
+        font-size: 90px;
+    }
+
+    .left {
+        right: 16% !important;
+    }
+
+    .warnBtn {
+        color: white;
+        background-color: #1D7AFC;
+        border: none;
+    }
+
+    .clearOrCancel {
+        color: white;
+        background-color: #E64655;
+        border: none;
+    }
+
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<div class="modal fade" id="@Model.ID" tabindex="-1" role="dialog" aria-labelledby="Title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content w-75 mx-auto p-3">
+            <div class="modal-header">
+                <button id="close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body d-flex flex-column justify-content-center">
+                <i class="fa fa-question-circle mx-auto" id="questionMark"></i>
+                <div class="mx-auto mt-3 font-weight-bold">@Model.reminderText</div>
+                <div class="mx-auto mt-3"> @Model.hintMessage </div>
+                @{
+                    if (Model.textArea)
+                    {
+                        <div class="mx-auto mt-3 row"><div class="font-weight-bold">Add a Comment </div>(optional)</div>
+                        <textarea cols="10" rows="5" placeholder="Type your comment here..." onkeyup="countWords(this.value)" maxlength="200" id="comments" class="mx-auto w-75 mt-2"></textarea>
+                        <div id="count" class="left"> 200 characters left </div>
+                    }
+                }
+            </div>
+            <div class="modal-footer">
+                <div class="d-flex mx-auto">
+                    <button type="button" class="btn filterButton clearOrCancel mr-3 px-3 py-2" data-dismiss="modal" id="@CancelBtnName"> @Model.cancelBtnMessage </button>
+                    <button type="button" class="btn filterButton warnBtn mx-auto px-3 py-2" data-dismiss="modal" id="@BtnName"> @Model.confirmBtnMessage </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function countWords(value) {
+        var remainingLength = 200 - value.length;
+        document.getElementById('count').innerHTML = remainingLength + " characters left";
+    }
+
+    $('#@CancelBtnName').click(function () {
+        $('#@Model.ID').modal('hide');
+
+    });
+
+    $('#close').click(function () {
+        $('#@Model.ID').modal('hide');
+
+    });
+</script>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Traffic_Control_System.Data;
 using Traffic_Control_System.Models;
+using Traffic_Control_System.Services;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -12,10 +13,12 @@ namespace Traffic_Control_System.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _applicationDbContext;
-        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext applicationDbContext)
+        private readonly IEmailService _emailService;
+        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext applicationDbContext, IEmailService emailService)
         {
             _userManager = userManager;
             _applicationDbContext = applicationDbContext;
+            _emailService = emailService;
         }
         public async Task<IActionResult> Index()
         {

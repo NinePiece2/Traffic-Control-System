@@ -21,4 +21,14 @@ namespace Traffic_Control_System.Models
         [Required(ErrorMessage = "Phone Number is required.")]
         public string PhoneNumber { get; set; }
     }
+
+    public class ApproveDenyModel
+    {
+        public string ID { get; set; }
+        public bool textArea { get; set; }
+        public string confirmBtnMessage { get; set; }
+        public string hintMessage { get; set; }
+        public string cancelBtnMessage { get; set; }
+        public string reminderText { get; set; }
+    }
 }

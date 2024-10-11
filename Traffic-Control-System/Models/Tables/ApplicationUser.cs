@@ -7,5 +7,6 @@ namespace Traffic_Control_System.Models
     {
         [MaxLength(255)]
         public string? Name { get; set; }
+        public bool AccountApproved { get; set; }
     }
 }
