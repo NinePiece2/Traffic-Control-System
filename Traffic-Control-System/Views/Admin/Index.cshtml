@@ -133,6 +133,8 @@
                         .Columns(col => {
                             col.Field("name").HeaderText("Name").Width("120").Add();
                             col.Field("emailId").HeaderText("Email").Width("150").Add();
+
+                            col.HeaderText("Actions").Template("<button class='k-button custom-approve' onclick='onApprove(this)'>Approve</button> <button class='k-button custom-deny' onclick='onDeny(this)'>Deny</button>").Width("100").Add();
                             
                         })
                         .AllowPaging()
@@ -148,3 +150,40 @@
     )
  </div>
 
+<div id="ApprovalModalSection"></div>
+<div id="DenyModalSection"></div>
+
+<script>
+    function onApprove(e) {
+        var gridObj = document.getElementById('pendingUserGrid').ej2_instances[0];
+
+        var row = e.closest('tr');
+
+        var uid = row.getAttribute('data-uid');
+
+        var rowData = gridObj.getRowObjectFromUID(uid).data;
+
+        // Load modal content using AJAX
+        $("#ApprovalModalSection").load('@Html.Raw(Url.Action("RenderApprovalModal", "Admin"))', function () {
+            var dataItemString = JSON.stringify(rowData).replace(/'/g, "\\'");
+            $('#ApprovalModalBtn').attr("onClick", "Approve('" + dataItemString + "')");
+            $('#ApprovalModal').modal('show');
+        });
+    }
+
+    function onDeny(e) {
+        var gridObj = document.getElementById('pendingUserGrid').ej2_instances[0];
+
+        var row = e.closest('tr');
+
+        var uid = row.getAttribute('data-uid');
+
+        var rowData = gridObj.getRowObjectFromUID(uid).data;
+
+        $("#DenyModalSection").load('@Html.Raw(Url.Action("RenderDenyModal", "Admin"))', function () {
+            var dataItemString = JSON.stringify(rowData).replace(/'/g, "\\'");
+            $('#DenyModalBtn').attr("onClick", "Deny('" + dataItemString + "')");
+            $('#DenyModal').modal('show');
+        });
+    }
+</script>

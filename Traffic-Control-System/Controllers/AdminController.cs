@@ -130,5 +130,17 @@ namespace Traffic_Control_System.Controllers
 
             return Json(new { result = userListObjects, count = userListObjects.Count });
         }
+
+        public ActionResult RenderApprovalModal()
+        {
+            ApproveDenyModel modal = new ApproveDenyModel { ID = "ApprovalModal", textArea = false, cancelBtnMessage = "Cancel", confirmBtnMessage = "Approve", reminderText = "Are you sure you want to approve this user's access to the application?" };
+            return PartialView("ApproveDenyModel", modal);
+        }
+
+        public ActionResult RenderDenyModal()
+        {
+            ApproveDenyModel modal = new ApproveDenyModel { ID = "DenyModal", textArea = false, cancelBtnMessage = "Cancel", confirmBtnMessage = "Deny", reminderText = "Are you sure you want to deny this user?", hintMessage = "This Will Delete Their Account." };
+            return PartialView("ApproveDenyModel", modal);
+        }
     }
 }

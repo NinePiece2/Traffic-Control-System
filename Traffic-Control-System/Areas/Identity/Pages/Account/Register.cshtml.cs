@@ -172,6 +172,12 @@ namespace Traffic_Control_System.Areas.Identity.Pages.Account
                     }
                     else
                     {
+                        if (!user.AccountApproved)
+                        {
+                            await _signInManager.SignOutAsync();
+                            return RedirectToPage("./AccountUnderReview");
+                        }
+
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         return LocalRedirect(returnUrl);
                     }
