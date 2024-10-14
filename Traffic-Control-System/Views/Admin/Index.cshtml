@@ -186,4 +186,95 @@
             $('#DenyModal').modal('show');
         });
     }
+
+    function Approve(dataItemString) {
+        var userGrid = document.getElementById('userGrid').ej2_instances[0];
+        var pendingUserGrid = document.getElementById('pendingUserGrid').ej2_instances[0];
+
+        const pendingUsersCounterElement = document.querySelector('.badge.badge-danger.spacer');
+        $('#ApprovalModal').modal('hide');
+
+        var dataItem = JSON.parse(dataItemString);
+        console.log(dataItem)
+        $.ajax({
+            url: '/Admin/ApproveUser',
+            type: 'POST',
+            data: { userId: dataItem.id },
+            success: function (result) {
+                console.log('User approved successfully');
+                userGrid.refresh();
+                pendingUserGrid.refresh();
+
+                $.ajax({
+                    url: '/Admin/GetNumberOfPendingUsers',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data > 1) {
+                            pendingUsersCounterElement.textContent = `${data}`;
+                        } else {
+                            pendingUsersCounterElement.classList.remove('badge-danger');
+                            pendingUsersCounterElement.textContent = ``;
+                        }
+
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle errors if any
+                        console.error('Error fetching number of pending users:', error);
+                    }
+                });
+
+
+            },
+            error: function (error) {
+                // Handle error
+                console.error('Error approving user', error);
+            }
+        });
+    }
+
+    function Deny(dataItemString) {
+        var userGrid = document.getElementById('userGrid').ej2_instances[0];
+        var pendingUserGrid = document.getElementById('pendingUserGrid').ej2_instances[0];
+
+        const pendingUsersCounterElement = document.querySelector('.badge.badge-danger.spacer');
+
+        $('#DenyModal').modal('hide');
+
+        var dataItem = JSON.parse(dataItemString);
+
+        $.ajax({
+            url: '/Admin/DenyUser',
+            type: 'POST',
+            data: { userId: dataItem.id },
+            success: function (result) {
+                console.log('User denied successfully');
+                userGrid.refresh();
+                pendingUserGrid.refresh();
+
+                $.ajax({
+                    url: '/Admin/GetNumberOfPendingUsers',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data > 1) {
+                            pendingUsersCounterElement.textContent = `${data}`;
+                        } else {
+                            pendingUsersCounterElement.classList.remove('badge-danger');
+                            pendingUsersCounterElement.textContent = ``;
+                        }
+
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle errors if any
+                        console.error('Error fetching number of pending users:', error);
+                    }
+                });
+            },
+            error: function (error) {
+                // Handle error
+                console.error('Error denying user', error);
+            }
+        });
+    }
 </script>

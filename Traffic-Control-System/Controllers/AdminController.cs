@@ -14,11 +14,13 @@ namespace Traffic_Control_System.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly IEmailService _emailService;
-        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext applicationDbContext, IEmailService emailService)
+        private readonly IConfiguration _configuration;
+        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext applicationDbContext, IEmailService emailService, IConfiguration configuration)
         {
             _userManager = userManager;
             _applicationDbContext = applicationDbContext;
             _emailService = emailService;
+            _configuration = configuration;
         }
         public async Task<IActionResult> Index()
         {
@@ -44,7 +46,7 @@ namespace Traffic_Control_System.Controllers
         public IActionResult AdminUsersList()
         {
             var userList = _userManager.Users
-                .Where(u => u.EmailConfirmed)
+                .Where(u => u.AccountApproved)
                 .ToList();
 
             var userListObjects = userList.Select(user =>
@@ -77,7 +79,7 @@ namespace Traffic_Control_System.Controllers
         public IActionResult UsersList()
         {
             var userList = _userManager.Users
-                .Where(u => u.EmailConfirmed)
+                .Where(u => u.AccountApproved)
                 .ToList();
 
             var userListObjects = userList.Select(user =>
@@ -141,6 +143,72 @@ namespace Traffic_Control_System.Controllers
         {
             ApproveDenyModel modal = new ApproveDenyModel { ID = "DenyModal", textArea = false, cancelBtnMessage = "Cancel", confirmBtnMessage = "Deny", reminderText = "Are you sure you want to deny this user?", hintMessage = "This Will Delete Their Account." };
             return PartialView("ApproveDenyModel", modal);
+        }
+
+        public async Task<IActionResult> ApproveUser(string userId)
+        {
+            try
+            {
+                var existingUser = await _userManager.FindByIdAsync(userId);
+                var homeUrl = _configuration["BaseUrl"];
+
+                var htmlEmailBody =
+                        $@"
+                        <!DOCTYPE html>
+                        <html lang=""en"">
+                        <head>
+                            <meta charset=""UTF-8"">
+                            <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                            <title>Account Created</title>
+                        </head>
+                        <body>
+                            <h2>Traffic Control System - Your Account Has Been Approved</h2>
+                            <p>
+                                Congratulations! Your account has been Approved.
+                            </p>
+                            <p>
+                            <p>
+                                Please click the following link to log in:
+                                <a href='{homeUrl}'>Login to Your Account</a>
+                            </p>
+                        </body>
+                        </html>";
+
+                await _emailService.SendEmail(existingUser.Email, "Traffic Control System - Your Account Has Been Approved", false, htmlEmailBody, false, null, null);
+
+                existingUser.AccountApproved = true;
+                await _userManager.UpdateAsync(existingUser);
+
+                return Ok("User approved successfully!");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        public async Task<IActionResult> DenyUser(string userId)
+        {
+            var existingUser = await _userManager.FindByIdAsync(userId);
+            if (existingUser != null)
+            {
+
+                var existingRoles = await _userManager.GetRolesAsync(existingUser);
+                var removeRolesResult = await _userManager.RemoveFromRolesAsync(existingUser, existingRoles);
+                var existingClaims = await _userManager.GetClaimsAsync(existingUser);
+                var removeClaimsResult = await _userManager.RemoveClaimsAsync(existingUser, existingClaims);
+
+                var result = await _userManager.DeleteAsync(existingUser);
+                if (result.Succeeded)
+                {
+                    return Ok("Account Denied and Deleted");
+                }
+                else
+                {
+                    return Json(new { errors = result.Errors.Select(e => e.Description) });
+                }
+            }
+            return Json(new { errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) });
         }
     }
 }
