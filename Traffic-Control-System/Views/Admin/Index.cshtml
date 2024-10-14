@@ -91,6 +91,8 @@
                         .Height("400px")
                         .DataSource(dataManger => {
                             dataManger.Url("/Admin/AdminUsersList").Key("id").CrossDomain(false);
+                            dataManger.UpdateUrl("/Admin/UpdateUser").Adaptor("UrlAdaptor");
+                            dataManger.RemoveUrl("/Admin/RemoveUser").Adaptor("UrlAdaptor");
                         })
                         .Columns(col => {
                             col.Field("name").HeaderText("Name").Width("120").Add();
@@ -99,11 +101,12 @@
                         })
                         .AllowPaging()
                         .EditSettings(editSettings => editSettings
-                            .AllowAdding(true)
                             .AllowEditing(true)
                             .AllowDeleting(true)
-                            .Mode(EditMode.Batch) 
+                            .ShowDeleteConfirmDialog(true)
+                            .Mode(EditMode.Normal) 
                         )
+                        .Toolbar(new string[] {"Delete", "Update", "Cancel" })
                         .Render()
                     )
                 </div>
@@ -113,13 +116,23 @@
                         .Height("400px")
                         .DataSource(dataManger => {
                             dataManger.Url("/Admin/UsersList").Key("id").CrossDomain(false);
+                            dataManger.UpdateUrl("/Admin/UpdateUser").Adaptor("UrlAdaptor");
+                            dataManger.RemoveUrl("/Admin/RemoveUser").Adaptor("UrlAdaptor");
                         })
                         .Columns(col => {
+                            col.Field("id").IsPrimaryKey(true).Visible(false).Add();
                             col.Field("name").HeaderText("Name").Width("120").Add();
                             col.Field("emailId").HeaderText("Email").Width("150").Add();
                             
                         })
                         .AllowPaging()
+                        .EditSettings(editSettings => editSettings
+                            .AllowEditing(true)
+                            .AllowDeleting(true)
+                            .ShowDeleteConfirmDialog(true)
+                            .Mode(EditMode.Normal) 
+                        )
+                        .Toolbar(new string[] {"Delete", "Update", "Cancel" })
                         .Render()
                     )
                 </div>

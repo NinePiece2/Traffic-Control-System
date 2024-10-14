@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -210,5 +211,75 @@ namespace Traffic_Control_System.Controllers
             }
             return Json(new { errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateUser([FromBody] ICRUDModel<UserList> value)
+        {
+            var user = value.value;
+            
+            try
+            {
+                var existingUser = await _userManager.FindByIdAsync(user.Id);
+                if (existingUser != null)
+                {
+                    existingUser.Email = user.EmailId;
+                    existingUser.UserName = user.EmailId;
+                    existingUser.Name = user.Name;
+                    existingUser.PhoneNumber = user.PhoneNumber;
+
+                    var result = await _userManager.UpdateAsync(existingUser);
+                    if (!result.Succeeded)
+                    {
+                        return Json(new { errors = "Error", message = result.Errors.Select(e => e.Description) });
+                    }
+
+                    var existingRoles = await _userManager.GetRolesAsync(existingUser);
+                    var removeRolesResult = await _userManager.RemoveFromRolesAsync(existingUser, existingRoles);
+                    var updateRoleResult = await _userManager.AddToRoleAsync(existingUser, user.Role);
+
+                    return Ok("User edited successfully!");
+                }
+
+                return BadRequest("User not found");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveUser([FromBody] ICRUDModel<UserList> value)
+        {
+            try
+            {
+                var existingUser = await _userManager.FindByIdAsync(value.key.ToString());
+                if (existingUser != null)
+                {
+
+                    var existingRoles = await _userManager.GetRolesAsync(existingUser);
+                    var removeRolesResult = await _userManager.RemoveFromRolesAsync(existingUser, existingRoles);
+                    var existingClaims = await _userManager.GetClaimsAsync(existingUser);
+                    var removeClaimsResult = await _userManager.RemoveClaimsAsync(existingUser, existingClaims);
+
+                    var result = await _userManager.DeleteAsync(existingUser);
+
+                    if (result.Succeeded)
+                    {
+                        return Ok("User edited successfully!");
+                    }
+                    else
+                    {
+                        return Json(new { errors = result.Errors.Select(e => e.Description) });
+                    }
+                }
+                return Json(new { errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }  
     }
 }

@@ -140,6 +140,38 @@ p {
     border-bottom: none !important;
 }
 
+.e-grid .e-toolbar {
+    background-color: #1e1e22 !important;
+}
+
+.e-toolbar .e-toolbar-items {
+    background-color: #1e1e22 !important;
+}
+
+.e-tbar-btn-text{
+    color: white !important;
+
+}
+
+.e-toolbar .e-toolbar-item .e-tbar-btn {
+    background-color: #1e1e20 !important;
+}
+
+.e-toolbar-item {
+/*    border: solid 1px #FFFFFF !important;*/
+}
+
+.e-toolbar .e-toolbar-item.e-overlay {
+    background-color: #1e1e22 !important;
+    opacity: 0.3 !important;
+/*    border: solid 1px #FFFFFF !important;*/
+
+}
+
+.e-toolbar-item button {
+    /*border: solid 1px #FFFFFF !important;*/
+}
+
 input {
     background-color: #1e1e22 !important;
 }

@@ -16,10 +16,7 @@ namespace Traffic_Control_System.Models
 
         [Required(ErrorMessage = "Name is required.")]
         public string Name { get; set; }
-
-        [Phone]
-        [Required(ErrorMessage = "Phone Number is required.")]
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
     }
 
     public class ApproveDenyModel
@@ -30,5 +27,26 @@ namespace Traffic_Control_System.Models
         public string hintMessage { get; set; }
         public string cancelBtnMessage { get; set; }
         public string reminderText { get; set; }
+    }
+
+    public class ICRUDModel<T> where T : class
+    {
+        public string action { get; set; }
+
+        public string table { get; set; }
+
+        public string keyColumn { get; set; }
+
+        public object key { get; set; }
+
+        public T value { get; set; }
+
+        public List<T> added { get; set; }
+
+        public List<T> changed { get; set; }
+
+        public List<T> deleted { get; set; }
+
+        public IDictionary<string, object> @params { get; set; }
     }
 }
