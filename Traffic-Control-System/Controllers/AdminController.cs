@@ -16,12 +16,14 @@ namespace Traffic_Control_System.Controllers
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
-        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext applicationDbContext, IEmailService emailService, IConfiguration configuration)
+        private readonly RoleManager<IdentityRole> _roleManager;
+        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext applicationDbContext, IEmailService emailService, IConfiguration configuration, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _applicationDbContext = applicationDbContext;
             _emailService = emailService;
             _configuration = configuration;
+            _roleManager = roleManager;
         }
         public async Task<IActionResult> Index()
         {
@@ -280,6 +282,20 @@ namespace Traffic_Control_System.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-        }  
+        }
+
+        public async Task<IActionResult> GetRoles()
+        {
+            var roles = _roleManager.Roles.ToList();
+
+            var temp = roles.Select(roles => new
+            {
+                RoleId = roles.Id,
+                roleName = roles.Name,
+                value = roles.Name
+            });
+
+            return Json(new { temp });
+        }
     }
 }

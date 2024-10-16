@@ -173,6 +173,7 @@ p {
 }
 
 input {
+    color: white !important;
     background-color: #1e1e22 !important;
 }
 

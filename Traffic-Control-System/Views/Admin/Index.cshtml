@@ -95,8 +95,13 @@
                             dataManger.RemoveUrl("/Admin/RemoveUser").Adaptor("UrlAdaptor");
                         })
                         .Columns(col => {
+                            col.Field("id").IsPrimaryKey(true).Visible(false).Add();
                             col.Field("name").HeaderText("Name").Width("120").Add();
                             col.Field("emailId").HeaderText("Email").Width("150").Add();
+                            col.Field("role").HeaderText("Role").Width("150").EditType("dropdownedit")
+                            .DataSource(new List<object> { new { text = "Admin", value = "Admin" }, new { text = "User", value = "User" } })
+                            .ForeignKeyField("value").ForeignKeyValue("text")
+                            .Add();
                             
                         })
                         .AllowPaging()
@@ -123,6 +128,10 @@
                             col.Field("id").IsPrimaryKey(true).Visible(false).Add();
                             col.Field("name").HeaderText("Name").Width("120").Add();
                             col.Field("emailId").HeaderText("Email").Width("150").Add();
+                             col.Field("role").HeaderText("Role").Width("150").EditType("dropdownedit")
+                            .DataSource(new List<object> { new { text = "Admin", value = "Admin" }, new { text = "User", value = "User" } })
+                            .ForeignKeyField("value").ForeignKeyValue("text")
+                            .Add();
                             
                         })
                         .AllowPaging()
