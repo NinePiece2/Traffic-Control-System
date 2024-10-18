@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -139,6 +140,12 @@ namespace Traffic_Control_System.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            if (!Regex.IsMatch(Input.Password, @"[\W_]"))
+            {
+                ModelState.AddModelError(string.Empty, "Password must contain at least one special character.");
+            }
+
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
