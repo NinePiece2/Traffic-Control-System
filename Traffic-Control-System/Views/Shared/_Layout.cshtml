@@ -10,6 +10,13 @@
         border: 2px solid #FFFFFF !important;
     }
 
+    .active-dropdown{
+        background-color: #42A5F5;
+    }
+
+    .inactive-dropdown{
+        background-color: #2a2a2a;
+    }
 </style>
 <html lang="en">
 <head>
@@ -38,12 +45,30 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
+                        <li class="nav-item mr-2 @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Admin</a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                        <li class="nav-item mr-2">
+                                <a class="nav-link dropdown-toggle @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active-dropdown" : "")" href="" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i aria-hidden="true"></i>
+                                Admin
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="navbarDropdownAdmin">
+                                <div class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index"? "active-dropdown" : "inactive-dropdown")">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Manage Users</a>
+                                </div>
+                                <div class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "AuditLog"? "active-dropdown" : "inactive-dropdown")">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="AuditLog">Audit Log</a>
+                                </div>
+                                <div class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Roles"? "active-dropdown" : "inactive-dropdown")">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Roles">Roles</a>
+                                </div>
+                                
+                            </div>
                         </li>
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
@@ -61,6 +86,9 @@
             &copy; 2024 - Traffic Control System
         </div>
     </footer>
+    <!-- Bootstrap and jQuery scripts for dropdown and toggling -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
