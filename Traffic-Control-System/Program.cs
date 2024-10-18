@@ -42,9 +42,8 @@ namespace Traffic_Control_System
             builder.Services.ConfigureApplicationCookie(options =>
             {
                 options.Cookie.Name = "TrafficControlSystem";
-                options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
                 options.LoginPath = "/Identity/Account/Login";
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
                 options.SlidingExpiration = true;
             });
 
