@@ -76,7 +76,7 @@ namespace Traffic_Control_System.Controllers
             }).Where(user => user != null) // Filter out any null values
             .ToList();
 
-            return Json(new { result = userListObjects, count = userListObjects.Count});
+            return Json(new { result = userListObjects, count = userListObjects.Count });
         }
 
         public IActionResult UsersList()
@@ -119,7 +119,7 @@ namespace Traffic_Control_System.Controllers
 
             var userListObjects = userList.Select(user =>
             {
-                
+
                 var userListObject = new UserList
                 {
                     Id = user.Id,
@@ -218,7 +218,7 @@ namespace Traffic_Control_System.Controllers
         public async Task<IActionResult> UpdateUser([FromBody] ICRUDModel<UserList> value)
         {
             var user = value.value;
-            
+
             try
             {
                 var existingUser = await _userManager.FindByIdAsync(user.Id);
@@ -248,7 +248,7 @@ namespace Traffic_Control_System.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-            
+
         }
 
         [HttpPost]
@@ -296,6 +296,16 @@ namespace Traffic_Control_System.Controllers
             });
 
             return Json(new { temp });
+        }
+
+        public async Task<IActionResult> AuditLog()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> Roles()
+        {
+            return View();
         }
     }
 }

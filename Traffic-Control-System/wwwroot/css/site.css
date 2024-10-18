@@ -185,3 +185,39 @@ input {
     border-color: #FFFFFF !important;
     background-color: #1e1e22 !important;
 }
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: #2a2a2a !important;
+    min-width: 160px;
+    z-index: 1;
+    border: 1px solid #FFFFFF !important;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+::-webkit-scrollbar {
+    width: 0px !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #808080 !important;
+}
+
+.container {
+    padding-top: 25px;
+    max-width: 95%;
+}
+
+h2 {
+    padding-left: 10px
+}
+
+.spacer {
+    margin-left: 5px;
+}
