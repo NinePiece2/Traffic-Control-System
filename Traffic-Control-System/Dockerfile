@@ -7,6 +7,8 @@ EXPOSE 8080
 EXPOSE 8443
 
 USER root
+RUN apt-get update && apt-get install -y wget && apt-get clean
+
 RUN mkdir -p /app/wwwroot/hls && chmod -R 777 /app/wwwroot/hls
 RUN mkdir -p /app/ffmpegBins && chmod -R 777 /app/ffmpegBins
 
