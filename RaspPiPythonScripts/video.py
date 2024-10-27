@@ -7,7 +7,7 @@ import numpy as np
 
 async def stream_camera():
     # Connect to the WebSocket server
-    uri = "wss://trafficcontrolsystem.romitsagu.com/ws"
+    uri = "wss://localhost:44328/ws"
 
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     ssl_context.check_hostname = False
