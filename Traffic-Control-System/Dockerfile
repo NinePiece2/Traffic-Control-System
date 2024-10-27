@@ -6,14 +6,16 @@ EXPOSE 8080
 EXPOSE 8443
 
 USER root
-RUN apt-get update && apt-get install -y wget && apt-get clean
+RUN apt-get update && apt-get install -y wget unzip && apt-get clean
 
 RUN mkdir -p /app/wwwroot/hls && chmod -R 777 /app/wwwroot/hls
 RUN mkdir -p /app/ffmpegBins && chmod -R 777 /app/ffmpegBins
 
 RUN chmod -R 777 /app
-#RUN wget -O /app/ffmpegBins/ffmpeg https://cdn.romitsagu.com/files/FFmpeg/ffmpeg 
-#RUN chmod +x /app/ffmpegBins/ffmpeg
+RUN wget -O /app/ffmpegBins/ffmpeg https://cdn.romitsagu.com/files/FFmpeg/ffmpeg-6.1-linux-64.zip
+RUN unzip ffmpeg-6.1-linux-64.zip
+RUN rm -rf ffmpeg-6.1-linux-64.zip
+RUN chmod +x /app/ffmpegBins/ffmpeg
 
 
 USER app
