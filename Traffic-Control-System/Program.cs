@@ -8,6 +8,7 @@ using Traffic_Control_System.Services;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using System.Runtime.InteropServices;
+using Traffic_Control_System.Migrations;
 
 namespace Traffic_Control_System
 {
@@ -74,6 +75,9 @@ namespace Traffic_Control_System
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             // For direct file access
+            string hlsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "hls");
+            Directory.CreateDirectory(hlsDirectory);
+
             var contentTypeProvider = new FileExtensionContentTypeProvider();
             contentTypeProvider.Mappings[".ism"] = "application/vnd.ms-sstr+xml";
             contentTypeProvider.Mappings[".m3u8"] = "application/vnd.apple.mpegurl";
@@ -133,9 +137,6 @@ namespace Traffic_Control_System
                 {
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                     Console.WriteLine("WebSocket connection established.");
-
-                    string hlsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "hls");
-                    Directory.CreateDirectory(hlsDirectory);
 
                     string hlsPath = Path.Combine(hlsDirectory, "stream.m3u8");
 

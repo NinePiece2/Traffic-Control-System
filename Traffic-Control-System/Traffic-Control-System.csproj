@@ -29,13 +29,4 @@
     <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="27.1.51" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="ffmpegBins\ffmpeg.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="ffmpegBins\ffprobe.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
