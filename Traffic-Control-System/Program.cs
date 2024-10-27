@@ -149,7 +149,7 @@ namespace Traffic_Control_System
                         string ffmpegFileDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", ffmpegBinFilename);
 
                         ffmpeg.StartInfo.FileName = ffmpegFileDirectory;
-                        ffmpeg.StartInfo.Arguments = $"-f rawvideo -pixel_format bgr24 -video_size 640x480 -i - -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -f hls -hls_time 0.5 -hls_list_size 3 -hls_flags delete_segments {hlsPath}";
+                        ffmpeg.StartInfo.Arguments = $"-f rawvideo -pixel_format bgr24 -video_size 640x480 -i - -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -f hls -hls_time 0.1 -hls_list_size 5 -hls_flags delete_segments {hlsPath}";
 
                         ffmpeg.StartInfo.UseShellExecute = false;
                         ffmpeg.StartInfo.RedirectStandardInput = true;
@@ -168,7 +168,7 @@ namespace Traffic_Control_System
 
                         try
                         {
-                            byte[] buffer = new byte[1024 * 8];
+                            byte[] buffer = new byte[1024 * 32];
                             while (webSocket.State == System.Net.WebSockets.WebSocketState.Open)
                             {
                                 var result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
