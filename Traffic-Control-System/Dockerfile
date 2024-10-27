@@ -6,8 +6,13 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8443
 
+USER root
 RUN mkdir -p /app/wwwroot/hls && chmod -R 777 /app/wwwroot/hls
 RUN mkdir -p /app/ffmpegBins && chmod -R 777 /app/ffmpegBins
+
+RUN chmod -R 777 /app
+
+USER app
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
