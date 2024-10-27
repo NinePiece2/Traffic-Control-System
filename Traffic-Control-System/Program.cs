@@ -80,6 +80,42 @@ namespace Traffic_Control_System
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
+            // Enable WebSocket middleware
+            app.UseWebSockets();
+
+            app.Map("/ws", async context =>
+            {
+                if (context.WebSockets.IsWebSocketRequest)
+                {
+                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                    Console.WriteLine("WebSocket connection established.");
+
+                    byte[] buffer = new byte[1024 * 4];
+
+                    while (webSocket.State == System.Net.WebSockets.WebSocketState.Open)
+                    {
+                        var result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+                        if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
+                        {
+                            await webSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
+                        }
+                        else
+                        {
+                            // Decode received data
+                            var base64Data = System.Text.Encoding.UTF8.GetString(buffer, 0, result.Count);
+                            byte[] imageData = Convert.FromBase64String(base64Data);
+
+                            // Optional: Process or save the image data
+                            Console.WriteLine($"Received frame with {imageData.Length} bytes");
+                        }
+                    }
+                }
+                else
+                {
+                    context.Response.StatusCode = 400;
+                }
+            });
+
             app.Run();
         }
     }
