@@ -11,6 +11,8 @@ RUN mkdir -p /app/wwwroot/hls && chmod -R 777 /app/wwwroot/hls
 RUN mkdir -p /app/ffmpegBins && chmod -R 777 /app/ffmpegBins
 
 RUN chmod -R 777 /app
+RUN chmod +x /app/ffmpegBins/ffmpeg
+
 
 USER app
 
