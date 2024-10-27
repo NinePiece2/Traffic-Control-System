@@ -111,12 +111,11 @@ namespace Traffic_Control_System
             // Enable WebSocket middleware
             app.UseWebSockets();
 
-            var architecture = RuntimeInformation.ProcessArchitecture.ToString();
+
             var ffmpegBinFilename = "";
 
             Directory.CreateDirectory("ffmpegBins");
-
-            if (architecture == "X64")
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 string ffmpegDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffmpeg.exe");
                 await DownloadFileAsync("https://cdn.romitsagu.com/files/FFmpeg/ffmpeg.exe", ffmpegDirectory);
