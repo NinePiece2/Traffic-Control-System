@@ -3,7 +3,7 @@ import asyncio
 import websockets
 import base64
 import ssl
-
+import numpy as np
 
 async def stream_camera():
     # Connect to the WebSocket server
@@ -16,23 +16,20 @@ async def stream_camera():
 
     async with websockets.connect(uri, ssl=ssl_context) as websocket:
         # Open the camera
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(1)
         try:
             while cap.isOpened():
                 ret, frame = cap.read()
-                if not ret:
-                    break
 
-                # Encode frame as JPEG
-                _, buffer = cv2.imencode('.jpg', frame)
-                # Convert to base64
-                frame_data = base64.b64encode(buffer).decode('utf-8')
+                # if not ret:
+                #     break
                 
                 # Send the frame data to the server
-                await websocket.send(frame_data)
+                await websocket.send(frame.tobytes())
+
 
                 # Optional: Add a short delay
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.016666)
         finally:
             cap.release()
 

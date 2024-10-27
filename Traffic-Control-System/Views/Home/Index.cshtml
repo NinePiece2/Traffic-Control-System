@@ -2,7 +2,22 @@
     ViewData["Title"] = "Home Page";
 }
 
+<link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
+<script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
+
+
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+
+<div>
+    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" data-setup='{}'>
+        <source src="~/hls/stream.m3u8" type="application/x-mpegURL">
+    </video>
+</div>
+<script>
+    var player = videojs('my-video');
+    player.play();
+</script>

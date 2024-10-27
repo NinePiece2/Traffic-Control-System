@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Traffic-Control-System/.env
+/Traffic-Control-System/wwwroot/hls
+/Traffic-Control-System/ffmpegBins
