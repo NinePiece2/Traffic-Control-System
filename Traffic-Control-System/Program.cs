@@ -10,6 +10,14 @@ using Microsoft.Extensions.FileProviders;
 using System.Runtime.InteropServices;
 using Traffic_Control_System.Migrations;
 using Microsoft.AspNetCore.WebSockets;
+using System.Net;
+using LiveStreamingServerNet;
+using LiveStreamingServerNet.Flv.Installer;
+using Traffic_Control_System.Handlers;
+using LiveStreamingServerNet.StreamProcessor.Installer;
+using LiveStreamingServerNet.Rtmp.Server.Auth.Contracts;
+using LiveStreamingServerNet.StreamProcessor.AspNetCore.Configurations;
+using LiveStreamingServerNet.StreamProcessor.AspNetCore.Installer;
 
 namespace Traffic_Control_System
 {
@@ -58,10 +66,35 @@ namespace Traffic_Control_System
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
 
             builder.Services.AddTransient<IEmailService, EmailService>();
+            builder.Services.AddTransient<IValidator, ValidatorService>();
 
             builder.Services.AddWebSockets(options => {
                 options.KeepAliveInterval = TimeSpan.FromSeconds(120);
             });
+
+            var outputDir = Path.Combine(Directory.GetCurrentDirectory(), "hls");
+            new DirectoryInfo(outputDir).Create();
+
+            builder.Services.AddLiveStreamingServer(
+                new IPEndPoint(IPAddress.Any, 1935),
+                options => options
+                    .Configure(options => options.EnableGopCaching = false)
+                    .AddFlv()
+                    .AddAuthorizationHandler<AuthorizationHandler>()
+                    .AddStreamProcessor(options =>
+                    {
+                        options.AddStreamProcessorEventHandler(svc =>
+                                new StreamProcessorEventListener(outputDir, svc.GetRequiredService<ILogger<StreamProcessorEventListener>>()));
+                    })
+                    .AddHlsTransmuxer(options => { 
+                        options.OutputPathResolver = new HlsOutputPathResolver(outputDir);
+                        options.SegmentListSize = 3;
+                        options.CleanupDelay = TimeSpan.FromSeconds(10.0);
+                        options.MinSegmentLength = TimeSpan.FromSeconds(0.5);
+                    })
+
+            ).AddLogging();
+
 
             var app = builder.Build();
 
@@ -79,29 +112,7 @@ namespace Traffic_Control_System
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            // For direct file access
-            string hlsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "hls");
-            Directory.CreateDirectory(hlsDirectory);
-
-            var contentTypeProvider = new FileExtensionContentTypeProvider();
-            contentTypeProvider.Mappings[".ism"] = "application/vnd.ms-sstr+xml";
-            contentTypeProvider.Mappings[".m3u8"] = "application/vnd.apple.mpegurl";
-            contentTypeProvider.Mappings[".ts"] = "video/MP2T";
-
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(
-                    Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "hls")),
-                RequestPath = "/hls",
-                ContentTypeProvider = contentTypeProvider,
-                OnPrepareResponse = ctx =>
-                {
-                    ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "https://localhost:44328");
-                    ctx.Context.Response.Headers.Append("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                    ctx.Context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-                    ctx.Context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
-                }
-            });
+            
 
             app.UseRouting();
 
@@ -113,144 +124,24 @@ namespace Traffic_Control_System
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
-            // Enable WebSocket middleware
-            app.UseWebSockets();
+            //// Enable WebSocket middleware
+            //app.UseWebSockets();
 
+            //app.UseWebSocketFlv();
 
-            var ffmpegBinFilename = "";
+            //app.UseHttpFlv();
 
-            Directory.CreateDirectory("ffmpegBins");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            app.UseHlsFiles(new HlsServingOptions
             {
-                string ffmpegDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffmpeg.exe");
-                await DownloadFileAsync("https://cdn.romitsagu.com/files/FFmpeg/ffmpeg.exe", ffmpegDirectory);
-
-                ffmpegBinFilename = "ffmpeg.exe";
-            }
-            else
-            {
-                string ffmpegDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffmpeg");
-                await DownloadFileAsync("https://cdn.romitsagu.com/files/FFmpeg/ffmpeg", ffmpegDirectory);
-
-                ffmpegBinFilename = "ffmpeg";
-            }
-
-            app.Map("/ws", async context =>
-            {
-                if (context.WebSockets.IsWebSocketRequest)
-                {
-                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    Console.WriteLine("WebSocket connection established.");
-
-                    string hlsPath = Path.Combine(hlsDirectory, "stream.m3u8");
-
-                    using (var ffmpeg = new Process())
-                    {
-                        string ffmpegFileDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", ffmpegBinFilename);
-
-                        ffmpeg.StartInfo.FileName = ffmpegFileDirectory;
-                        ffmpeg.StartInfo.Arguments = $"-f rawvideo -pixel_format bgr24 -video_size 640x480 -framerate 30 -i - -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -f hls -hls_time 2 -hls_list_size 3 -hls_flags delete_segments {hlsPath}";
-
-                        ffmpeg.StartInfo.UseShellExecute = false;
-                        ffmpeg.StartInfo.RedirectStandardInput = true;
-                        ffmpeg.StartInfo.RedirectStandardError = true; // Redirect standard error
-                        ffmpeg.Start();
-
-                        string errorOutput = string.Empty;
-                        ffmpeg.ErrorDataReceived += (sender, e) =>
-                        {
-                            if (e.Data != null)
-                            {
-                                errorOutput += e.Data + Environment.NewLine; // Accumulate error output
-                            }
-                        };
-                        ffmpeg.BeginErrorReadLine(); // Begin reading error output
-
-                        try
-                        {
-                            byte[] buffer = new byte[1024 * 32];
-                            while (webSocket.State == System.Net.WebSockets.WebSocketState.Open)
-                            {
-                                var result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
-                                if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
-                                {
-                                    await webSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
-                                    break;
-                                }
-
-                                if (ffmpeg.HasExited)
-                                {
-                                    Console.WriteLine("FFmpeg process has exited unexpectedly.");
-                                    break;
-                                }
-
-                                try
-                                {
-                                    await ffmpeg.StandardInput.BaseStream.WriteAsync(buffer, 0, result.Count);
-                                }
-                                catch (IOException ioEx)
-                                {
-                                    Console.WriteLine("Stream write error: " + ioEx.Message);
-                                    break;
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Error during WebSocket processing: " + ex.Message);
-                        }
-                        finally
-                        {
-                            try
-                            {
-                                ffmpeg.StandardInput.Close();
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("Error closing ffmpeg input: " + ex.Message);
-                            }
-
-                            if (!ffmpeg.HasExited)
-                            {
-                                ffmpeg.WaitForExit();
-                            }
-                            Console.WriteLine($"FFmpeg exited with code {ffmpeg.ExitCode}. Error Output: {errorOutput}");
-                        }
-                    }
-                }
-                else
-                {
-                    context.Response.StatusCode = 400;
-                }
+                Root = outputDir,
+                RequestPath = "/hls"
             });
+
 
             app.Run();
         }
 
 
-        private static async Task DownloadFileAsync(string fileUrl, string destinationPath)
-        {
-            // Check if the file already exists
-            if (File.Exists(destinationPath))
-            {
-                Console.WriteLine($"File already exists at {destinationPath}. Download skipped.");
-                return; // Exit the method if the file already exists
-            }
-
-            using (HttpClient httpClient = new HttpClient())
-            {
-                using (HttpResponseMessage response = await httpClient.GetAsync(fileUrl))
-                {
-                    response.EnsureSuccessStatusCode(); // Throw if not a success code.
-
-                    using (var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
-                    {
-                        await response.Content.CopyToAsync(fileStream);
-                    }
-
-                    Console.WriteLine($"File downloaded successfully to {destinationPath}.");
-                }
-            }
-        }
+        
     }
 }
