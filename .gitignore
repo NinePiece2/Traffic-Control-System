@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /Traffic-Control-System/.env
 /Traffic-Control-System/wwwroot/hls
 /Traffic-Control-System/ffmpegBins
+ffmpeg.exe
