@@ -18,6 +18,10 @@ RUN dotnet restore "./Traffic-Control-System-Video/Traffic-Control-System-Video.
 
 COPY . . 
 
+RUN rm /src/Traffic-Control-System/appsettings.Development.json \
+    /src/Traffic-Control-System/appsettings.json \
+    /src/Traffic-Control-System/appsettings.Production.json
+
 WORKDIR "/src/Traffic-Control-System-Video"
 RUN dotnet build "./Traffic-Control-System-Video.csproj" -c $BUILD_CONFIGURATION -o /app/build
 

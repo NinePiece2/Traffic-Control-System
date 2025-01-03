@@ -15,6 +15,10 @@ RUN dotnet restore "./Traffic-Control-System-API/Traffic-Control-System-API.cspr
 
 COPY . .
 
+RUN rm /src/Traffic-Control-System/appsettings.Development.json \
+    /src/Traffic-Control-System/appsettings.json \
+    /src/Traffic-Control-System/appsettings.Production.json
+
 WORKDIR "/src/Traffic-Control-System-API"
 RUN dotnet build "./Traffic-Control-System-API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
