@@ -16,8 +16,8 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Traffic-Control-System-Video/Traffic-Control-System-Video.csproj", "Traffic-Control-System-Video/"]
 RUN dotnet restore "./Traffic-Control-System-Video/Traffic-Control-System-Video.csproj"
-COPY . .
-WORKDIR "/src/Traffic-Control-System-Video"
+COPY ../ .
+WORKDIR "/src/Traffic-Control-System/Traffic-Control-System-Video"
 RUN dotnet build "./Traffic-Control-System-Video.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage

@@ -14,8 +14,8 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Traffic-Control-System-API/Traffic-Control-System-API.csproj", "Traffic-Control-System-API/"]
 RUN dotnet restore "./Traffic-Control-System-API/Traffic-Control-System-API.csproj"
-COPY . .
-WORKDIR "/src/Traffic-Control-System-API"
+COPY ../ .
+WORKDIR "/src/Traffic-Control-System/Traffic-Control-System-API"
 RUN dotnet build "./Traffic-Control-System-API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
