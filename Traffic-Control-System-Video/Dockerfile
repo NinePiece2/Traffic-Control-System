@@ -23,7 +23,11 @@ RUN dotnet build "./Traffic-Control-System-Video.csproj" -c $BUILD_CONFIGURATION
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-COPY Traffic-Control-System-Video/appsettings.* /src/Traffic-Control-System-Video/
+
+COPY Traffic-Control-System-Video/appsettings.json /src/Traffic-Control-System-Video/
+COPY Traffic-Control-System-Video/appsettings.Development.json /src/Traffic-Control-System-Video/
+COPY Traffic-Control-System-Video/appsettings.Production.json /src/Traffic-Control-System-Video/
+
 RUN dotnet publish "./Traffic-Control-System-Video.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final

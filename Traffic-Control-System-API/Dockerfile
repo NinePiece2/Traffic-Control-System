@@ -20,10 +20,16 @@ RUN dotnet build "./Traffic-Control-System-API.csproj" -c $BUILD_CONFIGURATION -
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-COPY Traffic-Control-System-API/appsettings.* /src/Traffic-Control-System-API/
+
+# Copy only the required appsettings files from Traffic-Control-System-API directory
+COPY Traffic-Control-System-API/appsettings.json /src/Traffic-Control-System-API/
+COPY Traffic-Control-System-API/appsettings.Development.json /src/Traffic-Control-System-API/
+COPY Traffic-Control-System-API/appsettings.Production.json /src/Traffic-Control-System-API/
+
 RUN dotnet publish "./Traffic-Control-System-API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
 ENTRYPOINT ["dotnet", "Traffic-Control-System-API.dll"]
