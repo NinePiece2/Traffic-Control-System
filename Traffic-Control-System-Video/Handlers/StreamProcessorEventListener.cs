@@ -1,8 +1,9 @@
 ﻿using LiveStreamingServerNet.StreamProcessor.Contracts;
+using LiveStreamingServerNet.StreamProcessor.FFmpeg.Contracts;
 using LiveStreamingServerNet.StreamProcessor.Hls.Contracts;
 using LiveStreamingServerNet.Utilities.Contracts;
 
-namespace Traffic_Control_System.Handlers
+namespace Traffic_Control_System_Video.Handlers
 {
     public class HlsOutputPathResolver : IHlsOutputPathResolver
     {

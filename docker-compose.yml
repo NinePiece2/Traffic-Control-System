@@ -1,8 +1,8 @@
 version: '3.8'
 
 services:
-  api:
-    image: ninepiece2/traffic-control-system:latest
+  mvc:
+    image: ninepiece2/traffic-control-system:mvc
     container_name: Traffic-Control-System
     ports:
       - "8443:8443"
@@ -14,5 +14,45 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/ssl.key
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - SyncfusionLicense=${SyncfusionLicense}
+      - VideoServiceURL=https://stream.trafficcontrolsystem.romitsagu.com
+      - APIURL=https://api.trafficcontrolsystem.romitsagu.com
+      - API_KEY=${JWT_Key}
     command: ["dotnet", "Traffic-Control-System.dll"]
+    restart: always
+  
+  api:
+    image: ninepiece2/traffic-control-system:api
+    container_name: Traffic-Control-System-API
+    ports:
+      - "8445:8445"
+    volumes:
+      - /root/certs:/https:ro
+    environment:
+      - ASPNETCORE_URLS=https://*:8445;http://*:8080
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/ssl.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/ssl.key
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - JWT:Issuer=https://api.trafficcontrolsystem.romitsagu.com
+      - JWT:Audience=https://api.trafficcontrolsystem.romitsagu.com
+      - JWT:Key=${JWT_Key}
+    command: ["dotnet", "Traffic-Control-System-API.dll"]
+    restart: always
+
+  video:
+    image: ninepiece2/traffic-control-system:video
+    container_name: Traffic-Control-System-Video
+    ports:
+      - "1935:1935"
+      - "8446:8446"
+    volumes:
+      - /root/certs:/https:ro
+    environment:
+      - ASPNETCORE_URLS=https://*:8446;http://*:8080
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/ssl.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/ssl.key
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - JWT:Issuer=https://stream.trafficcontrolsystem.romitsagu.com
+      - JWT:Audience=https://stream.trafficcontrolsystem.romitsagu.com
+      - JWT:Key=${JWT_Key}
+    command: ["dotnet", "Traffic-Control-System-Video.dll"]
     restart: always

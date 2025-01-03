@@ -370,3 +370,5 @@ ffprobe.exe
 /ffmpegBins/*
 /Traffic-Control-System-Video/ffmpegBins/ffmpeg.exe
 /Traffic-Control-System-Video/ffmpegBins/ffprobe.exe
+/Traffic-Control-System-Video/wwwroot/hls
+/Traffic-Control-System-Video/hls

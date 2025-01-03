@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.WebSockets;
 using System.Net;
 using LiveStreamingServerNet;
 using LiveStreamingServerNet.Flv.Installer;
-using Traffic_Control_System.Handlers;
 using LiveStreamingServerNet.StreamProcessor.Installer;
 using LiveStreamingServerNet.Rtmp.Server.Auth.Contracts;
 using LiveStreamingServerNet.StreamProcessor.AspNetCore.Configurations;
@@ -66,35 +65,6 @@ namespace Traffic_Control_System
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
 
             builder.Services.AddTransient<IEmailService, EmailService>();
-            builder.Services.AddTransient<IValidator, ValidatorService>();
-
-            builder.Services.AddWebSockets(options => {
-                options.KeepAliveInterval = TimeSpan.FromSeconds(120);
-            });
-
-            var outputDir = Path.Combine(Directory.GetCurrentDirectory(), "hls");
-            new DirectoryInfo(outputDir).Create();
-
-            builder.Services.AddLiveStreamingServer(
-                new IPEndPoint(IPAddress.Any, 1935),
-                options => options
-                    .Configure(options => options.EnableGopCaching = false)
-                    .AddFlv()
-                    .AddAuthorizationHandler<AuthorizationHandler>()
-                    .AddStreamProcessor(options =>
-                    {
-                        options.AddStreamProcessorEventHandler(svc =>
-                                new StreamProcessorEventListener(outputDir, svc.GetRequiredService<ILogger<StreamProcessorEventListener>>()));
-                    })
-                    .AddHlsTransmuxer(options => { 
-                        options.OutputPathResolver = new HlsOutputPathResolver(outputDir);
-                        options.SegmentListSize = 3;
-                        options.CleanupDelay = TimeSpan.FromSeconds(10.0);
-                        options.MinSegmentLength = TimeSpan.FromSeconds(0.5);
-                    })
-
-            ).AddLogging();
-
 
             var app = builder.Build();
 
@@ -123,20 +93,6 @@ namespace Traffic_Control_System
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
-
-            //// Enable WebSocket middleware
-            //app.UseWebSockets();
-
-            //app.UseWebSocketFlv();
-
-            //app.UseHttpFlv();
-
-            app.UseHlsFiles(new HlsServingOptions
-            {
-                Root = outputDir,
-                RequestPath = "/hls"
-            });
-
 
             app.Run();
         }

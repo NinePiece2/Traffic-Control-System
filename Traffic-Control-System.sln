@@ -5,6 +5,10 @@ VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traffic-Control-System", "Traffic-Control-System\Traffic-Control-System.csproj", "{406FA3E5-83BF-43B1-83E8-E085EDE9CD76}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traffic-Control-System-API", "Traffic-Control-System-API\Traffic-Control-System-API.csproj", "{D624CC18-EDA9-45B1-97E8-53821C4D0EE2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traffic-Control-System-Video", "Traffic-Control-System-Video\Traffic-Control-System-Video.csproj", "{929435C2-811C-4168-82EB-E9EC83511773}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{406FA3E5-83BF-43B1-83E8-E085EDE9CD76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{406FA3E5-83BF-43B1-83E8-E085EDE9CD76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{406FA3E5-83BF-43B1-83E8-E085EDE9CD76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D624CC18-EDA9-45B1-97E8-53821C4D0EE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D624CC18-EDA9-45B1-97E8-53821C4D0EE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D624CC18-EDA9-45B1-97E8-53821C4D0EE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D624CC18-EDA9-45B1-97E8-53821C4D0EE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{929435C2-811C-4168-82EB-E9EC83511773}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{929435C2-811C-4168-82EB-E9EC83511773}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{929435C2-811C-4168-82EB-E9EC83511773}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{929435C2-811C-4168-82EB-E9EC83511773}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
