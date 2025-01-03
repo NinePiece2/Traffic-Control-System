@@ -94,3 +94,6 @@ jobs:
           SyncfusionLicense: ${{ secrets.SyncfusionLicense }}
           JWT_Key: ${{ secrets.JWT_Key }}
         run: docker-compose up -d
+        
+      - name: Remove unused Docker images
+        run: docker image prune -af
