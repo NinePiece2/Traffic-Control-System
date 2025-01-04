@@ -38,7 +38,7 @@ namespace Traffic_Control_System_Video
 
 
             // Add services to the container.
-            builder.Services.AddLiveStreamingServer();
+            builder.Services.AddLiveStreamingServer().AddLogging();
 
             builder.Services.AddCors(options =>
                 options.AddDefaultPolicy(policy =>
@@ -83,7 +83,7 @@ namespace Traffic_Control_System_Video
 
             app.UseAuthorization();
 
-            await app.RunAsync();
+            app.Run();
         }
 
         private static IServiceCollection AddLiveStreamingServer(this IServiceCollection services)
@@ -92,6 +92,7 @@ namespace Traffic_Control_System_Video
 
             var outputDir = Path.Combine(Directory.GetCurrentDirectory(), "hls");
             new DirectoryInfo(outputDir).Create();
+            Console.WriteLine("Current Dir " + Directory.GetCurrentDirectory().ToString());
 
             return services.AddLiveStreamingServer(
                 new IPEndPoint(IPAddress.Any, 1935),
@@ -104,6 +105,7 @@ namespace Traffic_Control_System_Video
                         options.AddStreamProcessorEventHandler(svc =>
                                 new StreamProcessorEventListener(outputDir, svc.GetRequiredService<ILogger<StreamProcessorEventListener>>()));
                     })
+
                     .AddAdaptiveHlsTranscoder(options =>
                     {
                         // Check Platform
@@ -116,12 +118,17 @@ namespace Traffic_Control_System_Video
                         }
                         else
                         {
-                            options.FFmpegPath = ExecutableFinder.FindExecutableFromPATH("ffmpeg")!;
-                            options.FFprobePath = ExecutableFinder.FindExecutableFromPATH("ffprobe")!;
+                            //options.FFmpegPath = ExecutableFinder.FindExecutableFromPATH("ffmpeg")!;
+                            //options.FFprobePath = ExecutableFinder.FindExecutableFromPATH("ffprobe")!;
+                            var ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffmpeg");
+                            var ffprobePath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffprobe");
+                            options.FFmpegPath = ffmpegPath;
+                            options.FFprobePath = ffprobePath;
                         }
 
                         options.OutputPathResolver = new HlsOutputPathResolver(outputDir);
-
+                        options.PerformanceOptions = new PerformanceOptions(4, 4096);
+                        options.CleanupDelay = TimeSpan.FromSeconds(10.0);
                         options.DownsamplingFilters =
                         [
                             new DownsamplingFilter(
@@ -150,6 +157,12 @@ namespace Traffic_Control_System_Video
                         // options.VideoDecodingArguments = "-hwaccel auto -c:v h264_cuvid";
                         // options.VideoEncodingArguments = "-c:v h264_nvenc -g 30";
                     })
+                    //.AddHlsTransmuxer(options => {
+                    //    options.OutputPathResolver = new HlsOutputPathResolver(outputDir);
+                    //    options.SegmentListSize = 5;
+                    //    options.CleanupDelay = TimeSpan.FromSeconds(10.0);
+                    //    options.MinSegmentLength = TimeSpan.FromSeconds(0.5);
+                    //})
             );
         }
     }
