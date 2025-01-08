@@ -5,21 +5,6 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8443
 
-#USER root
-#RUN apt-get update && apt-get install -y wget unzip && apt-get clean
-#
-#RUN mkdir -p /app/wwwroot/hls && chmod -R 777 /app/wwwroot/hls
-#RUN mkdir -p /app/ffmpegBins && chmod -R 777 /app/ffmpegBins
-#
-#RUN chmod -R 777 /app
-#RUN wget -q -O /app/ffmpegBins/ffmpeg-6.1-linux-64.zip https://cdn.romitsagu.com/files/FFmpeg/ffmpeg-6.1-linux-64.zip
-#RUN unzip /app/ffmpegBins/ffmpeg-6.1-linux-64.zip -d  /app/ffmpegBins
-#RUN rm -rf ffmpeg-6.1-linux-64.zip
-#RUN chmod +x /app/ffmpegBins/ffmpeg
-#
-#
-#USER app
-#
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
