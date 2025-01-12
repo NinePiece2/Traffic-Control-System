@@ -14,8 +14,8 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/ssl.key
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - SyncfusionLicense=${SyncfusionLicense}
-      - VideoServiceURL=https://stream.trafficcontrolsystem.romitsagu.com
-      - APIURL=https://api.trafficcontrolsystem.romitsagu.com
+      - VideoServiceURL=https://stream-trafficcontrolsystem.romitsagu.com
+      - APIURL=https://api-trafficcontrolsystem.romitsagu.com
       - API_KEY=${JWT_Key}
     command: ["dotnet", "Traffic-Control-System.dll"]
     restart: always
@@ -32,8 +32,8 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/ssl.crt
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/ssl.key
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - JWT:Issuer=https://api.trafficcontrolsystem.romitsagu.com
-      - JWT:Audience=https://api.trafficcontrolsystem.romitsagu.com
+      - JWT:Issuer=https://api-trafficcontrolsystem.romitsagu.com
+      - JWT:Audience=https://api-trafficcontrolsystem.romitsagu.com
       - JWT:Key=${JWT_Key}
     command: ["dotnet", "Traffic-Control-System-API.dll"]
     restart: always
@@ -51,8 +51,8 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/ssl.crt
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/ssl.key
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - JWT:Issuer=https://stream.trafficcontrolsystem.romitsagu.com
-      - JWT:Audience=https://stream.trafficcontrolsystem.romitsagu.com
+      - JWT:Issuer=https://stream-trafficcontrolsystem.romitsagu.com
+      - JWT:Audience=https://stream-trafficcontrolsystem.romitsagu.com
       - JWT:Key=${JWT_Key}
     command: ["dotnet", "Traffic-Control-System-Video.dll"]
     restart: always
