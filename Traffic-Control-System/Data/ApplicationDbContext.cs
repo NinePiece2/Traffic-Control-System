@@ -18,6 +18,7 @@ namespace Traffic_Control_System.Data
         public DbSet<PowerSettings> PowerSettings { get; set; }
 
         public DbSet<StreamClients> StreamClients { get; set; }
+        public DbSet<ActiveSignals> ActiveSignals { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -46,6 +47,11 @@ namespace Traffic_Control_System.Data
             builder.Entity<StreamClients>(entity =>
             {
                 entity.HasKey(e => e.UID);
+            });
+
+            builder.Entity<ActiveSignals>(entity =>
+            {
+                entity.HasKey(e => e.ID);
             });
         }
     }
