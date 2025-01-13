@@ -39,30 +39,52 @@ class Streamer:
 
 
 class Recorder:
-    def __init__(self, filename, fps, width, height):
-        self.filename = filename
-        self.fps = fps
+    def __init__(self, width, height, fps):
         self.width = width
         self.height = height
+        self.fps = fps
+        self.buffer = deque(maxlen=fps * 20)  # Buffer for last 20 seconds
+        self.recording = False
         self.writer = None
 
-    def start_recording(self):
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        self.writer = cv2.VideoWriter(self.filename, fourcc, self.fps, (self.width, self.height))
+    def add_frame_to_buffer(self, frame):
+        """Adds a frame to the buffer for the last 20 seconds."""
+        self.buffer.append(frame)
 
-    def write_frame(self, frame):
-        if self.writer:
+    def start_recording(self, filename):
+        """Starts recording using buffered frames and live frames."""
+        self.recording = True
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        self.writer = cv2.VideoWriter(filename, fourcc, self.fps, (self.width, self.height))
+
+        # Write buffered frames (last 20 seconds)
+        for frame in self.buffer:
             self.writer.write(frame)
 
+        # Record live frames for 10 seconds
+        threading.Thread(target=self.record_live_frames, daemon=True).start()
+
+    def record_live_frames(self):
+        """Records live frames for 10 seconds after the trigger."""
+        start_time = time.time()
+        while self.recording and (time.time() - start_time) < 10:
+            ret, frame = video_capture.cap.read()
+            if ret:
+                self.writer.write(frame)
+
+        self.stop_recording()
+
     def stop_recording(self):
+        """Stops recording and releases the video writer."""
+        self.recording = False
         if self.writer:
             self.writer.release()
+            self.writer = None
 
 
 class VideoCapture:
-    def __init__(self, rtmp_url, record_filename):
+    def __init__(self, rtmp_url):
         self.rtmp_url = rtmp_url
-        self.record_filename = record_filename
 
         self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
@@ -73,13 +95,12 @@ class VideoCapture:
         self.fps = int(self.cap.get(cv2.CAP_PROP_FPS) or 30)
 
         self.streamer = Streamer(self.rtmp_url, self.width, self.height)
-        self.recorder = Recorder(self.record_filename, self.fps, self.width, self.height)
+        self.recorder = Recorder(self.width, self.height, self.fps)
 
         self.running = True
 
     def start(self):
         self.streamer.start_stream()
-        self.recorder.start_recording()
 
         while self.running:
             ret, frame = self.cap.read()
@@ -87,15 +108,21 @@ class VideoCapture:
                 print("Error: Failed to capture frame.")
                 break
 
-            # Send frame to streamer and recorder
+            # Send frame to streamer and add to recorder buffer
             self.streamer.send_frame(frame)
-            self.recorder.write_frame(frame)
+            self.recorder.add_frame_to_buffer(frame)
 
             # Display the frame (optional)
             cv2.imshow("Webcam", frame)
 
+            # Trigger recording on key press 'r'
+            key = cv2.waitKey(1)
+            if key & 0xFF == ord('r'):
+                print("Recording last 20 and next 10 seconds...")
+                self.recorder.start_recording("recorded_clip.mp4")
+
             # Break the loop if 'q' is pressed
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            if key & 0xFF == ord('q'):
                 self.running = False
 
         self.stop()
@@ -104,12 +131,10 @@ class VideoCapture:
         self.running = False
         self.cap.release()
         self.streamer.stop_stream()
-        self.recorder.stop_recording()
         cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
-    rtmp_url = "rtmp://localhost/live/device1?key=F17461C168C25A5B63F97ADB677B9A9D3797C357BEB46E417E1E8B788B"
-    record_filename = "recorded_video.mp4"
-    video_capture = VideoCapture(rtmp_url, record_filename)
+    rtmp_url = "rtmp://stream1-trafficcontrolsystem.romitsagu.com/live/device1?key=F17461C168C25A5B63F97ADB677B9A9D3797C357BEB46E417E1E8B788B"
+    video_capture = VideoCapture(rtmp_url)
     video_capture.start()
