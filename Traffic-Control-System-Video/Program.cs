@@ -92,7 +92,6 @@ namespace Traffic_Control_System_Video
 
             var outputDir = Path.Combine(Directory.GetCurrentDirectory(), "hls");
             new DirectoryInfo(outputDir).Create();
-            Console.WriteLine("Current Dir " + Directory.GetCurrentDirectory().ToString());
 
             return services.AddLiveStreamingServer(
                 new IPEndPoint(IPAddress.Any, 1935),
@@ -106,63 +105,64 @@ namespace Traffic_Control_System_Video
                                 new StreamProcessorEventListener(outputDir, svc.GetRequiredService<ILogger<StreamProcessorEventListener>>()));
                     })
 
-                    .AddAdaptiveHlsTranscoder(options =>
-                    {
-                        // Check Platform
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        {
-                            var ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffmpeg.exe");
-                            var ffprobePath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffprobe.exe");
-                            options.FFmpegPath = ffmpegPath;
-                            options.FFprobePath = ffprobePath;
-                        }
-                        else
-                        {
-                            //options.FFmpegPath = ExecutableFinder.FindExecutableFromPATH("ffmpeg")!;
-                            //options.FFprobePath = ExecutableFinder.FindExecutableFromPATH("ffprobe")!;
-                            var ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffmpeg");
-                            var ffprobePath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffprobe");
-                            options.FFmpegPath = ffmpegPath;
-                            options.FFprobePath = ffprobePath;
-                        }
+                    //.AddAdaptiveHlsTranscoder(options =>
+                    //{
+                    //    // Check Platform
+                    //    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    //    {
+                    //        var ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffmpeg.exe");
+                    //        var ffprobePath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffprobe.exe");
+                    //        options.FFmpegPath = ffmpegPath;
+                    //        options.FFprobePath = ffprobePath;
+                    //    }
+                    //    else
+                    //    {
+                    //        //options.FFmpegPath = ExecutableFinder.FindExecutableFromPATH("ffmpeg")!;
+                    //        //options.FFprobePath = ExecutableFinder.FindExecutableFromPATH("ffprobe")!;
+                    //        var ffmpegPath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffmpeg");
+                    //        var ffprobePath = Path.Combine(Directory.GetCurrentDirectory(), "ffmpegBins", "ffprobe");
+                    //        options.FFmpegPath = ffmpegPath;
+                    //        options.FFprobePath = ffprobePath;
+                    //    }
 
-                        options.OutputPathResolver = new HlsOutputPathResolver(outputDir);
-                        options.PerformanceOptions = new PerformanceOptions(4, 4096);
-                        options.CleanupDelay = TimeSpan.FromSeconds(10.0);
-                        options.DownsamplingFilters =
-                        [
-                            new DownsamplingFilter(
-                                Name: "360p",
-                                Height: 360,
-                                MaxVideoBitrate: "600k",
-                                MaxAudioBitrate: "64k"
-                            ),
-
-                            new DownsamplingFilter(
-                                Name: "480p",
-                                Height: 480,
-                                MaxVideoBitrate: "1500k",
-                                MaxAudioBitrate: "128k"
-                            ),
-
-                            new DownsamplingFilter(
-                                Name: "720p",
-                                Height: 720,
-                                MaxVideoBitrate: "3000k",
-                                MaxAudioBitrate: "256k"
-                            )
-                        ];
-
-                        // Hardware acceleration 
-                        // options.VideoDecodingArguments = "-hwaccel auto -c:v h264_cuvid";
-                        // options.VideoEncodingArguments = "-c:v h264_nvenc -g 30";
-                    })
-                    //.AddHlsTransmuxer(options => {
                     //    options.OutputPathResolver = new HlsOutputPathResolver(outputDir);
-                    //    options.SegmentListSize = 5;
+                    //    options.PerformanceOptions = new PerformanceOptions(4, 4096);
                     //    options.CleanupDelay = TimeSpan.FromSeconds(10.0);
-                    //    options.MinSegmentLength = TimeSpan.FromSeconds(0.5);
+                    //    options.DownsamplingFilters =
+                    //    [
+                    //        new DownsamplingFilter(
+                    //            Name: "360p",
+                    //            Height: 360,
+                    //            MaxVideoBitrate: "600k",
+                    //            MaxAudioBitrate: "64k"
+                    //        ),
+
+                    //        new DownsamplingFilter(
+                    //            Name: "480p",
+                    //            Height: 480,
+                    //            MaxVideoBitrate: "1500k",
+                    //            MaxAudioBitrate: "128k"
+                    //        ),
+
+                    //        new DownsamplingFilter(
+                    //            Name: "720p",
+                    //            Height: 720,
+                    //            MaxVideoBitrate: "3000k",
+                    //            MaxAudioBitrate: "256k"
+                    //        )
+                    //    ];
+
+                    //    // Hardware acceleration 
+                    //    // options.VideoDecodingArguments = "-hwaccel auto -c:v h264_cuvid";
+                    //    // options.VideoEncodingArguments = "-c:v h264_nvenc -g 30";
                     //})
+                    .AddHlsTransmuxer(options =>
+                    {
+                        options.OutputPathResolver = new HlsOutputPathResolver(outputDir);
+                        options.SegmentListSize = 5;
+                        options.CleanupDelay = TimeSpan.FromSeconds(10.0);
+                        options.MinSegmentLength = TimeSpan.FromSeconds(0.5);
+                    })
             );
         }
     }
