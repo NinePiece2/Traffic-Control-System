@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Net;
-using Traffic_Control_System.Data;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -82,9 +81,9 @@ namespace Traffic_Control_System.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public IActionResult ActiveSignalsList()
+        public IActionResult TrafficSignalsList()
         {
-            var userList = _applicationDbContext.ActiveSignals
+            var userList = _applicationDbContext.TrafficSignals
                 .ToList();
             
             return Json(new { result = userList, count = userList.Count });
