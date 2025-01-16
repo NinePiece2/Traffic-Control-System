@@ -38,13 +38,14 @@ namespace Traffic_Control_System_Video.Controllers
         }
 
         [HttpPost("UploadFile")]
-        public async Task<IActionResult> UploadFile(IFormFile file)
+        public async Task<IActionResult> UploadFile(IFormFile file, string deviceID)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded");
 
             var fileName = Path.GetFileName(file.FileName);
             var folderPath = "ClipsFiles";
+            folderPath = Path.Combine(folderPath, deviceID);
 
             using (var stream = file.OpenReadStream())
             {
