@@ -69,7 +69,7 @@ namespace Traffic_Control_System_Video
             });
 
             builder.Services.AddSingleton<ITokenService, TokenService>();
-            builder.Services.AddSingleton<IFTPFileService, FTPFileService>();
+            builder.Services.AddTransient<IFTPFileService, FTPFileService>();
 
             var app = builder.Build();
 

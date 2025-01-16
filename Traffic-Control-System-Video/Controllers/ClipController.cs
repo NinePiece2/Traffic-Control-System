@@ -38,7 +38,7 @@ namespace Traffic_Control_System_Video.Controllers
         }
 
         [HttpPost("UploadFile")]
-        public async Task<IActionResult> UploadFile(IFormFile file, [FromBody] string deviceID)
+        public async Task<IActionResult> UploadFile(IFormFile file, [FromForm] string deviceID)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded");
