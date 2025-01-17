@@ -36,7 +36,6 @@ namespace Traffic_Control_System_Video
 
             builder.Services.AddScoped<AuthorizationHandler>();
 
-
             // Add services to the container.
             builder.Services.AddLiveStreamingServer().AddLogging();
 
@@ -70,6 +69,7 @@ namespace Traffic_Control_System_Video
             });
 
             builder.Services.AddSingleton<ITokenService, TokenService>();
+            builder.Services.AddTransient<IFTPFileService, FTPFileService>();
 
             var app = builder.Build();
 

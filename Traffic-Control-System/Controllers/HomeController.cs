@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using Traffic_Control_System.Services;
+using Traffic_Control_System.Data;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Text;
@@ -20,12 +21,14 @@ namespace Traffic_Control_System.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService emailService;
+        private readonly ApplicationDbContext _applicationDbContext;
 
-        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IEmailService _emailService, IConfiguration _config)
+        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IEmailService _emailService, ApplicationDbContext applicationDbContext, IConfiguration _config)
         {
             _logger = logger;
             _userManager = userManager;
             emailService = _emailService;
+            _applicationDbContext = applicationDbContext;
             config = _config;
         }
 
@@ -76,6 +79,16 @@ namespace Traffic_Control_System.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public IActionResult TrafficSignalsList()
+        {
+            var userList = _applicationDbContext.TrafficSignals
+                .ToList();
+            
+            return Json(new { result = userList, count = userList.Count });
+
+
         }
     }
 }

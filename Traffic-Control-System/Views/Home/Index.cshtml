@@ -1,23 +1,95 @@
-﻿@{
+﻿@using Syncfusion.EJ2.Navigations
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.Grids
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
-<script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
+<style>
+    ::-webkit-scrollbar {
+        width: 0px !important;
+    }
+   
+    ::-webkit-scrollbar-thumb {
+        background: #808080 !important;
+    }
 
+    .container {
+        padding-top: 25px;
+        max-width: 95%;
+    }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    h2 {
+        padding-left: 10px
+    }
+
+    .spacer {
+        margin-left: 5px; 
+    }
+
+    .custom-access{
+        color: #050505 !important;
+        background-color: #fc1d1d;
+        border-color: #fc1d1d;
+    }
+
+    .custom-access:focus {
+        background-color: #1D7AFC;
+        border-color: #1D7AFC !important;
+    }
+
+    .custom-access:focus:active {
+        background-color: #1D7AFC;
+        border-color: #fc1d1d !important;
+        box-shadow: 0 0 2px 1px #1D7AFC !important;
+    }
+
+    .e-dropdownbase .e-list-item {
+        color: white;
+        background-color: #1e1e22;
+    }
+
+    .e-dropdownbase .e-list-item:hover {
+        color: white;
+        background-color: #42A5F5;
+    }
+
+    .badge-danger{
+        color: white;
+        background-color: #dc3545;
+    }
+    
+    .e-dropdownbase .e-list-item.e-active {
+        color: white;
+        background-color: #42A5F5 !important;
+    }
+
+</style>
+
+<h2>Traffic Signals</h2>
+<div class="container">
+            <div class="e-content"> 
+                <div>
+                    @(Html.EJS().Grid("adminSignalGrid")
+                        .Height("400px")
+                        .DataSource(dataManger => {
+                            dataManger.Url("/Home/TrafficSignalsList").Key("id").CrossDomain(false);
+                        })
+                        .Columns(col => {
+                            col.Field("id").HeaderText("ID").Width("120").Add();
+                            col.Field("Address").HeaderText("Address").Width("150").Add();
+                            col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").Add();
+
+                            col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> ").Width("100").Add();
+                            
+                        })
+                        .AllowPaging()
+                        .Render()
+                    )
+                </div>
+        
+ </div>
+
+</script>       
 </div>
 
-
-<div>
-    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" data-setup='{}'>
-        <source src="https://localhost:44384/Stream/device1/output.m3u8" type="application/x-mpegURL">
-    </video>
-</div>
-<script>
-    var player = videojs('my-video');
-    player.play();
-</script>

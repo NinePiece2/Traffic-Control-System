@@ -3,7 +3,42 @@ import subprocess
 import threading
 import time
 from collections import deque
+import requests
 
+class UploadClip:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def upload_clip(self, device_id):
+        url = "http://localhost:5130/Clip/UploadFile"
+        # Open the file in binary mode
+        with open(self.filename, 'rb') as file:
+            # Set up the headers with Bearer token
+            headers = {
+                'Authorization': f'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6Ik9SbUVxR1VZeUphQzJHVmdHT0tiNXlJUVI5dUdlMUNhN0FLYldoZzc3Mi91L1Jxam1lK0NPTkJkNnpVWFNsbU1wQzkrU3JMSUZYeXJmOVhoTUVLakZhcEROZ2N3ampIcjNBQmFvdTQ1MXRyYVdGd2V2d1BzVTlKS3dyaFV5TWQ5T1FySytYUFlScFVXK2pOZE9yQUxYaWRGN2prR0lTZnhMUHVuUWxkLzVOaz0iLCJuYmYiOjE3MzcwNzA0MzUsImV4cCI6MTczNzA3NDAzNSwiaWF0IjoxNzM3MDcwNDM1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDM4NCIsImF1ZCI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0Mzg0In0.Mz6QK3egl0CB1Qe-ZfXSgohSnmFYxOYbwXJcv4J2saU'
+            }
+
+            # Set up the form data (multipart)
+            files = {
+                'file': (self.filename.split('/')[-1], file),
+            }
+
+            # Include the deviceID as part of the form data
+            data = {
+                'deviceID': device_id
+            }
+
+            # Make the POST request
+            response = requests.post(url, headers=headers, files=files, data=data)
+
+            # Check the response
+            if response.status_code == 200:
+                print("File uploaded successfully!")
+                print("Response:", response.json())
+            else:
+                print("Failed to upload file.")
+                print("Status Code:", response.status_code)
+                print("Response:", response.text)
 
 class Streamer:
     def __init__(self, rtmp_url, width, height):
@@ -15,7 +50,7 @@ class Streamer:
     def start_stream(self):
         # FFmpeg command to stream the video
         command = [
-            'ffmpeg',
+            './ffmpeg',
             '-y',
             '-f', 'rawvideo',
             '-pixel_format', 'bgr24',
@@ -80,13 +115,14 @@ class Recorder:
         if self.writer:
             self.writer.release()
             self.writer = None
-
+            upload = UploadClip("recorded_clip.mp4")
+            upload.upload_clip('device1')
 
 class VideoCapture:
     def __init__(self, rtmp_url):
         self.rtmp_url = rtmp_url
 
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(1)
         if not self.cap.isOpened():
             raise Exception("Error: Could not open webcam.")
 

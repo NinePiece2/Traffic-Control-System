@@ -57,9 +57,8 @@ namespace Traffic_Control_System_Video.Services
             }
             catch (FtpCommandException ex)
             {
-                // Log detailed error message
                 Console.WriteLine($"FTP command failed: {ex.Message}");
-                throw; // Re-throw or handle as needed
+                throw;
             }
             finally
             {

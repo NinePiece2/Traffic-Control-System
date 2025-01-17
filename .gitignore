@@ -373,3 +373,5 @@ ffprobe.exe
 /Traffic-Control-System-Video/wwwroot/hls
 /Traffic-Control-System-Video/hls
 *.mp4
+.DS_Store
+ffmpeg

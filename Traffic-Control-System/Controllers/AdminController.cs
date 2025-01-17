@@ -307,5 +307,6 @@ namespace Traffic_Control_System.Controllers
         {
             return View();
         }
+
     }
 }
