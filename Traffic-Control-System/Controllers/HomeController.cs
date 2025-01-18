@@ -8,10 +8,9 @@ using Traffic_Control_System.Services;
 using Traffic_Control_System.Data;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
-using System.Text;
-using System.Text.Encodings.Web;
 using System.Net;
-using Traffic_Control_System.Data;
+using Microsoft.AspNetCore.SignalR;
+using Traffic_Control_System.Hubs;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -23,14 +22,16 @@ namespace Traffic_Control_System.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService emailService;
         private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IHubContext<ControlHub> _hubContext;
 
-        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IEmailService _emailService, ApplicationDbContext applicationDbContext, IConfiguration _config)
+        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IEmailService _emailService, ApplicationDbContext applicationDbContext, IConfiguration _config, IHubContext<ControlHub> hubContext)
         {
             _logger = logger;
             _userManager = userManager;
             emailService = _emailService;
             _applicationDbContext = applicationDbContext;
             config = _config;
+            _hubContext = hubContext;
         }
 
         public async Task<IActionResult> Index()
@@ -90,6 +91,14 @@ namespace Traffic_Control_System.Controllers
             return Json(new { result = userList, count = userList.Count });
 
 
+        }
+
+        public async Task<IActionResult> SignalRTest()
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Test", "Test");
+
+
+            return View();
         }
     }
 }
