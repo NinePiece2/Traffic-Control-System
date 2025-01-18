@@ -66,19 +66,19 @@
 
 </style>
 
-<h2>Active Signals</h2>
+<h2>Traffic Signals</h2>
 <div class="container">
             <div class="e-content"> 
                 <div>
                     @(Html.EJS().Grid("adminSignalGrid")
                         .Height("400px")
                         .DataSource(dataManger => {
-                            dataManger.Url("/Home/ActiveSignalsList").Key("id").CrossDomain(false);
+                            dataManger.Url("/Home/TrafficSignalsList").Key("id").CrossDomain(false);
                         })
                         .Columns(col => {
-                            col.Field("ID").HeaderText("ID").Width("120").Add();
+                            col.Field("id").HeaderText("ID").Width("120").Add();
                             col.Field("Address").HeaderText("Address").Width("150").Add();
-                            col.Field("NumofViolations").HeaderText("NumberofViolations").Width("150").Add();
+                            col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").Add();
 
                             col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> ").Width("100").Add();
                             

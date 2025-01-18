@@ -14,11 +14,10 @@ namespace Traffic_Control_System.Data
         }
 
         public DbSet<PendingUserRequests> PendingUserRequests { get; set; }
-
         public DbSet<PowerSettings> PowerSettings { get; set; }
-
         public DbSet<StreamClients> StreamClients { get; set; }
-        public DbSet<ActiveSignals> ActiveSignals { get; set; }
+        public DbSet<TrafficSignals> TrafficSignals { get; set; }
+        public DbSet<TrafficViolations> TrafficViolations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -48,10 +47,16 @@ namespace Traffic_Control_System.Data
             {
                 entity.HasKey(e => e.UID);
             });
-
-            builder.Entity<ActiveSignals>(entity =>
+            
+            builder.Entity<TrafficViolations>(entity =>
             {
-                entity.HasKey(e => e.ID);
+                entity.HasKey(e => e.UID);
+            });
+
+            builder.Entity<TrafficSignals>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("TrafficSignals");
             });
         }
     }

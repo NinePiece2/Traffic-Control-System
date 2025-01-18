@@ -8,6 +8,8 @@ using Traffic_Control_System.Services;
 using Traffic_Control_System.Data;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Net;
 using Microsoft.AspNetCore.SignalR;
 using Traffic_Control_System.Hubs;
@@ -83,9 +85,9 @@ namespace Traffic_Control_System.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public IActionResult ActiveSignalsList()
+        public IActionResult TrafficSignalsList()
         {
-            var userList = _applicationDbContext.ActiveSignals
+            var userList = _applicationDbContext.TrafficSignals
                 .ToList();
             
             return Json(new { result = userList, count = userList.Count });
