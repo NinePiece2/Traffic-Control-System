@@ -97,7 +97,6 @@ namespace Traffic_Control_System.Controllers
         {
             await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Test", "Test");
 
-
             return View();
         }
     }
