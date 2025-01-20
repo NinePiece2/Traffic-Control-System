@@ -3,16 +3,17 @@ import urllib.parse
 import jwt
 from jwt.exceptions import ExpiredSignatureError, DecodeError
 from datetime import datetime, timezone
+import json
 
 class API:
     def __init__(self):
         self.token = None
-        self.token_url = "https://api-trafficcontrolsystem.romitsagu.com/Token/GetToken?userID="
-        self.key = 'xrUXvjdVt0Kz3c7drkt9oSLR9Rcm5nPQXe8rU1riDT2qKLzPlH9VsetNzv68YHqG+n+TWeP4ZSqZnBpNEc6UKpZVrleN6Yr5rYwhg7qhXQvQ5eohikcuyxFVbDATEK4aqEoRheBEoDh4VpDzOTi+S9zVE7p9f/+6l6ZPPtIhu2U='
+        self.token_url = "https://localhost:44363/Token/GetToken?userID="
+        self.key = 'ORmEqGUYyJaC2GVgGOKb5yIQR9uGe1Ca7AKbWhg772%2Fu%2FRqjme%2BCONBd6zUXSlmMpC9%2BSrLIFXyrf9XhMEKjFapDNgcwjjHr3ABaou451traWFwevwPsU9JKwrhUyMd9OQrK%2BXPYRpUW%2BjNdOrALXidF7jkGISfxLPunQld%2F5Nk%3D'
 
     def _get_new_token(self):
         """Fetch a new token from the token URL and update expiration time."""
-        response_token = requests.get(self.token_url + urllib.parse.quote(self.key, safe=''))
+        response_token = requests.get(self.token_url + urllib.parse.quote(self.key, safe=''), verify=False)
         if response_token.status_code == 200:
             self.token = response_token.text
             print(f"Token received: {self.token}")
@@ -66,19 +67,55 @@ class API:
             print("No token available to proceed.")
             return
 
-        stream_url = f"https://api-trafficcontrolsystem.romitsagu.com/Traffic/GetStreamClientKey?DeviceStreamID={device_stream_id}"
+        stream_url = f"https://localhost:44363/Traffic/GetStreamClientKey?DeviceStreamID={device_stream_id}"
         headers = {
             'Authorization': f'Bearer {self.token}'
         }
 
-        response_stream = requests.get(stream_url, headers=headers)
+        response_stream = requests.get(stream_url, headers=headers, verify=False)
         
         if response_stream.status_code == 200:
             print(f"Stream Client Key Response: {response_stream.text}")
         else:
             print(f"Failed to fetch stream client key. Status code: {response_stream.status_code}")
             print(f"Response Content: {response_stream.text}")
+            
+    def post_AddTrafficViolation(self, ActiveSignalID, LicensePlate, VideoURL):
+        self._ensure_valid_token()
+        
+        if not self.token:
+            print("No token available to proceed.")
+            return
+        
+        stream_url = f"https://localhost:44363/Traffic/AddTrafficViolation"
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = json.dumps({
+            "ActiveSignalID": ActiveSignalID,
+            "LicensePlate": LicensePlate,
+            "VideoURL": VideoURL
+        })
+        
+        try:
+            response_violation = requests.post(stream_url, json=payload, headers = headers, verify=False)
+            
+            if response_violation.status_code == 200:
+                print(f"Traffic Violation Added: {response_violation.json()}")
+            
+            else:
+                print(f"Failed to add traffic violation. Status Code: {response_violation.status_code}")
+                print(f"Response Content: {response_violation.text}")
+                
+        except requests.exceptions.RequestException as e:
+            print(f"Error occurred during POST request: {e}")
+        
+        
 
 if __name__ == "__main__":
     api = API()
     api.get_stream_client_key("device1")
+    api.post_AddTrafficViolation(1,"randomtest","http://sagu.com/sagu.sagu4")
