@@ -13,7 +13,7 @@ class API:
 
     def _get_new_token(self):
         """Fetch a new token from the token URL and update expiration time."""
-        response_token = requests.get(self.token_url + urllib.parse.quote(self.key, safe=''), verify=False)
+        response_token = requests.get(self.token_url + urllib.parse.quote(self.key, safe=''))
         if response_token.status_code == 200:
             self.token = response_token.text
             print(f"Token received: {self.token}")
@@ -68,10 +68,10 @@ class API:
             return
 
         stream_url = f"https://localhost:44363/Traffic/GetStreamClientKey?DeviceStreamID={device_stream_id}"
+        
         headers = {
             'Authorization': f'Bearer {self.token}'
         }
-
         response_stream = requests.get(stream_url, headers=headers, verify=False)
         
         if response_stream.status_code == 200:
@@ -112,7 +112,6 @@ class API:
                 
         except requests.exceptions.RequestException as e:
             print(f"Error occurred during POST request: {e}")
-        
         
 
 if __name__ == "__main__":
