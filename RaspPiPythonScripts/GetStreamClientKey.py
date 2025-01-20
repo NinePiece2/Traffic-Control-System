@@ -9,7 +9,7 @@ class API:
     def __init__(self):
         self.token = None
         self.token_url = "https://localhost:44363/Token/GetToken?userID="
-        self.key = 'ORmEqGUYyJaC2GVgGOKb5yIQR9uGe1Ca7AKbWhg772%2Fu%2FRqjme%2BCONBd6zUXSlmMpC9%2BSrLIFXyrf9XhMEKjFapDNgcwjjHr3ABaou451traWFwevwPsU9JKwrhUyMd9OQrK%2BXPYRpUW%2BjNdOrALXidF7jkGISfxLPunQld%2F5Nk%3D'
+        self.key = 'ORmEqGUYyJaC2GVgGOKb5yIQR9uGe1Ca7AKbWhg772/u/Rqjme+CONBd6zUXSlmMpC9+SrLIFXyrf9XhMEKjFapDNgcwjjHr3ABaou451traWFwevwPsU9JKwrhUyMd9OQrK+XPYRpUW+jNdOrALXidF7jkGISfxLPunQld/5Nk='
 
     def _get_new_token(self):
         """Fetch a new token from the token URL and update expiration time."""
@@ -94,11 +94,11 @@ class API:
             'Content-Type': 'application/json'
         }
         
-        payload = json.dumps({
+        payload = {
             "ActiveSignalID": ActiveSignalID,
             "LicensePlate": LicensePlate,
             "VideoURL": VideoURL
-        })
+        }
         
         try:
             response_violation = requests.post(stream_url, json=payload, headers = headers, verify=False)
