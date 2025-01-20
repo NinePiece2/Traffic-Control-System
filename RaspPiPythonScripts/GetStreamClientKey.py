@@ -5,6 +5,7 @@ from jwt.exceptions import ExpiredSignatureError, DecodeError
 from datetime import datetime, timezone
 import json
 
+
 class API:
     def __init__(self):
         self.token = None
@@ -71,8 +72,6 @@ class API:
         headers = {
             'Authorization': f'Bearer {self.token}'
         }
-
-        response_stream = requests.get(stream_url, headers=headers, verify=False)
         
         if response_stream.status_code == 200:
             print(f"Stream Client Key Response: {response_stream.text}")
@@ -112,7 +111,6 @@ class API:
                 
         except requests.exceptions.RequestException as e:
             print(f"Error occurred during POST request: {e}")
-        
         
 
 if __name__ == "__main__":
