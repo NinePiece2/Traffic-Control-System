@@ -29,19 +29,19 @@
 
     .custom-access{
         color: #050505 !important;
-        background-color: #fc1d1d;
-        border-color: #fc1d1d;
+        background-color: #dcda63;
+        border-color: #dcda63;
     }
 
     .custom-access:focus {
-        background-color: #1D7AFC;
-        border-color: #1D7AFC !important;
+        background-color: #dcda63;
+        border-color: #dcda63 !important;
     }
 
     .custom-access:focus:active {
-        background-color: #1D7AFC;
-        border-color: #fc1d1d !important;
-        box-shadow: 0 0 2px 1px #1D7AFC !important;
+        background-color: #dcda63;
+        border-color: #dcda63 !important;
+        box-shadow: 0 0 2px 1px #dcda63 !important;
     }
 
     .e-dropdownbase .e-list-item {
@@ -87,9 +87,32 @@
                         .Render()
                     )
                 </div>
-        
- </div>
-
-</script>       
+            </div>    
 </div>
+
+<script>
+    function onAccess(button) {
+        // Get the grid instance
+        var gridObj = document.getElementById('adminSignalGrid').ej2_instances[0];
+
+        // Find the closest row to the clicked button
+        var row = button.closest('tr');
+
+        // Retrieve the UID of the row
+        var uid = row.getAttribute('data-uid');
+
+        if (uid) {
+            // Use the UID to get the row data
+            var rowData = gridObj.getRowObjectFromUID(uid).data;
+
+            // Extract the ID field from the row data
+            var id = rowData.id; // Ensure 'id' is the correct field name in your grid data
+
+            // Redirect to the IncidentReport page with the ID as a query parameter
+            window.location.href = `/Home/IncidentReport?ID=${id}`;
+        } else {
+            console.error("UID not found in the row.");
+        }
+    }
+</script>
 

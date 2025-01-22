@@ -1,0 +1,93 @@
+@using Syncfusion.EJ2.Navigations
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.Grids
+@model Traffic_Control_System.Models.TrafficViolationsViewModel
+@{
+    ViewData["Title"] = "Incident Report Page";
+}
+
+<style>
+    ::-webkit-scrollbar {
+        width: 0px !important;
+    }
+   
+    ::-webkit-scrollbar-thumb {
+        background: #808080 !important;
+    }
+
+    .container {
+        padding-top: 25px;
+        max-width: 95%;
+    }
+
+    h2 {
+        padding-left: 10px
+    }
+
+    .spacer {
+        margin-left: 5px; 
+    }
+
+    .custom-access{
+        color: #050505 !important;
+        background-color: #6756fa;
+        border-color: #6756fa;
+    }
+
+    .custom-access:focus {
+        background-color: #6756fa;
+        border-color: #6756fa !important;
+    }
+
+    .custom-access:focus:active {
+        background-color: #1D7AFC;
+        border-color: #6756fa !important;
+        box-shadow: 0 0 2px 1px #6756fa !important;
+    }
+
+    .e-dropdownbase .e-list-item {
+        color: white;
+        background-color: #1e1e22;
+    }
+
+    .e-dropdownbase .e-list-item:hover {
+        color: white;
+        background-color: #42A5F5;
+    }
+
+    .badge-danger{
+        color: white;
+        background-color: #dc3545;
+    }
+    
+    .e-dropdownbase .e-list-item.e-active {
+        color: white;
+        background-color: #42A5F5 !important;
+    }
+
+</style>
+
+<h2>Incident Report</h2>
+<div class="container">
+            <div class="e-content"> 
+                <div>
+                    @(Html.EJS().Grid("incidentReportGrid")
+                        .Height("400px")
+                        .DataSource(dataManger => {
+                            dataManger.Url($"/Home/IncidentReportsList?signalID={@Model.ActiveSignalID}").Key("UID").CrossDomain(false);
+                        })
+                        .Columns(col => {
+                            col.Field("LicensePlate").HeaderText("License Plate").Width("150").Add();
+                            col.Field("DateCreated").HeaderText("Date Created").Width("150").Add();
+
+                            col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Report</button> ").Width("100").Add();
+                            
+                        })
+                        .AllowPaging()
+                        .Render()
+                    )
+                </div>
+            </div>
+</div>
+
+
