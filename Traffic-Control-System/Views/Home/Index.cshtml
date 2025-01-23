@@ -81,6 +81,27 @@
         background-color: #42A5F5 !important;
     }
 
+    .k-button.custom-live {
+        background-color: #ff4d4d;  
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .k-button.custom-live:hover {
+        background-color: #e60000; 
+    }
+
+    .k-button.custom-live:active {
+        transform: scale(0.98);  
+        background-color: #b30000; 
+    }
+
 </style>
 
 <h2 style="display: inline-block;">Traffic Signals</h2>
@@ -197,7 +218,7 @@
                             col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").Add();
                             
                             //button to incident report of specific violation
-                            col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> ").Width("100").Add();
+                    col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> <button class='k-button custom-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
                             
                         })
                         .AllowPaging()
@@ -227,6 +248,24 @@
 
             // Redirect to the IncidentReport page with the ID as a query parameter
             window.location.href = `/Home/IncidentReport?ID=${id}`;
+        } else {
+            console.error("UID not found in the row.");
+        }
+    }
+
+    function onLive(button){
+        var gridObj = document.getElementById('adminSignalGrid').ej2_instances[0];
+
+        var row = button.closest('tr');
+
+        var uid = row.getAttribute('data-uid');
+
+        if (uid) {
+            var rowData = gridObj.getRowObjectFromUID(uid).data;
+
+            var id = rowData.id; 
+
+            window.location.href = `/Home/Stream?ID=${id}`;
         } else {
             console.error("UID not found in the row.");
         }

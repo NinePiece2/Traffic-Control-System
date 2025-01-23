@@ -69,25 +69,44 @@
 
 <h2>Incident Report</h2>
 <div class="container">
-            <div class="e-content"> 
-                <div>
-                    @(Html.EJS().Grid("incidentReportGrid")
-                        .Height("400px")
-                        .DataSource(dataManger => {
-                            dataManger.Url($"/Home/IncidentReportsList?signalID={@Model.ActiveSignalID}").Key("UID").CrossDomain(false);
-                        })
-                        .Columns(col => {
-                            col.Field("LicensePlate").HeaderText("License Plate").Width("150").Add();
-                            col.Field("DateCreated").HeaderText("Date Created").Width("150").Add();
+    <div class="e-content"> 
+        <div>
+            @(Html.EJS().Grid("incidentReportGrid")
+                .Height("400px")
+                .DataSource(dataManger => {
+                    dataManger.Url($"/Home/IncidentReportsList?signalID={@Model.ActiveSignalID}").Key("UID").CrossDomain(false);
+                })
+                .Columns(col => {
+                    col.Field("LicensePlate").HeaderText("License Plate").Width("150").Add();
+                    col.Field("DateCreated").HeaderText("Date Created").Width("150").Add();
 
-                            col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Report</button> ").Width("100").Add();
+                    col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onReport(this)'>Report</button> ").Width("100").Add();
                             
-                        })
-                        .AllowPaging()
-                        .Render()
-                    )
-                </div>
-            </div>
+                })
+                .AllowPaging()
+                .Render()
+            )
+        </div>
+    </div>
 </div>
 
+<script>
+    function onReport(button){
+        var gridObj = document.getElementById('incidentReportGrid').ej2_instances[0];
+
+        var row = button.closest('tr');
+
+        var uid = row.getAttribute('data-uid');
+
+        if (uid) {
+            var rowData = gridObj.getRowObjectFromUID(uid).data;
+            console.log(rowData)
+            var id = rowData.uid;
+
+            window.location.href = `/Home/Report?ID=${id}`;
+        } else {
+            console.error("UID not found in the row.");
+        }
+    }
+</script>
 

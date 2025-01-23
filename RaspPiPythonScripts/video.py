@@ -10,12 +10,12 @@ class UploadClip:
         self.filename = filename
 
     def upload_clip(self, device_id):
-        url = "https://localhost:44384/Clip/UploadFile"
+        url = "https://stream-trafficcontrolsystem.romitsagu.com/Clip/UploadFile"
         # Open the file in binary mode
         with open(self.filename, 'rb') as file:
             # Set up the headers with Bearer token
             headers = {
-                'Authorization': f'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6Ik9SbUVxR1VZeUphQzJHVmdHT0tiNXlJUVI5dUdlMUNhN0FLYldoZzc3Mi91L1Jxam1lK0NPTkJkNnpVWFNsbU1wQzkrU3JMSUZYeXJmOVhoTUVLakZhcEROZ2N3ampIcjNBQmFvdTQ1MXRyYVdGd2V2d1BzVTlKS3dyaFV5TWQ5T1FySytYUFlScFVXK2pOZE9yQUxYaWRGN2prR0lTZnhMUHVuUWxkLzVOaz0iLCJuYmYiOjE3Mzc2MDUzOTUsImV4cCI6MTczNzYwODk5NSwiaWF0IjoxNzM3NjA1Mzk1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDM4NCIsImF1ZCI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0Mzg0In0.b5WBRoo0yxy_Yy4Njb_T8SHp-NMPd9DqHiUsSNsx8EU'
+                'Authorization': f'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6InhyVVh2amRWdDBLejNjN2Rya3Q5b1NMUjlSY201blBRWGU4clUxcmlEVDJxS0x6UGxIOVZzZXROenY2OFlIcUcrbitUV2VQNFpTcVpuQnBORWM2VUtwWlZybGVONllyNXJZd2hnN3FoWFF2UTVlb2hpa2N1eXhGVmJEQVRFSzRhcUVvUmhlQkVvRGg0VnBEek9UaStTOXpWRTdwOWYvKzZsNlpQUHRJaHUyVT0iLCJuYmYiOjE3Mzc2MDg1MzAsImV4cCI6MTczNzYxMjEzMCwiaWF0IjoxNzM3NjA4NTMwLCJpc3MiOiJodHRwczovL3N0cmVhbS10cmFmZmljY29udHJvbHN5c3RlbS5yb21pdHNhZ3UuY29tIiwiYXVkIjoiaHR0cHM6Ly9zdHJlYW0tdHJhZmZpY2NvbnRyb2xzeXN0ZW0ucm9taXRzYWd1LmNvbSJ9.5aHMhNaptxOGos0-fVr8T9yrpGpiaSwu0NAYEyv-hCw'
             }
 
             # Set up the form data (multipart)
