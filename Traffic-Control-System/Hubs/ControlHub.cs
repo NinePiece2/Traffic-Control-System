@@ -1,12 +1,21 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using System.Threading.Tasks;
 
 namespace Traffic_Control_System.Hubs
 {
     public class ControlHub : Hub
     {
-        public async Task SendMessage(string user, string message)
+
+        public override async Task OnConnectedAsync()
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            var connectionId = Context.ConnectionId;
+            await Clients.Client(connectionId).SendAsync("ReceiveConnectionId", connectionId);
+            await base.OnConnectedAsync();
+        }
+
+        public async Task SendMessage(string connectionId, string user, string message)
+        {
+            await Clients.Client(connectionId).SendAsync("ReceiveMessage", user, message);
         }
     }
 }

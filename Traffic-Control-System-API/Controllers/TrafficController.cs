@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Traffic_Control_System.Data;
+using Traffic_Control_System.Models;
 
 namespace Traffic_Control_System_API.Controllers
 {
@@ -16,13 +17,6 @@ namespace Traffic_Control_System_API.Controllers
         {
             _applicationDbContext = applicationDbContext;
 
-        }
-
-        [HttpGet]
-        [Route("APItest")]
-        public IActionResult APItest()
-        {
-            return Ok("Test");
         }
 
         [HttpGet]
@@ -53,9 +47,36 @@ namespace Traffic_Control_System_API.Controllers
                     return BadRequest(ex.Message);
                 }
             }
-
         }
 
-    }
+        [HttpPost]
+        [Route("AddTrafficViolation")]
+        public IActionResult AddTrafficViolation([FromBody] TrafficViolationsModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
+                var violation = new TrafficViolations
+                {
+                    ActiveSignalID = model.ActiveSignalID,
+                    LicensePlate = model.LicensePlate,
+                    VideoURL = model.VideoURL,
+                    DateCreated = DateTime.Now 
+                };
+
+                _applicationDbContext.Add(violation);
+                _applicationDbContext.SaveChanges();
+
+                return Ok(new { Message = "Traffic violation added successfully", Violation = violation });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.ToString()}");
+            }
+        }
+    }
 }

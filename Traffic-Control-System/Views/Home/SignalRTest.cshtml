@@ -20,10 +20,11 @@
         });
 
         connection.start().then(function () {
+            //console.log("Connected. My connection ID:", connection.connectionId);
             document.getElementById("sendButton").addEventListener("click", function (event) {
-                const user = document.getElementById("userInput").value;
-                const message = document.getElementById("messageInput").value;
-                connection.invoke("SendMessage", user, message).catch(function (err) {
+                const user = "System";
+                const message = "Manual Override";
+                connection.invoke("SendMessage", connection.connectionId, user, message).catch(function (err) {
                     return console.error(err.toString());
                 });
                 event.preventDefault();
@@ -33,8 +34,5 @@
         });
     });
 </script>
-
-<input type="text" id="userInput" placeholder="Name" />
-<input type="text" id="messageInput" placeholder="Message" />
 <button id="sendButton">Send</button>
 <ul id="messages"></ul>

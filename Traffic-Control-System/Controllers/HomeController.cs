@@ -95,11 +95,44 @@ namespace Traffic_Control_System.Controllers
 
         }
 
-        public async Task<IActionResult> SignalRTest()
-        {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Test", "Test");
 
-            return View();
+            public IActionResult IncidentReportsList(int signalID)
+            {
+                // Query the TrafficViolations table based on the ActiveSignalID
+                var violations = _applicationDbContext.TrafficViolations
+                    .Where(v => v.ActiveSignalID == signalID)
+                    .Select(v => new TrafficViolation
+                    {
+                        UID = v.UID,
+                        DateCreated = v.DateCreated,
+                        LicensePlate = v.LicensePlate
+                    })
+                    .ToList();
+
+                // Return the result as JSON with the count
+                return Json(new { result = violations, count = violations.Count });
+            }
+
+
+
+        public IActionResult IncidentReport(int ID)
+        {
+            
+            if (ID == null)
+            {
+
+                return NotFound(); // Or handle the case where the report isn't found
+            }
+
+            var violation = new TrafficViolationsViewModel{
+                ActiveSignalID=ID
+            };
+
+            // Pass the data to the view (or you can create a ViewModel)
+            return View(violation);
         }
+
+        public IActionResult SignalRTest() { return View(); }
+
     }
 }
