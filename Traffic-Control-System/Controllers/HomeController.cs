@@ -11,6 +11,8 @@ using System.Security.Policy;
 using Traffic_Control_System.Data;
 using Traffic_Control_System.Models;
 using Traffic_Control_System.Services;
+using Microsoft.AspNetCore.SignalR;
+using Traffic_Control_System.Hubs;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -22,16 +24,18 @@ namespace Traffic_Control_System.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService emailService;
         private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IHubContext<ControlHub> _hubContext;
         private readonly IVideoService videoService;
 
         public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IEmailService _emailService, ApplicationDbContext applicationDbContext, 
-            IConfiguration _config, IVideoService videoService)
+            IConfiguration _config, IVideoService videoService, IHubContext<ControlHub> hubContext)
         {
             _logger = logger;
             _userManager = userManager;
             emailService = _emailService;
             _applicationDbContext = applicationDbContext;
             config = _config;
+            _hubContext = hubContext;
             this.videoService = videoService;
         }
 
@@ -182,6 +186,8 @@ namespace Traffic_Control_System.Controllers
             // Pass the data to the view (or you can create a ViewModel)
             return View(violation);
         }
+
+        public IActionResult SignalRTest() { return View(); }
 
     }
 }

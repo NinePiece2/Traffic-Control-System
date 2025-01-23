@@ -1,0 +1,38 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/controlhub")
+            .build();
+
+        connection.on("ReceiveMessage", function (user, message) {
+            const msg = user + ": " + message;
+            const li = document.createElement("li");
+            li.textContent = msg;
+            document.getElementById("messages").appendChild(li);
+        });
+
+        connection.start().then(function () {
+            //console.log("Connected. My connection ID:", connection.connectionId);
+            document.getElementById("sendButton").addEventListener("click", function (event) {
+                const user = "System";
+                const message = "Manual Override";
+                connection.invoke("SendMessage", connection.connectionId, user, message).catch(function (err) {
+                    return console.error(err.toString());
+                });
+                event.preventDefault();
+            });
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+    });
+</script>
+<button id="sendButton">Send</button>
+<ul id="messages"></ul>

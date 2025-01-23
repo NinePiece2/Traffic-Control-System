@@ -5,10 +5,24 @@ using System.Diagnostics;
 using Traffic_Control_System.Data;
 using Traffic_Control_System.Models;
 using Traffic_Control_System.Services;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
+using System.Runtime.InteropServices;
+using Traffic_Control_System.Migrations;
+using Microsoft.AspNetCore.WebSockets;
+using System.Net;
+using LiveStreamingServerNet;
+using LiveStreamingServerNet.Flv.Installer;
+using LiveStreamingServerNet.StreamProcessor.Installer;
+using LiveStreamingServerNet.Rtmp.Server.Auth.Contracts;
+using LiveStreamingServerNet.StreamProcessor.AspNetCore.Configurations;
+using LiveStreamingServerNet.StreamProcessor.AspNetCore.Installer;
 
 namespace Traffic_Control_System
 {
-    public class Program
+    public class Program 
+
+
     {
         public static async Task Main(string[] args)
         {
@@ -39,6 +53,7 @@ namespace Traffic_Control_System
             .AddDefaultUI();
 
             builder.Services.AddControllersWithViews();
+            builder.Services.AddSignalR();
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
@@ -82,6 +97,7 @@ namespace Traffic_Control_System
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
+            app.MapHub<ControlHub>("/controlhub");
 
             app.Run();
         }
