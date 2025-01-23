@@ -17,6 +17,7 @@ using LiveStreamingServerNet.StreamProcessor.Installer;
 using LiveStreamingServerNet.Rtmp.Server.Auth.Contracts;
 using LiveStreamingServerNet.StreamProcessor.AspNetCore.Configurations;
 using LiveStreamingServerNet.StreamProcessor.AspNetCore.Installer;
+using Traffic_Control_System.Hubs;
 
 namespace Traffic_Control_System
 {
