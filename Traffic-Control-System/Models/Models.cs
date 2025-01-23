@@ -62,4 +62,16 @@ namespace Traffic_Control_System.Models
 
         public IDictionary<string, object> @params { get; set; }
     }
+
+    public class VideStreamViewModel
+    {
+        public string VideoURL { get; set; } = "~/VideoServiceProxy/";
+    }
+
+    public class ReportViewModel
+    {
+        public DateTime DateCreated { get; set; }
+        public string? LicensePlate { get; set; }
+        public string VideoURL { get; set; } = "~/VideoServiceProxy/";
+    }
 }

@@ -1,16 +1,16 @@
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using Traffic_Control_System.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
-using Traffic_Control_System.Services;
-using Traffic_Control_System.Data;
-using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Text;
-using System.Text.Encodings.Web;
+using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Security.Policy;
+using Traffic_Control_System.Data;
+using Traffic_Control_System.Models;
+using Traffic_Control_System.Services;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -22,14 +22,17 @@ namespace Traffic_Control_System.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService emailService;
         private readonly ApplicationDbContext _applicationDbContext;
+        private readonly IVideoService videoService;
 
-        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IEmailService _emailService, ApplicationDbContext applicationDbContext, IConfiguration _config)
+        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IEmailService _emailService, ApplicationDbContext applicationDbContext, 
+            IConfiguration _config, IVideoService videoService)
         {
             _logger = logger;
             _userManager = userManager;
             emailService = _emailService;
             _applicationDbContext = applicationDbContext;
             config = _config;
+            this.videoService = videoService;
         }
 
         public async Task<IActionResult> Index()
@@ -47,32 +50,84 @@ namespace Traffic_Control_System.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Video()
+        public IActionResult Stream(string ID)
         {
-            using (var client = new HttpClient())
+            if (ID == null)
             {
-                client.BaseAddress = new Uri(config["VideoServiceURL"]);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                return BadRequest("ID Can Not be Null");
+            }
 
-                var apiKey = WebUtility.UrlEncode(config["API_KEY"]);
-                var param = $"userId={apiKey}";
+            int IDint = Int32.Parse(ID);
+            var device = _applicationDbContext.StreamClients
+                .Where(s => s.UID == _applicationDbContext.TrafficSignals
+                    .Where(ts => ts.DeviceStreamUID == IDint)
+                    .Select(ts => ts.DeviceStreamUID)
+                    .FirstOrDefault())
+                .Select(s => s.DeviceStreamID)
+                .FirstOrDefault();
 
-                HttpResponseMessage response = await client.GetAsync($"Token/GetToken?{param}");
 
+            var viewModel = new VideStreamViewModel
+            {
+                VideoURL = $"/VideoServiceProxy/Stream/{device}/output.m3u8"
+            };
+            return View(viewModel);
+        }
 
-                if (response.IsSuccessStatusCode)
+        public async Task<IActionResult> Report(string ID)
+        {
+            if (ID == null)
+            {
+                return BadRequest("ID Can Not be Null");
+            }
+
+            int IDint = Int32.Parse(ID);
+            var violation = _applicationDbContext.TrafficViolations
+                .Where(s => s.UID == IDint)
+                .FirstOrDefault();
+
+            var device = _applicationDbContext.StreamClients
+                .Where(s => s.UID == _applicationDbContext.TrafficSignals
+                    .Where(ts => ts.DeviceStreamUID == violation.ActiveSignalID)
+                    .Select(ts => ts.DeviceStreamUID)
+                    .FirstOrDefault())
+                .Select(s => s.DeviceStreamID)
+                .FirstOrDefault();
+
+            var viewModel = new ReportViewModel
+            {
+                VideoURL = $"/VideoServiceProxy/Clip/GetFile/{device}/hls/playlist.m3u8",
+                DateCreated = violation.DateCreated,
+                LicensePlate = violation.LicensePlate
+            };
+            return View(viewModel);
+        }
+
+        [HttpGet("VideoServiceProxy/{*url}")]
+        public async Task<IActionResult> VideoServiceProxy(string url)
+        {
+            try
+            {
+                var httpResponse = await videoService.VideoServiceProxy(url);
+
+                if (httpResponse.IsSuccessStatusCode)
                 {
-                    var responseContent = response.Content.ReadAsStringAsync().Result;
-                    var token = JsonConvert.DeserializeObject<string>(responseContent);
-                    ViewBag.Token = token;
+                    var contentStream = await httpResponse.Content.ReadAsStreamAsync();
+
+                    var contentType = httpResponse.Content.Headers.ContentType.ToString();
+
+                    return new FileStreamResult(contentStream, contentType);
                 }
                 else
                 {
-                    ViewBag.Token = null;
+                    return BadRequest(httpResponse);
                 }
+
             }
-                return View();
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -1,0 +1,41 @@
+﻿@using Microsoft.Extensions.Configuration;
+@model Traffic_Control_System.Models.ReportViewModel
+@{
+    ViewData["Title"] = "Video Test";
+}
+
+<link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
+<script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 text-center">
+            <h1>Report</h1>
+        </div>
+        <div class="col-12 text-center">
+            <h2>@Model.LicensePlate</h2>
+        </div>
+        <div class="col-12 text-center">
+            <h2>@Model.DateCreated.ToShortDateString() @Model.DateCreated.ToShortTimeString() EST</h2>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" data-setup='{}'>
+                <source src="@Model.VideoURL" type="application/x-mpegURL">
+            </video>
+        </div>
+    </div>
+</div>
+
+<script>
+    var player = videojs('my-video', {
+        controls: true,
+        autoplay: false,
+        preload: 'auto',
+        techOrder: ['html5']
+    });
+
+    player.play();
+</script>

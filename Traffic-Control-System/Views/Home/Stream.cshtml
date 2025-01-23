@@ -1,9 +1,7 @@
 ﻿@using Microsoft.Extensions.Configuration;
-@inject IConfiguration config;
+@model Traffic_Control_System.Models.VideStreamViewModel
 @{
     ViewData["Title"] = "Video Test";
-    var baseVideoURL = config["VideoServiceURL"];
-    var token = ViewBag.Token;
 }
 
 <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
@@ -11,17 +9,10 @@
 
 <div>
     <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" data-setup='{}'>
-        <source src="@baseVideoURL/Stream/device1/output.m3u8" type="application/x-mpegURL">
+        <source src="@Model.VideoURL" type="application/x-mpegURL">
     </video>
 </div>
 <script>
-    videojs.Hls.xhr.beforeRequest = function (options) {
-        options.headers = {
-            Authorization: 'Bearer @token'
-        };
-        return options;
-    };
-
     var player = videojs('my-video', {
         controls: true,
         autoplay: false,

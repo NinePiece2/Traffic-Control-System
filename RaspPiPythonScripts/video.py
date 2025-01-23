@@ -10,12 +10,12 @@ class UploadClip:
         self.filename = filename
 
     def upload_clip(self, device_id):
-        url = "http://localhost:5130/Clip/UploadFile"
+        url = "https://localhost:44384/Clip/UploadFile"
         # Open the file in binary mode
         with open(self.filename, 'rb') as file:
             # Set up the headers with Bearer token
             headers = {
-                'Authorization': f'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6Ik9SbUVxR1VZeUphQzJHVmdHT0tiNXlJUVI5dUdlMUNhN0FLYldoZzc3Mi91L1Jxam1lK0NPTkJkNnpVWFNsbU1wQzkrU3JMSUZYeXJmOVhoTUVLakZhcEROZ2N3ampIcjNBQmFvdTQ1MXRyYVdGd2V2d1BzVTlKS3dyaFV5TWQ5T1FySytYUFlScFVXK2pOZE9yQUxYaWRGN2prR0lTZnhMUHVuUWxkLzVOaz0iLCJuYmYiOjE3MzcwNzA0MzUsImV4cCI6MTczNzA3NDAzNSwiaWF0IjoxNzM3MDcwNDM1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDM4NCIsImF1ZCI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0Mzg0In0.Mz6QK3egl0CB1Qe-ZfXSgohSnmFYxOYbwXJcv4J2saU'
+                'Authorization': f'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6Ik9SbUVxR1VZeUphQzJHVmdHT0tiNXlJUVI5dUdlMUNhN0FLYldoZzc3Mi91L1Jxam1lK0NPTkJkNnpVWFNsbU1wQzkrU3JMSUZYeXJmOVhoTUVLakZhcEROZ2N3ampIcjNBQmFvdTQ1MXRyYVdGd2V2d1BzVTlKS3dyaFV5TWQ5T1FySytYUFlScFVXK2pOZE9yQUxYaWRGN2prR0lTZnhMUHVuUWxkLzVOaz0iLCJuYmYiOjE3Mzc2MDUzOTUsImV4cCI6MTczNzYwODk5NSwiaWF0IjoxNzM3NjA1Mzk1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo0NDM4NCIsImF1ZCI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0Mzg0In0.b5WBRoo0yxy_Yy4Njb_T8SHp-NMPd9DqHiUsSNsx8EU'
             }
 
             # Set up the form data (multipart)
@@ -29,7 +29,7 @@ class UploadClip:
             }
 
             # Make the POST request
-            response = requests.post(url, headers=headers, files=files, data=data)
+            response = requests.post(url, headers=headers, files=files, data=data, verify=False)
 
             # Check the response
             if response.status_code == 200:
