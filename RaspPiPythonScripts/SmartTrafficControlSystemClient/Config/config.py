@@ -15,7 +15,7 @@ class Config:
             self.config = {
                 "Stream_URL": "rtmp://localhost/live",
                 "API_URL": "https://localhost:5000/",
-                "API_KEY": "API",
+                "API_KEY": "API_KEY",
                 "Device_ID": "Device0",
             }
 
