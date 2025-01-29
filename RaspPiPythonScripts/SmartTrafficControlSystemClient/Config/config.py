@@ -13,11 +13,8 @@ class Config:
         except FileNotFoundError:
             print("Config file not found. Using default configuration.")
             self.config = {
-                "rtmp_url": "rtmp://localhost/live",
-                "width": 640,
-                "height": 480,
-                "fps": 30,
-                "buffer_size": 20
+                "Stream_URL": "rtmp://localhost/live",
+                "API_URL": "https://localhost:5000/",
             }
 
     def get(self, key):
