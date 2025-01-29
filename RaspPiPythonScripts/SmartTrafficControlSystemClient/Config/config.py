@@ -19,5 +19,16 @@ class Config:
                 "Device_ID": "Device0",
             }
 
+
     def get(self, key):
+        self.load_config()
         return self.config.get(key)
+
+    def set(self, key, value):
+        self.config[key] = value
+        with open('config.json', 'w') as file:
+            json.dump(self.config, file, indent=4)
+        
+    def get_all(self):
+        self.load_config()
+        return self.config

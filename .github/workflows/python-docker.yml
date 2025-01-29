@@ -26,8 +26,11 @@ jobs:
         - name: Build and push
           uses: docker/build-push-action@v5
           with:
-            platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v8
+            platforms: linux/amd64,linux/arm/v8
             context: ./RaspPiPythonScripts
             file: ./RaspPiPythonScripts/Dockerfile
             push: true
             tags: ${{ secrets.DOCKER_USERNAME }}/traffic-control-system:client
+
+        - name: Remove unused Docker images
+          run: docker image prune -af
