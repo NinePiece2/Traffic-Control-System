@@ -1,11 +1,12 @@
 name: Client CI/CD Pipeline
 
 on:
-    push:
-      branches:
-        - master
-      paths:
-        - SmartTrafficControlSystemClient/**
+  push:
+    branches:
+      - master
+    paths:
+      - SmartTrafficControlSystemClient/**
+      - SmartTrafficControlSystemClient/*
 
 jobs:
     Build-Client:
