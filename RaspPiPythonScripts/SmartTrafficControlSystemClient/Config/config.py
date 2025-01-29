@@ -16,7 +16,8 @@ class Config:
                 "Stream_URL": "rtmp://localhost/live",
                 "API_URL": "https://localhost:5000/",
                 "API_KEY": "API_KEY",
-                "Device_ID": "Device0",
+                "Device_ID": "device0",
+                "Stream_Key": "STREAM_KEY",
             }
 
 
