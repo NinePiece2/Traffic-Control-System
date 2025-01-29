@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  my_python_app:
+    build:
+      context: .
+    image: my_python_app
+    container_name: my_python_app_container
+    privileged: true  # Needed to allow access to GPIO and camera devices
+    devices:
+      - "/dev/gpiomem:/dev/gpiomem"  # GPIO access
+      - "/dev/video0:/dev/video0"    # Camera access
+    volumes:
+      - ./config:/app/config  # Optional: Mount local config files
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
