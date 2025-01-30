@@ -10,4 +10,5 @@ COPY . /app
 RUN pip install -r requirements.txt
 
 # Run the application
-CMD ["python", "SmartTrafficControlSystemClient/core.py"]
+#CMD ["python", "SmartTrafficControlSystemClient/core.py"]
+CMD ["python", "SmartTrafficControlSystemClient/main.py"]
