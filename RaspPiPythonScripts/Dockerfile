@@ -1,5 +1,10 @@
 FROM python:3.9.13-bullseye
 
+# Update and install required packages
+RUN apt-get update && apt-get install -y \
+    lgpio \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
 
