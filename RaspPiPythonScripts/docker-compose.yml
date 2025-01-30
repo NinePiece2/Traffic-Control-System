@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   client:
-    image: ninepiece2/smart-traffic-control-system:client
+    image: ninepiece2/traffic-control-system:client
     container_name: Smart-Traffic-Control-System-Client
     privileged: true  # Needed to allow access to GPIO and camera devices
     devices:

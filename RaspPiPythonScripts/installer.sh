@@ -37,12 +37,13 @@ sudo docker-compose --version
 docker pull ninepiece2/traffic-control-system:client
 
 mkdir TrafficControlSystemClient && cd TrafficControlSystemClient
+mkdir config
 
 # Download the docker-compose.yml file
 sudo curl -LJO https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/docker-compose.yml
 
 # Curl the configuration file
-sudo curl -LJO https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/config.json
+sudo curl -LJ https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/config.json -o config/config.json
 
 echo "Docker and Docker Compose have been successfully installed on your Raspberry Pi (ARM64)."
 echo "Please update the configuration file (config.json) with your own values."
