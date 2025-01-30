@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 opencv-python = "*"
+gpiozero = "==2.0.1"
 
 [dev-packages]
 
