@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 opencv-python = "*"
 gpiozero = "*"
+PyJWT="*"
+requests="*"
+urllib3="*"
 
 [dev-packages]
 
