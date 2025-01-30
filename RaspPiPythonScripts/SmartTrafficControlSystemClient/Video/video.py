@@ -4,18 +4,61 @@ import threading
 import time
 from collections import deque
 import requests
+import Config.config as config
+from jwt.exceptions import DecodeError
+from datetime import datetime, timezone
+import urllib.parse
+import jwt
 
 class UploadClip:
     def __init__(self, filename):
         self.filename = filename
+        self.token = None
+    
+    def _get_new_token(self):
+        """Fetch a new token from the token URL and update expiration time."""
+        token_url = config.Config().get("Video_URL") + "Token/GetToken?userID="
+        key = config.Config().get("API_KEY")
+        response_token = requests.get(token_url + urllib.parse.quote(key, safe=''))
+        if response_token.status_code == 200:
+            self.token = response_token.text
+            #print(f"Token received: {self.token}")
+        else:
+            print(f"Failed to get token. Status code: {response_token.status_code}")
+            print(f"Response Content: {response_token.text}")
+            self.token = None
+
+    def _ensure_valid_token(self):
+        if not self.token:
+            self._get_new_token()
+
+        try:
+            decoded_token = jwt.decode(self.token, options={"verify_signature": False})
+            exp = decoded_token.get("exp") 
+            expiration_time = datetime.fromtimestamp(exp, tz=timezone.utc)
+            current_time = datetime.now(tz=timezone.utc)
+
+            if current_time >= expiration_time:
+                self._get_new_token()
+
+            elif (expiration_time - current_time).total_seconds() <= 300:
+                self._get_new_token()
+
+        except DecodeError as e:
+            print(f"Invalid token format: {e}")
+            return False
+        except Exception as e:
+            print(f"Error while decoding token in _ensure_valid_token: {e}")
+            return False
 
     def upload_clip(self, device_id):
-        url = "https://stream-trafficcontrolsystem.romitsagu.com/Clip/UploadFile"
+        self._ensure_valid_token()
+        url = f"{config.Config().get('Video_URL')}Clip/UploadFile"
         # Open the file in binary mode
         with open(self.filename, 'rb') as file:
             # Set up the headers with Bearer token
             headers = {
-                'Authorization': f'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6InhyVVh2amRWdDBLejNjN2Rya3Q5b1NMUjlSY201blBRWGU4clUxcmlEVDJxS0x6UGxIOVZzZXROenY2OFlIcUcrbitUV2VQNFpTcVpuQnBORWM2VUtwWlZybGVONllyNXJZd2hnN3FoWFF2UTVlb2hpa2N1eXhGVmJEQVRFSzRhcUVvUmhlQkVvRGg0VnBEek9UaStTOXpWRTdwOWYvKzZsNlpQUHRJaHUyVT0iLCJuYmYiOjE3Mzc2MDg1MzAsImV4cCI6MTczNzYxMjEzMCwiaWF0IjoxNzM3NjA4NTMwLCJpc3MiOiJodHRwczovL3N0cmVhbS10cmFmZmljY29udHJvbHN5c3RlbS5yb21pdHNhZ3UuY29tIiwiYXVkIjoiaHR0cHM6Ly9zdHJlYW0tdHJhZmZpY2NvbnRyb2xzeXN0ZW0ucm9taXRzYWd1LmNvbSJ9.5aHMhNaptxOGos0-fVr8T9yrpGpiaSwu0NAYEyv-hCw'
+                'Authorization': f'Bearer {self.token}'
             }
 
             # Set up the form data (multipart)
@@ -29,7 +72,7 @@ class UploadClip:
             }
 
             # Make the POST request
-            response = requests.post(url, headers=headers, files=files, data=data, verify=False)
+            response = requests.post(url, headers=headers, files=files, data=data)
 
             # Check the response
             if response.status_code == 200:
@@ -74,13 +117,15 @@ class Streamer:
 
 
 class Recorder:
-    def __init__(self, width, height, fps):
+    def __init__(self, video_capture, width, height, fps):
+        self.video_capture = video_capture  # Pass VideoCapture instance here
         self.width = width
         self.height = height
         self.fps = fps
         self.buffer = deque(maxlen=fps * 20)  # Buffer for last 20 seconds
         self.recording = False
         self.writer = None
+        self.filename = None
 
     def add_frame_to_buffer(self, frame):
         """Adds a frame to the buffer for the last 20 seconds."""
@@ -88,9 +133,10 @@ class Recorder:
 
     def start_recording(self, filename):
         """Starts recording using buffered frames and live frames."""
+        self.filename = filename  # Store the filename for later use
         self.recording = True
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        self.writer = cv2.VideoWriter(filename, fourcc, self.fps, (self.width, self.height))
+        self.writer = cv2.VideoWriter(self.filename, fourcc, self.fps, (self.width, self.height))
 
         # Write buffered frames (last 20 seconds)
         for frame in self.buffer:
@@ -103,7 +149,7 @@ class Recorder:
         """Records live frames for 10 seconds after the trigger."""
         start_time = time.time()
         while self.recording and (time.time() - start_time) < 10:
-            ret, frame = video_capture.cap.read()
+            ret, frame = self.video_capture.cap.read()  # Access the VideoCapture instance's cap directly
             if ret:
                 self.writer.write(frame)
 
@@ -115,8 +161,10 @@ class Recorder:
         if self.writer:
             self.writer.release()
             self.writer = None
-            upload = UploadClip("recorded_clip.mp4")
+            # Use the stored filename to upload the clip
+            upload = UploadClip(self.filename)
             upload.upload_clip('device1')
+
 
 class VideoCapture:
     def __init__(self, rtmp_url):
@@ -131,9 +179,12 @@ class VideoCapture:
         self.fps = int(self.cap.get(cv2.CAP_PROP_FPS) or 30)
 
         self.streamer = Streamer(self.rtmp_url, self.width, self.height)
-        self.recorder = Recorder(self.width, self.height, self.fps)
+        self.recorder = Recorder(self, self.width, self.height, self.fps)  # Pass the VideoCapture instance
 
         self.running = True
+
+    def record_clip(self, filename):
+        self.recorder.start_recording(filename)
 
     def start(self):
         self.streamer.start_stream()
@@ -149,17 +200,17 @@ class VideoCapture:
             self.recorder.add_frame_to_buffer(frame)
 
             # Display the frame (optional)
-            cv2.imshow("Webcam", frame)
+            # cv2.imshow("Webcam", frame)
 
-            # Trigger recording on key press 'r'
-            key = cv2.waitKey(1)
-            if key & 0xFF == ord('r'):
-                print("Recording last 20 and next 10 seconds...")
-                self.recorder.start_recording("recorded_clip.mp4")
+            # # Trigger recording on key press 'r'
+            # key = cv2.waitKey(1)
+            # if key & 0xFF == ord('r'):
+            #     print("Recording last 20 and next 10 seconds...")
+            #     self.record_clip("recorded_clip.mp4")
 
-            # Break the loop if 'q' is pressed
-            if key & 0xFF == ord('q'):
-                self.running = False
+            # # Break the loop if 'q' is pressed
+            # if key & 0xFF == ord('q'):
+            #     self.running = False
 
         self.stop()
 
@@ -168,9 +219,3 @@ class VideoCapture:
         self.cap.release()
         self.streamer.stop_stream()
         cv2.destroyAllWindows()
-
-
-if __name__ == "__main__":
-    rtmp_url = "rtmp://stream1-trafficcontrolsystem.romitsagu.com/live/device1?key=F17461C168C25A5B63F97ADB677B9A9D3797C357BEB46E417E1E8B788B"
-    video_capture = VideoCapture(rtmp_url)
-    video_capture.start()

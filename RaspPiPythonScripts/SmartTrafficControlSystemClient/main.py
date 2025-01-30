@@ -1,64 +1,32 @@
-from gpiozero import LED
-import time
+import DeviceControl.deviceControl as deviceControl
+import threading
+import API.api as api
+import Config.config as config
+import Video.video as video
+import json
 
-# Define the GPIO pins for each traffic light (Red, Yellow, Green)
-traffic_lights = {
-    "light1": {"red": LED(17), "yellow": LED(27), "green": LED(22)},
-    "light2": {"red": LED(23), "yellow": LED(24), "green": LED(25)}
-}
+def get_config_data():
+    cfg = config.Config()
+    return cfg.get_all()
 
-# Function to switch traffic light to green
-def green_light(light):
-    light["red"].off()
-    light["yellow"].off()
-    light["green"].on()
+def set_config_data(key, value):
+    cfg = config.Config()
+    cfg.set(key, value)
 
-# Function to switch traffic light to yellow
-def yellow_light(light):
-    light["green"].off()
-    light["yellow"].on()
-    light["red"].off()
+def start_video_capture():
+    # Initialize video stream in a separate thread
+    video.VideoCapture(f"{get_config_data()['Stream_URL']}{get_config_data()['Device_ID']}?key={get_config_data()['Stream_Key']}").start()
 
-# Function to switch traffic light to red
-def red_light(light):
-    light["yellow"].off()
-    light["red"].on()
-    light["green"].off()
+if __name__ == "__main__":
 
-# Function to handle one traffic light cycle
-def traffic_light_cycle(current_light_name):
-    current_light = traffic_lights[current_light_name]
-    other_light_name = find_other_light(current_light_name)
-    other_light = traffic_lights[other_light_name]
+    # Initialize API
+    api = api.API()
+    streamKey = api.get_stream_client_key(get_config_data()['Device_ID'])
+    set_config_data('Stream_Key', streamKey)
 
-    # Red light for the other traffic light
-    red_light(other_light)
+    # Start video capture in a new thread
+    video_thread = threading.Thread(target=start_video_capture)
+    video_thread.start()
 
-    # Green light for 30 seconds
-    green_light(current_light)
-    time.sleep(30)
-
-    # Yellow light for 4 seconds
-    yellow_light(current_light)
-    time.sleep(4)
-
-    # Red light until next cycle
-    red_light(current_light)
-    time.sleep(4)
-
-# Function to find the other light
-def find_other_light(given_light):
-    return "light2" if given_light == "light1" else "light1"
-
-# Main loop
-try:
-    while True:
-        traffic_light_cycle("light1")
-        traffic_light_cycle("light2")
-
-except KeyboardInterrupt:
-    # Turn off all LEDs on exit
-    for light in traffic_lights.values():
-        light["red"].off()
-        light["yellow"].off()
-        light["green"].off()
+    # Initialize traffic light control and needed config settings
+    # Need to use 2 threads for lights and camera

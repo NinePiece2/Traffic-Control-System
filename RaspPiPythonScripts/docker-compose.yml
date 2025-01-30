@@ -7,7 +7,7 @@ services:
       - "/dev/gpiomem:/dev/gpiomem"  # GPIO access
       - "/dev/video0:/dev/video0"    # Camera access
     volumes:
-      - ./config:/app/config  # Optional: Mount local config files
+      - ./config:/app/SmartTrafficControlSystemClient/ConfigFile
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped

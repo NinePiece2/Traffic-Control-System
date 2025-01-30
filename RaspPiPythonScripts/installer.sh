@@ -43,7 +43,7 @@ mkdir config
 sudo curl -LJO https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/docker-compose.yml
 
 # Curl the configuration file
-sudo curl -LJ https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/config.json -o config/config.json
+sudo curl -LJ https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/DefaultConfig/config.json -o config/config.json
 
 # Give the base folder read and write permissions recursively
 sudo chmod -R 777 .
