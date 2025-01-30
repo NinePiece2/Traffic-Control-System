@@ -25,6 +25,7 @@ class Config:
                 "API_KEY": "API_KEY",
                 "Device_ID": "device0",
                 "Stream_Key": "STREAM_KEY",
+                "WebcamID": "0"
             }
             # Create config file within ConfigFile folder
             with open(self.config_file_path, 'w') as file:

@@ -170,7 +170,7 @@ class VideoCapture:
     def __init__(self, rtmp_url):
         self.rtmp_url = rtmp_url
 
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(int(config.Config().get("WebcamID")))
         if not self.cap.isOpened():
             raise Exception("Error: Could not open webcam.")
 
