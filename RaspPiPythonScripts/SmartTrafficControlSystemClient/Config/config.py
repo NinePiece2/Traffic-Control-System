@@ -19,8 +19,9 @@ class Config:
                 "Device_ID": "device0",
                 "Stream_Key": "STREAM_KEY",
             }
-
-
+            with open('config.json', 'w') as file:
+                json.dump(self.config, file, indent=4)
+    
     def get(self, key):
         self.load_config()
         return self.config.get(key)
