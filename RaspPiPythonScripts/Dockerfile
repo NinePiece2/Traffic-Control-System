@@ -5,8 +5,6 @@ RUN pip install gpiozero rpi-lgpio
 RUN wget https://github.com/Gadgetoid/PY_LGPIO/releases/download/0.2.2.0/lgpio-0.2.2.0.tar.gz
 RUN pip install lgpio-0.2.2.0.tar.gz
 
-ENV GPIOZERO_PIN_FACTORY=rpi.lgpio
-
 # Set working directory
 WORKDIR /app
 
