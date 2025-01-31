@@ -9,6 +9,7 @@ from jwt.exceptions import DecodeError
 from datetime import datetime, timezone
 import urllib.parse
 import jwt
+import platform
 
 class UploadClip:
     def __init__(self, filename):
@@ -170,7 +171,13 @@ class VideoCapture:
     def __init__(self, rtmp_url):
         self.rtmp_url = rtmp_url
 
-        self.cap = cv2.VideoCapture(int(config.Config().get("WebcamID")))
+        webcam_id = config.Config().get("WebcamID")
+        
+        if platform.system() != "Linux":
+            webcam_id = int(webcam_id)
+
+
+        self.cap = cv2.VideoCapture(webcam_id)
         if not self.cap.isOpened():
             raise Exception("Error: Could not open webcam.")
 
