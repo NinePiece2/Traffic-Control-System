@@ -6,7 +6,7 @@ RUN wget https://github.com/Gadgetoid/PY_LGPIO/releases/download/0.2.2.0/lgpio-0
 RUN pip install lgpio-0.2.2.0.tar.gz
 
 # Install FFMPEG
-RUN apt-get update && apt-get install -y ffmpeg v4l-utils libv4l-dev && apt-get clean
+RUN apt-get update && apt-get install -y ffmpeg && apt-get clean
 
 # Set working directory
 WORKDIR /app
