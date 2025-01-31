@@ -11,15 +11,12 @@ import urllib.parse
 import jwt
 import platform
 
-# ------------------------------
-# Picamera2 is only needed if running on Linux
+# Attempt to import Picamera2 on Linux
 try:
     if platform.system() == 'Linux':
         from picamera2 import Picamera2
 except ImportError:
-    # If picamera2 isn't installed, you might want to handle it here
     pass
-# ------------------------------
 
 class UploadClip:
     def __init__(self, filename):
@@ -27,7 +24,6 @@ class UploadClip:
         self.token = None
     
     def _get_new_token(self):
-        """Fetch a new token from the token URL and update expiration time."""
         token_url = config.Config().get("Video_URL") + "Token/GetToken?userID="
         key = config.Config().get("API_KEY")
         response_token = requests.get(token_url + urllib.parse.quote(key, safe=''))
@@ -65,19 +61,10 @@ class UploadClip:
         url = f"{config.Config().get('Video_URL')}Clip/UploadFile"
 
         with open(self.filename, 'rb') as file:
-            # Set up the headers with Bearer token
-            headers = {
-                'Authorization': f'Bearer {self.token}'
-            }
-            # Set up the form data (multipart)
-            files = {
-                'file': (self.filename.split('/')[-1], file),
-            }
-            # Include the deviceID as part of the form data
-            data = {
-                'deviceID': device_id
-            }
-            # Make the POST request
+            headers = {'Authorization': f'Bearer {self.token}'}
+            files = {'file': (self.filename.split('/')[-1], file)}
+            data = {'deviceID': device_id}
+
             response = requests.post(url, headers=headers, files=files, data=data)
 
             if response.status_code == 200:
@@ -97,7 +84,6 @@ class Streamer:
         self.process = None
 
     def start_stream(self):
-        # FFmpeg command to stream the video
         ffmpeg_path = './ffmpeg'
         system_name = platform.system()
         if system_name == 'Linux':
@@ -106,10 +92,10 @@ class Streamer:
             ffmpeg_path = 'ffmpeg.exe'
 
         command = [
-            f'{ffmpeg_path}',
+            ffmpeg_path,
             '-y',
             '-f', 'rawvideo',
-            '-pixel_format', 'bgr24',
+            '-pixel_format', 'bgr24',  # Expecting 3-channel BGR
             '-video_size', f"{self.width}x{self.height}",
             '-i', '-',
             '-c:v', 'libx264',
@@ -134,53 +120,49 @@ class Recorder:
     def __init__(self, video_capture, width, height, fps):
         """
         video_capture should be an instance of VideoCapture (below),
-        which provides a `read()` method.
+        which provides a `read()` method returning (ret, frame).
         """
         self.video_capture = video_capture
         self.width = width
         self.height = height
         self.fps = fps
-        self.buffer = deque(maxlen=abs(fps) * 20)  # Buffer for last 20 seconds
+        self.buffer = deque(maxlen=abs(fps) * 20)  # Buffer last 20 seconds
         self.recording = False
         self.writer = None
         self.filename = None
 
     def add_frame_to_buffer(self, frame):
-        """Adds a frame to the buffer for the last 20 seconds."""
+        """Buffers the frame for up to 20s."""
         self.buffer.append(frame)
 
     def start_recording(self, filename):
-        """Starts recording using buffered frames and live frames."""
-        self.filename = filename  # Store the filename for later use
+        """Save 20s of buffered frames + 10s of live frames."""
+        self.filename = filename
         self.recording = True
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         self.writer = cv2.VideoWriter(self.filename, fourcc, self.fps, (self.width, self.height))
 
-        # Write buffered frames (last 20 seconds)
+        # Write the last 20 seconds first
         for frame in self.buffer:
             self.writer.write(frame)
 
-        # Record live frames for 10 seconds
+        # Continue recording live frames for 10 seconds
         threading.Thread(target=self.record_live_frames, daemon=True).start()
 
     def record_live_frames(self):
-        """Records live frames for 10 seconds after the trigger."""
         start_time = time.time()
         while self.recording and (time.time() - start_time) < 10:
             ret, frame = self.video_capture.read()
             if ret:
                 self.writer.write(frame)
-
         self.stop_recording()
 
     def stop_recording(self):
-        """Stops recording and releases the video writer."""
         self.recording = False
         if self.writer:
             self.writer.release()
             self.writer = None
-
-            # Upload the clip after we're done writing
+            # Perform upload after done writing
             upload = UploadClip(self.filename)
             upload.upload_clip('device1')
 
@@ -190,53 +172,50 @@ class VideoCapture:
         self.rtmp_url = rtmp_url
         self.running = True
 
-        # Decide between picamera2 (Linux) and regular OpenCV capture (others).
+        # Decide between Picamera2 (Linux) and OpenCV VideoCapture (other OS).
         if platform.system() == 'Linux':
-            # Use Picamera2
             self.use_picamera2 = True
             self.picam2 = Picamera2()
-            # Set a desired resolution or adapt from config
+            # Set desired resolution / read from config if needed
             self.width = 640
             self.height = 480
-            self.fps = 30  # PiCamera2 doesn't always provide exact FPS, but we'll use 30 as a reference.
+            self.fps = 30  # PiCamera2 approximate
 
-            # Configure Picamera2
-            video_config = self.picam2.create_video_configuration(
+            config_params = self.picam2.create_video_configuration(
                 main={"format": 'XRGB8888', "size": (self.width, self.height)}
             )
-            self.picam2.configure(video_config)
+            self.picam2.configure(config_params)
             self.picam2.start()
+
         else:
-            # Use OpenCV VideoCapture
             self.use_picamera2 = False
             self.cap = cv2.VideoCapture(int(config.Config().get("WebcamID")))
             if not self.cap.isOpened():
                 raise Exception("Error: Could not open webcam.")
-
             self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            # Some cameras may return 0 for FPS, so we default to 30 if that's the case.
             cam_fps = self.cap.get(cv2.CAP_PROP_FPS)
             self.fps = int(cam_fps) if cam_fps > 0 else 30
 
-        # Create the streamer and recorder
         self.streamer = Streamer(self.rtmp_url, self.width, self.height)
         self.recorder = Recorder(self, self.width, self.height, self.fps)
 
     def read(self):
         """
-        Unified read method to return (ret, frame) 
-        regardless of whether we use picamera2 or OpenCV.
+        Returns (ret, frame).
+        If using picamera2 with 'XRGB8888' format, convert BGRA → BGR.
         """
         if self.use_picamera2:
+            # Picamera2 returns a 4-channel (BGRA-like) image by default.
             frame = self.picam2.capture_array()
-            # Emulate the OpenCV read() convention: (True, frame)
+            # Convert from BGRA to BGR
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
             return True, frame
         else:
             return self.cap.read()
 
     def release_capture(self):
-        """Stop capture depending on the mode."""
+        """Stop the camera capture."""
         if self.use_picamera2:
             self.picam2.stop()
         else:
@@ -258,11 +237,11 @@ class VideoCapture:
             self.streamer.send_frame(frame)
             self.recorder.add_frame_to_buffer(frame)
 
-            # OPTIONAL: If you want to see a local preview
+            # Optional local preview
             # cv2.imshow("Webcam", frame)
             # key = cv2.waitKey(1)
             # if key & 0xFF == ord('r'):
-            #     print("Recording last 20 and next 10 seconds...")
+            #     print("Recording last 20s + next 10s...")
             #     self.record_clip("recorded_clip.mp4")
             # if key & 0xFF == ord('q'):
             #     self.running = False
