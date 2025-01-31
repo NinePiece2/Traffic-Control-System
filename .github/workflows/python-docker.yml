@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - RaspPiPythonScripts/**
+  workflow_dispatch:
 
 jobs:
     Build-Client:
