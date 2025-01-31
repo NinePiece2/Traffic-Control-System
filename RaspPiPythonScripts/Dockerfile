@@ -1,37 +1,32 @@
-FROM python:3.11
+FROM debian:bookworm
 
+# Install system python3.11 and tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget \
-    gnupg \
-    ca-certificates \
+    python3.11 python3.11-dev python3-pip python3-distutils \
+    wget gnupg ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget -O /usr/share/keyrings/raspi.gpg.key \
-      https://archive.raspberrypi.org/debian/raspberrypi.gpg.key
-
-RUN echo "deb [signed-by=/usr/share/keyrings/raspi.gpg.key] http://archive.raspberrypi.org/debian bookworm main" \
+    https://archive.raspberrypi.org/debian/raspberrypi.gpg.key && \
+  echo "deb [signed-by=/usr/share/keyrings/raspi.gpg.key] \
+    http://archive.raspberrypi.org/debian bookworm main" \
     > /etc/apt/sources.list.d/raspi.list
 
+RUN apt update && apt -y upgrade
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3-picamera2 \
-    python3-libcamera \
-    python3-kms++ \
-    libcamera-apps \
-    libatlas-base-dev \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+  python3-picamera2 \
+  ffmpeg \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir gpiozero rpi-lgpio
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
-RUN wget https://github.com/Gadgetoid/PY_LGPIO/releases/download/0.2.2.0/lgpio-0.2.2.0.tar.gz \
-    && pip install lgpio-0.2.2.0.tar.gz \
-    && rm lgpio-0.2.2.0.tar.gz
+RUN pip install --upgrade pip setuptools
+
+RUN pip install gpiozero rpi-lgpio
 
 WORKDIR /app
-
 COPY . /app
+RUN pip install -r requirements.txt
 
-RUN pip install --no-cache-dir --upgrade pip setuptools \
-    && pip install --no-cache-dir -r requirements.txt
-
-CMD ["python", "SmartTrafficControlSystemClient/main.py"]
+CMD ["python3", "SmartTrafficControlSystemClient/main.py"]
