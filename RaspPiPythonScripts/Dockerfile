@@ -6,7 +6,7 @@ RUN wget https://github.com/Gadgetoid/PY_LGPIO/releases/download/0.2.2.0/lgpio-0
 RUN pip install lgpio-0.2.2.0.tar.gz
 
 # Install FFMPEG
-RUN apt-get update && apt-get install -y ffmpeg && apt-get clean
+RUN apt-get update && apt-get install -y ffmpeg python3-picamera2 && apt-get clean
 
 # Set working directory
 WORKDIR /app
