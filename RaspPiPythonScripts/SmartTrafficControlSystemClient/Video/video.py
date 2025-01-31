@@ -9,6 +9,7 @@ from jwt.exceptions import DecodeError
 from datetime import datetime, timezone
 import urllib.parse
 import jwt
+import platform
 
 class UploadClip:
     def __init__(self, filename):
@@ -92,8 +93,14 @@ class Streamer:
 
     def start_stream(self):
         # FFmpeg command to stream the video
+        ffmpeg_path = './ffmpeg'
+        if platform.system() == 'Linux':
+            ffmpeg_path = 'ffmpeg'
+        elif platform.system() == 'Windows':
+            ffmpeg_path = 'ffmpeg.exe'
+
         command = [
-            './ffmpeg',
+            f'{ffmpeg_path}',
             '-y',
             '-f', 'rawvideo',
             '-pixel_format', 'bgr24',
