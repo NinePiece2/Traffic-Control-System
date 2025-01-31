@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN wget -O /usr/share/keyrings/raspi.gpg.key \
     https://archive.raspberrypi.org/debian/raspberrypi.gpg.key && \
-  echo "deb [signed-by=/usr/share/keyrings/raspi.gpg.key] \
+    echo "deb [signed-by=/usr/share/keyrings/raspi.gpg.key] \
     http://archive.raspberrypi.org/debian bookworm main" \
     > /etc/apt/sources.list.d/raspi.list
 
@@ -17,6 +17,9 @@ RUN apt update && apt -y upgrade
 RUN apt-get update && apt-get install -y --no-install-recommends \
   python3-picamera2 \
   ffmpeg \
+  && apt-get clean \
+  && apt-get autoremove \
+  && rm -rf /var/cache/apt/archives/* \
   && rm -rf /var/lib/apt/lists/*
 
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
