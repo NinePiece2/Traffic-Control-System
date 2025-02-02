@@ -5,6 +5,10 @@ import Config.config as config
 import Video.video as video
 import json
 
+# Global variable to store the video capture instance
+video_capture_instance = None
+api_instance = None
+
 def get_config_data():
     cfg = config.Config()
     return cfg.get_all()
@@ -14,14 +18,28 @@ def set_config_data(key, value):
     cfg.set(key, value)
 
 def start_video_capture():
+    global video_capture_instance
     # Initialize video stream in a separate thread
-    video.VideoCapture(f"{get_config_data()['Stream_URL']}{get_config_data()['Device_ID']}?key={get_config_data()['Stream_Key']}").start()
+    video_capture_instance = video.VideoCapture(
+        f"{get_config_data()['Stream_URL']}{get_config_data()['Device_ID']}?key={get_config_data()['Stream_Key']}"
+    )
+    video_capture_instance.start()
+
+def incident_detected():
+    global video_capture_instance
+    global api_instance
+    video_GUID = api_instance.get_guid()
+    
+    if video_capture_instance:
+        video_capture_instance.record_clip()  # Use the stored instance
+    else:
+        print("Error: VideoCapture instance is not running!")
 
 if __name__ == "__main__":
 
     # Initialize API
-    api = api.API()
-    streamKey = api.get_stream_client_key(get_config_data()['Device_ID'])
+    api_instance = api.API()
+    streamKey = api_instance.get_stream_client_key(get_config_data()['Device_ID'])
     set_config_data('Stream_Key', streamKey)
 
     # Start video capture in a new thread

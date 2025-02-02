@@ -164,7 +164,7 @@ class Recorder:
             self.writer = None
             # Perform upload after done writing
             upload = UploadClip(self.filename)
-            upload.upload_clip('device1')
+            upload.upload_clip(config.Config().get("Device_ID"))
 
 
 class VideoCapture:
