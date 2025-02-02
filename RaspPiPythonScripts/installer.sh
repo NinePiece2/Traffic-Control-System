@@ -48,6 +48,9 @@ sudo curl -LJ https://raw.githubusercontent.com/NinePiece2/Traffic-Control-Syste
 # Give the base folder read and write permissions recursively
 sudo chmod -R 777 .
 
+cd ..
+rm installer.sh
+
 echo "Docker and Docker Compose have been successfully installed on your Raspberry Pi (ARM64)."
 echo "Please update the configuration file (config.json) with your own values."
 echo "To start the container, run the following command:"
