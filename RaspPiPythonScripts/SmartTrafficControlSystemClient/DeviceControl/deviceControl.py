@@ -73,3 +73,8 @@ if __name__ == "__main__":
             light["red"].off()
             light["yellow"].off()
             light["green"].off()
+
+def start_traffic_light_control():
+    while True:
+        traffic_light_cycle("light1")
+        traffic_light_cycle("light2")
