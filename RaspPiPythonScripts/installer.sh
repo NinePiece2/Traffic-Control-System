@@ -14,6 +14,7 @@ if ! $AUTO_CONFIRM; then
     echo "This script will install Docker and pull the required container for the Traffic Control System."
     read -p "Do you want to continue? (y/N): " confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+        rm -- "$0"
         echo "Installation aborted."
         exit 0
     fi
