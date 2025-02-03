@@ -20,11 +20,22 @@
         });
 
         connection.start().then(function () {
-            //console.log("Connected. My connection ID:", connection.connectionId);
+
+            // Register the client with a unique identifier
+            // const clientId = "Client1";
+            // connection.invoke("RegisterClient", clientId).catch(function (err) {
+            //     return console.error(err.toString());
+            // });
+
+            //console.log("Registered client:", clientId, "with connection ID", connection.connectionId);
+
+            connection.invoke("GetConnectionId").then(connectionId => {
+                document.getElementById("connectionId").textContent = connectionId;
+            }).catch(err => console.error(err.toString()));
+            
             document.getElementById("sendButton").addEventListener("click", function (event) {
-                const user = "System";
-                const message = "Manual Override";
-                connection.invoke("SendMessage", connection.connectionId, user, message).catch(function (err) {
+                const connectionId = document.getElementById("targetConnectionIdInput").value;
+                connection.invoke("SendMessage", connectionId).catch(function (err) {
                     return console.error(err.toString());
                 });
                 event.preventDefault();
@@ -34,5 +45,9 @@
         });
     });
 </script>
+
+<input type="text" id="targetConnectionIdInput" placeholder="Target Connection ID" />
 <button id="sendButton">Send</button>
-<ul id="messages"></ul>
+<ol id="messages"></ol>
+<p id="connectionIdDisplay">Connection ID: <span id="connectionId"></span></p>
+
