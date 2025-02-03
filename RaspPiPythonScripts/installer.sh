@@ -1,19 +1,5 @@
 #!/bin/bash
 
-# Function to check if the system is running Raspbian
-check_raspbian() {
-    if [[ -f "/etc/os-release" ]]; then
-        source /etc/os-release
-        if [[ "$ID" != "raspbian" ]]; then
-            echo "Error: This script is only intended for Raspbian-based systems."
-            exit 1
-        fi
-    else
-        echo "Error: Unable to determine the operating system."
-        exit 1
-    fi
-}
-
 # Check for -y flag (bypass confirmation)
 AUTO_CONFIRM=false
 while getopts "y" opt; do
@@ -32,9 +18,6 @@ if ! $AUTO_CONFIRM; then
         exit 0
     fi
 fi
-
-# Check if the system is running Raspbian
-check_raspbian
 
 echo "Updating package list..."
 sudo apt-get update
