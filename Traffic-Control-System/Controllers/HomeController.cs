@@ -128,5 +128,30 @@ namespace Traffic_Control_System.Controllers
             return View(violation);
         }
 
-    }
+        
+        public JsonResult SaveTrafficSignal([FromBody] TrafficSignalModel model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.Address) || string.IsNullOrWhiteSpace(model.Direction))
+            {
+                return Json(new { error = "Invalid input data." });
+            }
+
+            // Generate DeviceStreamId and API Key
+            string deviceStreamId = Guid.NewGuid().ToString();
+            string apiKey = Guid.NewGuid().ToString();
+
+            // Save to database
+            var trafficSignal = new TrafficSignal
+            {
+                Address = model.Address,
+                Direction = model.Direction,
+                DeviceStreamId = deviceStreamId,
+                ApiKey = apiKey
+            };
+
+            _context.TrafficSignals.Add(trafficSignal);
+            _context.SaveChanges();
+
+            return Json(new { deviceStreamId, apiKey });
+        }
 }
