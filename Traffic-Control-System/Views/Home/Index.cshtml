@@ -170,6 +170,7 @@
                             col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").Add();
                             
                             //button to incident report of specific violation
+                    col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> <button class='k-button custom-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
                             col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> ").Width("100").Add();
                             
                         })

@@ -136,6 +136,15 @@ namespace Traffic_Control_System.Controllers
                 return Json(new { error = "Invalid input data." });
             }
 
+    }
+        
+        public JsonResult SaveTrafficSignal([FromBody] TrafficSignalModel model)
+        {
+            if (model == null || string.IsNullOrWhiteSpace(model.Address) || string.IsNullOrWhiteSpace(model.Direction))
+            {
+                return Json(new { error = "Invalid input data." });
+            }
+
             // Generate DeviceStreamId and API Key
             string deviceStreamId = Guid.NewGuid().ToString();
             string apiKey = Guid.NewGuid().ToString();
