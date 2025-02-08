@@ -2,7 +2,7 @@ from signalrcore.hub_connection_builder import HubConnectionBuilder
 import time
 
 # Define the SignalR hub URL
-hub_url = "https://localhost:7106/controlhub"
+hub_url = "http://localhost:5062/controlhub"
 
 # Create the hub connection
 hub_connection = HubConnectionBuilder() \
@@ -10,8 +10,9 @@ hub_connection = HubConnectionBuilder() \
     .build()
 
 messages=[]
-# Define a function to handle incoming messages
-def on_receive_message(user, message):
+
+def on_receive_message(args):
+    user, message = args  # Unpack the received list
     msg = f"{user}: {message}"  
     print(msg)  # Print the message
     messages.append(msg)
