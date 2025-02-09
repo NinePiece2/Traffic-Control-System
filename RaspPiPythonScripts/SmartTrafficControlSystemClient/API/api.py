@@ -4,20 +4,20 @@ import jwt
 from jwt.exceptions import ExpiredSignatureError, DecodeError
 from datetime import datetime, timezone
 import json
-
+import Config.config as config
 
 class API:
     def __init__(self):
         self.token = None
-        self.token_url = "https://localhost:44363/Token/GetToken?userID="
-        self.key = 'ORmEqGUYyJaC2GVgGOKb5yIQR9uGe1Ca7AKbWhg772/u/Rqjme+CONBd6zUXSlmMpC9+SrLIFXyrf9XhMEKjFapDNgcwjjHr3ABaou451traWFwevwPsU9JKwrhUyMd9OQrK+XPYRpUW+jNdOrALXidF7jkGISfxLPunQld/5Nk='
-
+     
     def _get_new_token(self):
         """Fetch a new token from the token URL and update expiration time."""
-        response_token = requests.get(self.token_url + urllib.parse.quote(self.key, safe=''), verify=False)
+        token_url = config.Config().get("API_URL") + "Token/GetToken?userID="
+        key = config.Config().get("API_KEY")
+        response_token = requests.get(token_url + urllib.parse.quote(key, safe=''))
         if response_token.status_code == 200:
             self.token = response_token.text
-            print(f"Token received: {self.token}")
+            #print(f"Token received: {self.token}")
         else:
             print(f"Failed to get token. Status code: {response_token.status_code}")
             print(f"Response Content: {response_token.text}")
@@ -25,33 +25,29 @@ class API:
 
     def _ensure_valid_token(self):
         if not self.token:
-            print("Fetching a new token...")
+            #print("Fetching a new token...")
             self._get_new_token()
 
         try:
             decoded_token = jwt.decode(self.token, options={"verify_signature": False})
-            print(f"Decoded Token: {decoded_token}")
+            #print(f"Decoded Token: {decoded_token}")
 
             exp = decoded_token.get("exp")
-            print(f"Expiration Claim (exp): {exp}")
+            #print(f"Expiration Claim (exp): {exp}")
             
             expiration_time = datetime.fromtimestamp(exp, tz=timezone.utc)
-            print(f"Expiration Time: {expiration_time}")
+            #print(f"Expiration Time: {expiration_time}")
 
             current_time = datetime.now(tz=timezone.utc)
-            print(f"Current Time: {current_time}")
+            #print(f"Current Time: {current_time}")
 
             if current_time >= expiration_time:
-                print("Token has expired.")
+                #print("Token has expired.")
                 self._get_new_token()
 
             elif (expiration_time - current_time).total_seconds() <= 300:
-                print("Token will expire in less than 5 minutes. Fetching a new one.")
+                #print("Token will expire in less than 5 minutes. Fetching a new one.")
                 self._get_new_token()
-
-            else:
-                print("Token is still valid.")
-
 
         except DecodeError as e:
             print(f"Invalid token format: {e}")
@@ -65,30 +61,33 @@ class API:
         self._ensure_valid_token()
 
         if not self.token:
-            print("No token available to proceed.")
+            #print("No token available to proceed.")
             return
+        
+        stream_url = f"{config.Config().get('API_URL')}Traffic/GetStreamClientKey?DeviceStreamID={device_stream_id}"
 
-        stream_url = f"https://localhost:44363/Traffic/GetStreamClientKey?DeviceStreamID={device_stream_id}"
         headers = {
             'Authorization': f'Bearer {self.token}'
         }
 
-        response_stream = requests.get(stream_url, headers=headers, verify=False)
+        response_stream = requests.get(stream_url, headers=headers)
         
         if response_stream.status_code == 200:
-            print(f"Stream Client Key Response: {response_stream.text}")
+            #print(f"Stream Client Key Response: {response_stream.text}")
+            data = json.loads(response_stream.text)
+            return data["deviceStreamKEY"]
         else:
             print(f"Failed to fetch stream client key. Status code: {response_stream.status_code}")
             print(f"Response Content: {response_stream.text}")
             
-    def post_AddTrafficViolation(self, ActiveSignalID, LicensePlate, VideoURL):
+    def add_traffic_violation(self, ActiveSignalID, LicensePlate, VideoURL):
         self._ensure_valid_token()
         
         if not self.token:
-            print("No token available to proceed.")
+            #print("No token available to proceed.")
             return
         
-        stream_url = f"https://localhost:44363/Traffic/AddTrafficViolation"
+        stream_url = f"{config.Config().get('API_URL')}Traffic/AddTrafficViolation"
         
         headers = {
             'Authorization': f'Bearer {self.token}',

@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - master
+    paths:
+      - Traffic-Control-System/**
+      - Traffic-Control-System-API/**
+      - Traffic-Control-System-Video/**
+      - docker-compose.yml
+  workflow_dispatch:
 
 jobs:
   Build-MVC:

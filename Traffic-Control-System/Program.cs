@@ -1,23 +1,10 @@
 using dotenv.net;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 using Traffic_Control_System.Data;
 using Traffic_Control_System.Models;
 using Traffic_Control_System.Services;
 using Traffic_Control_System.Hubs;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
-using System.Runtime.InteropServices;
-using Traffic_Control_System.Migrations;
-using Microsoft.AspNetCore.WebSockets;
-using System.Net;
-using LiveStreamingServerNet;
-using LiveStreamingServerNet.Flv.Installer;
-using LiveStreamingServerNet.StreamProcessor.Installer;
-using LiveStreamingServerNet.Rtmp.Server.Auth.Contracts;
-using LiveStreamingServerNet.StreamProcessor.AspNetCore.Configurations;
-using LiveStreamingServerNet.StreamProcessor.AspNetCore.Installer;
 
 namespace Traffic_Control_System
 {
@@ -69,6 +56,7 @@ namespace Traffic_Control_System
             Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
 
             builder.Services.AddTransient<IEmailService, EmailService>();
+            builder.Services.AddTransient<IVideoService, VideoService>();
 
             var app = builder.Build();
 
@@ -99,10 +87,8 @@ namespace Traffic_Control_System
             app.MapRazorPages();
             app.MapHub<ControlHub>("/controlhub");
 
-            await app.RunAsync();
+            app.Run();
         }
-
-
         
     }
 }

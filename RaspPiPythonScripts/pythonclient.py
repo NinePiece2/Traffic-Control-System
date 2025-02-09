@@ -78,6 +78,6 @@ if start_connection():
     except KeyboardInterrupt:   
         print("Stopping connection...")
     finally:
-        hub_connection.stop()
+    hub_connection.stop()
 else:
-    print("Failed to connect.")
+    print("Failed to connect.") 

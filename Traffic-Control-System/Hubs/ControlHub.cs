@@ -89,6 +89,7 @@ namespace Traffic_Control_System.Hubs
         {
             await Clients.All.SendAsync("ReceiveMessage","System", "Manual Override");
         }
+
     }
 
 }

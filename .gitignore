@@ -375,3 +375,5 @@ ffprobe.exe
 *.mp4
 .DS_Store
 ffmpeg
+.vs/*
+RaspPiPythonScripts/SmartTrafficControlSystemClient/ConfigFile/config.json
