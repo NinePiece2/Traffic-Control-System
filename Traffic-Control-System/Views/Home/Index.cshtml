@@ -1,6 +1,7 @@
 ﻿@using Syncfusion.EJ2.Navigations
 @using Syncfusion.EJ2
 @using Syncfusion.EJ2.Grids
+
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -80,6 +81,27 @@
         color: white;
         background-color: #42A5F5 !important;
     }
+    
+    .k-button.custom-live {
+        background-color: #ff4d4d;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .k-button.custom-live:hover {
+        background-color: #e60000; 
+    }
+
+    .k-button.custom-live:active {
+        transform: scale(0.98);
+        background-color: #b30000; 
+    }
 </style>
 
 <h2 style="display: inline-block;">Traffic Signals</h2>
@@ -102,10 +124,22 @@
                         <input type="text" class="form-control" id="signalAddress" placeholder="Enter traffic signal address" required>
                     </div>
                     <div class="form-group">
-                        <label for="signalDirection">Direction:</label>
+                        <label for="signalDirection">Direction1:</label>
                         <input type="text" class="form-control" id="signalDirection" placeholder="Enter direction" required>
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="saveAndNext()">Save, Next Page</button>
+                    <div class="form-group">
+                        <label for="signalGreen">GreenLight1:</label>
+                        <input type="text" class="form-control" id="signalGreen" placeholder="Enter green light time" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signalDirection">Direction2:</label>
+                        <input type="text" class="form-control" id="signalDirection2" placeholder="Enter direction" required>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="signalGreen2">GreenLight2:</label>
+                        <input type="text" class="form-control" id="signalGreen2" placeholder="Enter green light time" required>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="saveTrafficSignal">Save, Next Page</button>
                 </form>
             </div>
 
@@ -114,7 +148,7 @@
                     <label for="deviceStreamId">Device Stream ID:</label>
                     <input type="text" class="form-control" id="deviceStreamId" readonly>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-4">
                     <label for="apiKey">API Key:</label>
                     <input type="text" class="form-control" id="apiKey" readonly>
                 </div>
@@ -124,37 +158,6 @@
         </div>
     </div>
 </div>
-
-<script>
-    function saveAndNext() {
-        var signalAddress = document.getElementById('signalAddress').value;
-        var signalDirection = document.getElementById('signalDirection').value;
-        
-        if (!signalAddress || !signalDirection) {
-            alert('Please fill in all fields.');
-            return;
-        }
-        
-        fetch('/Home/SaveTrafficSignal', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address: signalAddress, direction: signalDirection })
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('deviceStreamId').value = data.deviceStreamId;
-            document.getElementById('apiKey').value = data.apiKey;
-            document.getElementById('page1').style.display = 'none';
-            document.getElementById('page2').style.display = 'block';
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    function goToPreviousPage() {
-        document.getElementById('page2').style.display = 'none';
-        document.getElementById('page1').style.display = 'block';
-    }
-</script>
 
 <div class="container">
             <div class="e-content"> 
@@ -170,8 +173,8 @@
                             col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").Add();
                             
                             //button to incident report of specific violation
-                    col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> <button class='k-button custom-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
-                            col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> ").Width("100").Add();
+                            col.HeaderText("Actions").Template(@" <button class='btn custom-access' onclick='onAccess(this)'>Access</button> 
+                            <button class='btn custom-live' onclick='onLive(this)'>Live</button>").TextAlign(Syncfusion.EJ2.Grids.TextAlign.Center).Width("200").Add();
                             
                         })
                         .AllowPaging()
@@ -181,29 +184,79 @@
             </div>    
 </div>
 
-<script>
-    function onAccess(button) {
-        // Get the grid instance
-        var gridObj = document.getElementById('adminSignalGrid').ej2_instances[0];
+@section Scripts{
 
-        // Find the closest row to the clicked button
-        var row = button.closest('tr');
+    <script>
 
-        // Retrieve the UID of the row
-        var uid = row.getAttribute('data-uid');
+        $(document).ready(function () {
+            $('#saveTrafficSignal').click(function () {
+                var signalData = {
+                    Address: $('#signalAddress').val(),
+                    Direction1: $('#signalDirection').val(),
+                    Direction2: $('#signalDirection2').val(),
+                    Direction1Green: $('#signalGreen').val(),
+                    Direction2Green: $('#signalGreen2').val()
+                };
 
-        if (uid) {
-            // Use the UID to get the row data
-            var rowData = gridObj.getRowObjectFromUID(uid).data;
+                $.ajax({
+                    url: '@Url.Action("SaveTrafficSignal", "Home")', // Correct ASP.NET MVC routing
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(signalData),
+                    dataType: 'json', // Expect JSON response
+                    success: function (response) {
+                        if (response && response.deviceStreamID && response.apiKey) {
+                            $('#deviceStreamId').val(response.deviceStreamID);
+                            $('#apiKey').val(response.apiKey);
+                            $('#page1').hide();
+                            $('#page2').show();
+                        } else {
+                            console.error("Invalid response format:", response);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('AJAX Error:', error);
+                        console.error('Response Text:', xhr.responseText);
+                    }
+                });
+            });
+        });
 
-            // Extract the ID field from the row data
-            var id = rowData.id; // Ensure 'id' is the correct field name in your grid data
+        // Access button functionality
+        function onAccess(button) {
+            var gridObj = document.getElementById('adminSignalGrid').ej2_instances[0];
+            var row = button.closest('tr');
+            var uid = row.getAttribute('data-uid');
 
-            // Redirect to the IncidentReport page with the ID as a query parameter
-            window.location.href = `/Home/IncidentReport?ID=${id}`;
-        } else {
-            console.error("UID not found in the row.");
+            if (uid) {
+                var rowData = gridObj.getRowObjectFromUID(uid).data;
+                var id = rowData.id;
+
+                // Redirect to the IncidentReport page
+                window.location.href = `/Home/IncidentReport?ID=${id}`;
+            } else {
+                console.error("UID not found in the row.");
+            }
         }
-    }
-</script>
 
+        // Live button functionality
+        function onLive(button){
+            var gridObj = document.getElementById('adminSignalGrid').ej2_instances[0];
+
+            var row = button.closest('tr');
+
+            var uid = row.getAttribute('data-uid');
+
+            if (uid) {
+                var rowData = gridObj.getRowObjectFromUID(uid).data;
+
+                var id = rowData.id; 
+
+                window.location.href = `/Home/Stream?ID=${id}`;
+            } else {
+                console.error("UID not found in the row.");
+            }
+        }
+    </script>
+
+}

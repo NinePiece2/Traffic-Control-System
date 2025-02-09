@@ -11,6 +11,9 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Net;
+using System;
+using System.Security.Cryptography;
+
 
 namespace Traffic_Control_System.Controllers
 {
@@ -60,10 +63,9 @@ namespace Traffic_Control_System.Controllers
 
                 HttpResponseMessage response = await client.GetAsync($"Token/GetToken?{param}");
 
-
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseContent = response.Content.ReadAsStringAsync().Result;
+                    var responseContent = await response.Content.ReadAsStringAsync();
                     var token = JsonConvert.DeserializeObject<string>(responseContent);
                     ViewBag.Token = token;
                 }
@@ -72,7 +74,7 @@ namespace Traffic_Control_System.Controllers
                     ViewBag.Token = null;
                 }
             }
-                return View();
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -83,84 +85,92 @@ namespace Traffic_Control_System.Controllers
 
         public IActionResult TrafficSignalsList()
         {
-            var userList = _applicationDbContext.TrafficSignals
-                .ToList();
-            
-            return Json(new { result = userList, count = userList.Count });
-
-
+            var signalsList = _applicationDbContext.TrafficSignals.ToList();
+            return Json(new { result = signalsList, count = signalsList.Count });
         }
 
+        public IActionResult IncidentReportsList(int signalID)
+        {
+            var violations = _applicationDbContext.TrafficViolations
+                .Where(v => v.ActiveSignalID == signalID)
+                .Select(v => new TrafficViolation
+                {
+                    UID = v.UID,
+                    DateCreated = v.DateCreated,
+                    LicensePlate = v.LicensePlate
+                })
+                .ToList();
 
-            public IActionResult IncidentReportsList(int signalID)
-            {
-                // Query the TrafficViolations table based on the ActiveSignalID
-                var violations = _applicationDbContext.TrafficViolations
-                    .Where(v => v.ActiveSignalID == signalID)
-                    .Select(v => new TrafficViolation
-                    {
-                        UID = v.UID,
-                        DateCreated = v.DateCreated,
-                        LicensePlate = v.LicensePlate
-                    })
-                    .ToList();
-
-                // Return the result as JSON with the count
-                return Json(new { result = violations, count = violations.Count });
-            }
-
-
+            return Json(new { result = violations, count = violations.Count });
+        }
 
         public IActionResult IncidentReport(int ID)
         {
-            
-            if (ID == null)
+            if (ID == 0)
             {
-
-                return NotFound(); // Or handle the case where the report isn't found
+                return NotFound();
             }
 
-            var violation = new TrafficViolationsViewModel{
-                ActiveSignalID=ID
+            var violation = new TrafficViolationsViewModel
+            {
+                ActiveSignalID = ID
             };
 
-            // Pass the data to the view (or you can create a ViewModel)
             return View(violation);
         }
 
-        
-        public JsonResult SaveTrafficSignal([FromBody] TrafficSignalModel model)
+        public JsonResult SaveTrafficSignal([FromBody] ActiveSignals trafficSignal)
         {
-            if (model == null || string.IsNullOrWhiteSpace(model.Address) || string.IsNullOrWhiteSpace(model.Direction))
+            if (trafficSignal == null || 
+                string.IsNullOrWhiteSpace(trafficSignal.Address) || 
+                string.IsNullOrWhiteSpace(trafficSignal.Direction1) || 
+                string.IsNullOrWhiteSpace(trafficSignal.Direction2))
             {
                 return Json(new { error = "Invalid input data." });
             }
+
+            // Validate and convert GreenLight values
+            if (!int.TryParse(trafficSignal.Direction1Green?.ToString(), out int green1) ||
+                !int.TryParse(trafficSignal.Direction2Green?.ToString(), out int green2))
+            {
+                return Json(new { error = "Invalid green light times." });
+            }
+            
+            trafficSignal.Direction1Green = green1;
+            trafficSignal.Direction2Green = green2;
+
+            StreamClients newstreamClient = new StreamClients();
+            // Generate a unique DeviceStreamId
+            newstreamClient.DeviceStreamID = Guid.NewGuid().ToString();
+
+            // Generate a cryptographically secure, URL-safe API Key
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                byte[] randomBytes = new byte[64];
+                rng.GetBytes(randomBytes);
+
+                // Convert the byte array to a Base64 string
+                string base64String = Convert.ToBase64String(randomBytes);
+
+                // Make the Base64 string URL-safe
+                newstreamClient.DeviceStreamKEY = base64String
+                    .Replace('+', '-')
+                    .Replace('/', '_')
+                    .TrimEnd('=');
+            }
+            
+
+            // Save to the database
+            _applicationDbContext.Add(newstreamClient);
+            _applicationDbContext.SaveChanges();
+            trafficSignal.DeviceStreamUID = newstreamClient.UID;
+            trafficSignal.IsActive = true;
+            _applicationDbContext.Add(trafficSignal);
+            _applicationDbContext.SaveChanges();
+
+            // Return the generated keys
+            return Json(new {DeviceStreamID = newstreamClient.DeviceStreamID, APIKey = config["API_KEY"] });
+        }
 
     }
-        
-        public JsonResult SaveTrafficSignal([FromBody] TrafficSignalModel model)
-        {
-            if (model == null || string.IsNullOrWhiteSpace(model.Address) || string.IsNullOrWhiteSpace(model.Direction))
-            {
-                return Json(new { error = "Invalid input data." });
-            }
-
-            // Generate DeviceStreamId and API Key
-            string deviceStreamId = Guid.NewGuid().ToString();
-            string apiKey = Guid.NewGuid().ToString();
-
-            // Save to database
-            var trafficSignal = new TrafficSignal
-            {
-                Address = model.Address,
-                Direction = model.Direction,
-                DeviceStreamId = deviceStreamId,
-                ApiKey = apiKey
-            };
-
-            _context.TrafficSignals.Add(trafficSignal);
-            _context.SaveChanges();
-
-            return Json(new { deviceStreamId, apiKey });
-        }
 }

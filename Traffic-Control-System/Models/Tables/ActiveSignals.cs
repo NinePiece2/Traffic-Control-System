@@ -1,6 +1,6 @@
 namespace Traffic_Control_System.Models
 {
-    public class TrafficSignals
+    public class ActiveSignals
     {
         public int ID { get; set; }
         public string Address { get; set; }  // Made non-nullable since it's required
@@ -9,6 +9,6 @@ namespace Traffic_Control_System.Models
         public int? Direction1Green { get; set; } // Green signal for traffic signal direction
         public int? Direction2Green { get; set; } // Green signal for traffic signal direction
         public int? DeviceStreamUID { get; set; } // Changed to string to match API generation
-        public int? NumofViolations { get; set; } // Kept this as it was
+        public bool? IsActive { get; set; }
     }
 }
