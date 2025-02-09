@@ -1,0 +1,53 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/controlhub")
+            .build();
+
+        connection.on("ReceiveMessage", function (user, message) {
+            const msg = user + ": " + message;
+            const li = document.createElement("li");
+            li.textContent = msg;
+            document.getElementById("messages").appendChild(li);
+        });
+
+        connection.start().then(function () {
+
+            // Register the client with a unique identifier
+            // const clientId = "Client1";
+            // connection.invoke("RegisterClient", clientId).catch(function (err) {
+            //     return console.error(err.toString());
+            // });
+
+            //console.log("Registered client:", clientId, "with connection ID", connection.connectionId);
+
+            connection.invoke("GetConnectionId").then(connectionId => {
+                document.getElementById("connectionId").textContent = connectionId;
+            }).catch(err => console.error(err.toString()));
+            
+            document.getElementById("sendButton").addEventListener("click", function (event) {
+                const connectionId = document.getElementById("targetConnectionIdInput").value;
+                connection.invoke("SendMessage", connectionId).catch(function (err) {
+                    return console.error(err.toString());
+                });
+                event.preventDefault();
+            });
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+    });
+</script>
+
+<input type="text" id="targetConnectionIdInput" placeholder="Target Connection ID" />
+<button id="sendButton">Send</button>
+<ol id="messages"></ol>
+<p id="connectionIdDisplay">Connection ID: <span id="connectionId"></span></p>
+

@@ -1,0 +1,9 @@
+{
+    "Stream_URL": "rtmp://streamURL/live/",
+    "API_URL": "https://apiURL/",
+    "Video_URL": "https://videoURL/",
+    "API_KEY": "API_KEY",
+    "Device_ID": "Device_ID",
+    "Stream_Key": "Stream_Key",
+    "WebcamID": "0"
+}

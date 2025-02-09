@@ -1,0 +1,11 @@
+services:
+  client:
+    image: ninepiece2/traffic-control-system:client
+    container_name: Smart-Traffic-Control-System-Client
+    privileged: true  # Needed to allow access to GPIO and camera devices
+    volumes:
+      - ./config:/app/ConfigFile
+      - /run/udev:/run/udev:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

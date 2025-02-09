@@ -1,4 +1,4 @@
-﻿@using Syncfusion.EJ2.Navigations
+@using Syncfusion.EJ2.Navigations
 @using Syncfusion.EJ2
 @using Syncfusion.EJ2.Grids
 
@@ -105,8 +105,10 @@
 </style>
 
 <h2 style="display: inline-block;">Traffic Signals</h2>
+<!-- Button trigger modal -->
 <button type="button" class="btn btn-primary" style="margin-left: 797px;" data-toggle="modal" data-target="#exampleModalCenter">Add</button>
 
+<!-- Modal -->
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -116,7 +118,6 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            
             <div class="modal-body" style="color: black;" id="page1">
                 <form id="trafficSignalForm">
                     <div class="form-group">
@@ -124,7 +125,8 @@
                         <input type="text" class="form-control" id="signalAddress" placeholder="Enter traffic signal address" required>
                     </div>
                     <div class="form-group">
-                        <label for="signalDirection">Direction1:</label>
+
+                      <label for="signalDirection">Direction1:</label>
                         <input type="text" class="form-control" id="signalDirection" placeholder="Enter direction" required>
                     </div>
                     <div class="form-group">
@@ -175,6 +177,7 @@
                             //button to incident report of specific violation
                             col.HeaderText("Actions").Template(@" <button class='btn custom-access' onclick='onAccess(this)'>Access</button> 
                             <button class='btn custom-live' onclick='onLive(this)'>Live</button>").TextAlign(Syncfusion.EJ2.Grids.TextAlign.Center).Width("200").Add();
+                    col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> <button class='k-button custom-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
                             
                         })
                         .AllowPaging()
