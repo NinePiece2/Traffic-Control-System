@@ -18,6 +18,7 @@ namespace Traffic_Control_System.Data
         public DbSet<StreamClients> StreamClients { get; set; }
         public DbSet<TrafficSignals> TrafficSignals { get; set; }
         public DbSet<TrafficViolations> TrafficViolations { get; set; }
+        public DbSet<ActiveSignals> ActiveSignals { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -57,6 +58,11 @@ namespace Traffic_Control_System.Data
             {
                 entity.HasNoKey();
                 entity.ToView("TrafficSignals");
+            });
+
+            builder.Entity<ActiveSignals>(entity =>
+            {
+                entity.HasKey(e => e.ID);
             });
         }
     }

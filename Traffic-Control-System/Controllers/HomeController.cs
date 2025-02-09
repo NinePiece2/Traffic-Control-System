@@ -13,6 +13,7 @@ using Traffic_Control_System.Models;
 using Traffic_Control_System.Services;
 using Microsoft.AspNetCore.SignalR;
 using Traffic_Control_System.Hubs;
+using System.Security.Cryptography;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -185,6 +186,59 @@ namespace Traffic_Control_System.Controllers
 
             // Pass the data to the view (or you can create a ViewModel)
             return View(violation);
+        }
+
+        public JsonResult SaveTrafficSignal([FromBody] ActiveSignals trafficSignal)
+        {
+            if (trafficSignal == null || 
+                string.IsNullOrWhiteSpace(trafficSignal.Address) || 
+                string.IsNullOrWhiteSpace(trafficSignal.Direction1) || 
+                string.IsNullOrWhiteSpace(trafficSignal.Direction2))
+            {
+                return Json(new { error = "Invalid input data." });
+            }
+
+            // Validate and convert GreenLight values
+            if (!int.TryParse(trafficSignal.Direction1Green?.ToString(), out int green1) ||
+                !int.TryParse(trafficSignal.Direction2Green?.ToString(), out int green2))
+            {
+                return Json(new { error = "Invalid green light times." });
+            }
+            
+            trafficSignal.Direction1Green = green1;
+            trafficSignal.Direction2Green = green2;
+
+            StreamClients newstreamClient = new StreamClients();
+            // Generate a unique DeviceStreamId
+            newstreamClient.DeviceStreamID = Guid.NewGuid().ToString();
+
+            // Generate a cryptographically secure, URL-safe API Key
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                byte[] randomBytes = new byte[64];
+                rng.GetBytes(randomBytes);
+
+                // Convert the byte array to a Base64 string
+                string base64String = Convert.ToBase64String(randomBytes);
+
+                // Make the Base64 string URL-safe
+                newstreamClient.DeviceStreamKEY = base64String
+                    .Replace('+', '-')
+                    .Replace('/', '_')
+                    .TrimEnd('=');
+            }
+            
+
+            // Save to the database
+            _applicationDbContext.Add(newstreamClient);
+            _applicationDbContext.SaveChanges();
+            trafficSignal.DeviceStreamUID = newstreamClient.UID;
+            trafficSignal.IsActive = true;
+            _applicationDbContext.Add(trafficSignal);
+            _applicationDbContext.SaveChanges();
+
+            // Return the generated keys
+            return Json(new {DeviceStreamID = newstreamClient.DeviceStreamID, APIKey = config["API_KEY"] });
         }
 
         public IActionResult SignalRTest() { return View(); }

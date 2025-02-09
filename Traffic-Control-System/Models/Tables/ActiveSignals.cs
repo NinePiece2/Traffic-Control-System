@@ -1,6 +1,6 @@
 namespace Traffic_Control_System.Models
 {
-    public class TrafficSignals
+    public class ActiveSignals
     {
         public int ID { get; set; }
         public string Address { get; set; }
@@ -9,6 +9,6 @@ namespace Traffic_Control_System.Models
         public int? Direction1Green { get; set; }
         public int? Direction2Green { get; set; }
         public int? DeviceStreamUID { get; set; }
-        public int? NumofViolations { get; set; }
+        public bool? IsActive { get; set; }
     }
 }
