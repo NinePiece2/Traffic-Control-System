@@ -9,7 +9,7 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/controlhub")
+            .withUrl("/controlhub?clientType=JavaScript")
             .build();
 
         connection.on("ReceiveMessage", function (user, message) {
@@ -20,14 +20,6 @@
         });
 
         connection.start().then(function () {
-
-            // Register the client with a unique identifier
-            // const clientId = "Client1";
-            // connection.invoke("RegisterClient", clientId).catch(function (err) {
-            //     return console.error(err.toString());
-            // });
-
-            //console.log("Registered client:", clientId, "with connection ID", connection.connectionId);
 
             connection.invoke("GetConnectionId").then(connectionId => {
                 document.getElementById("connectionId").textContent = connectionId;

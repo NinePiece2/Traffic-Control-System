@@ -2,7 +2,7 @@ from signalrcore.hub_connection_builder import HubConnectionBuilder
 import time
 
 # Define the SignalR hub URL
-hub_url = "https://localhost:7106/controlhub"
+hub_url = "https://localhost:7106/controlhub?clientType=Python"
 
 # Create the hub connection
 hub_connection = HubConnectionBuilder() \
@@ -10,8 +10,9 @@ hub_connection = HubConnectionBuilder() \
     .build()
 
 messages=[]
-# Define a function to handle incoming messages
-def on_receive_message(user, message):
+
+def on_receive_message(args):
+    user, message = args  # Unpack the received list
     msg = f"{user}: {message}"  
     print(msg)  # Print the message
     messages.append(msg)
@@ -20,6 +21,13 @@ def on_receive_connection_id(connection_id):
     print(f"My Connection ID: {connection_id}")
     global client_connection_id
     client_connection_id = connection_id
+
+def send_broadcast_message(user, message):
+    if is_connected:
+        hub_connection.send("BroadcastMessage", [user, message])
+    else:
+        print("Not connected to the hub.")
+
 
 # Register the function for the 'ReceiveMessage' event
 hub_connection.on("ReceiveMessage", on_receive_message)
@@ -56,14 +64,20 @@ def start_connection():
 
 # Wait until the connection is established before receiving messages
 if start_connection():
-    # Wait for the connection to establish
     while not is_connected:
         time.sleep(1)
     
-    print("Waiting for messages from the server...")
+    print("Ready to send messages. Type a message and press Enter.")
 
-    # Keep the connection open and receive messages from the server
-    input("")
-    hub_connection.stop()
+    try:
+        while True:
+            user_input = input("Enter message: ")
+            if user_input.lower() == "exit":
+                break
+            send_broadcast_message("System", user_input)
+    except KeyboardInterrupt:   
+        print("Stopping connection...")
+    finally:
+        hub_connection.stop()
 else:
-    print("Failed to connect.") 
+    print("Failed to connect.")
