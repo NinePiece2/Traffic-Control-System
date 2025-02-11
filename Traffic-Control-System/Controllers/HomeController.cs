@@ -243,5 +243,61 @@ namespace Traffic_Control_System.Controllers
 
         public IActionResult SignalRTest() { return View(); }
 
+        [HttpPost]
+        public async Task<IActionResult> UpdateTrafficSignal([FromBody] ActiveSignals signal)
+        {
+            try
+            {
+                // Validate that the ID is an integer and greater than 0
+                if (signal.ID <= 0)
+                {
+                    return BadRequest(new { success = false, message = "Invalid Signal ID." });
+                }
+
+                // Fetch from ActiveSignals table
+                var existingSignal = _applicationDbContext.ActiveSignals.FirstOrDefault(s => s.ID == signal.ID);
+
+                if (existingSignal == null)
+                {
+                    return NotFound(new { success = false, message = "Traffic signal not found." });
+                }
+
+                // Validate required fields
+                if (string.IsNullOrWhiteSpace(signal.Address))
+                {
+                    return BadRequest(new { success = false, message = "Address is required." });
+                }
+                if (string.IsNullOrWhiteSpace(signal.Direction1) || string.IsNullOrWhiteSpace(signal.Direction2))
+                {
+                    return BadRequest(new { success = false, message = "Both directions are required." });
+                }
+
+                // Ensure Direction1Green and Direction2Green are valid integers and non-negative
+                if (signal.Direction1Green < 0 || signal.Direction2Green < 0)
+                {
+                    return BadRequest(new { success = false, message = "Green signal times must be non-negative integers." });
+                }
+
+                // Update existing ActiveSignals entry
+                existingSignal.Address = signal.Address;
+                existingSignal.Direction1 = signal.Direction1;
+                existingSignal.Direction2 = signal.Direction2;
+                existingSignal.Direction1Green = signal.Direction1Green;
+                existingSignal.Direction2Green = signal.Direction2Green;
+
+                // Update the entity in the database
+                _applicationDbContext.ActiveSignals.Update(existingSignal);
+                await _applicationDbContext.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Traffic signal updated successfully!" });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for better debugging
+                _logger.LogError(ex, "An error occurred while updating the traffic signal.");
+
+                return StatusCode(500, new { success = false, message = "An error occurred while saving the entity changes. Please check the inner exception for details." });
+            }
+        }
     }
 }
