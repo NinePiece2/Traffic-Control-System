@@ -45,23 +45,6 @@
         box-shadow: 0 0 2px 1px orange !important;
     }
 
-    .custom-access{
-        color: #050505 !important;
-        background-color: #dcda63;
-        border-color: #dcda63;
-    }
-
-    .custom-access:focus {
-        background-color: #dcda63;
-        border-color: #dcda63 !important;
-    }
-
-    .custom-access:focus:active {
-        background-color: #dcda63;
-        border-color: #dcda63 !important;
-        box-shadow: 0 0 2px 1px #dcda63 !important;
-    }
-
     .e-dropdownbase .e-list-item {
         color: white;
         background-color: #1e1e22;
@@ -81,34 +64,67 @@
         color: white;
         background-color: #42A5F5 !important;
     }
-    
-    .k-button.custom-live {
-        background-color: #ff4d4d;
-        color: white;
-        font-size: 16px;
-        font-weight: bold;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.3s ease;
+
+    .common-btn {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
     }
 
-    .k-button.custom-live:hover {
+    .btn-live {
+        background-color: #ff4d4d;
+        color: white;
+    }
+
+    .btn-live:hover {
         background-color: #e60000; 
     }
 
-    .k-button.custom-live:active {
+    .btn-live:active {
         transform: scale(0.98);
         background-color: #b30000; 
     }
+
+    .btn-access {
+        background-color: #dcda63;
+        color: black;
+    }
+
+    .btn-access:hover {
+        background-color: #c9c453;
+    }
+
+    .btn-access:active {
+        transform: scale(0.98);
+        background-color: #b0af46;
+    }
+
+    .btn-add {
+        background-color: orange;
+        color: black;
+    }
+
+    .btn-add:hover {
+        background-color: #e69500;
+    }
+
+    .btn-add:active {
+        transform: scale(0.98);
+        background-color: #cc8400;
+    }
+
+
 </style>
 
 <h2 style="display: inline-block;">Traffic Signals</h2>
 <!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" style="margin-left: 797px;" data-toggle="modal" data-target="#exampleModalCenter">Add</button>
+<button type="button" class="btn common-btn btn-add" style="margin-left: 797px;" data-toggle="modal" data-target="#exampleModalCenter">Add</button>
 
-<!-- Modal -->
+<!-- Add New Signal Modal -->
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -125,8 +141,7 @@
                         <input type="text" class="form-control" id="signalAddress" placeholder="Enter traffic signal address" required>
                     </div>
                     <div class="form-group">
-
-                      <label for="signalDirection">Direction1:</label>
+                        <label for="signalDirection">Direction1:</label>
                         <input type="text" class="form-control" id="signalDirection" placeholder="Enter direction" required>
                     </div>
                     <div class="form-group">
@@ -134,7 +149,7 @@
                         <input type="text" class="form-control" id="signalGreen" placeholder="Enter green light time" required>
                     </div>
                     <div class="form-group">
-                        <label for="signalDirection">Direction2:</label>
+                        <label for="signalDirection2">Direction2:</label>
                         <input type="text" class="form-control" id="signalDirection2" placeholder="Enter direction" required>
                     </div>
                     <div class="form-group mb-4">
@@ -154,8 +169,49 @@
                     <label for="apiKey">API Key:</label>
                     <input type="text" class="form-control" id="apiKey" readonly>
                 </div>
-                <button type="button" class="btn btn-secondary" onclick="goToPreviousPage()">Go Back</button>
                 <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Signal on table Bootstrap Modal -->
+<div class="modal fade" id="editTrafficSignalModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="color: black;">Edit Traffic Signal</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="color: black;">
+                <form id="updateTrafficSignalForm">
+                    <div class="form-group">
+                        <label for="updatedSignalAddress">Updated Signal Address:</label>
+                        <input type="text" class="form-control" id="updatedSignalAddress" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatedSignalDirection1">Updated Signal Direction 1:</label>
+                        <input type="text" class="form-control" id="updatedSignalDirection1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatedDirection1Green">Updated Direction 1 Green Time:</label>
+                        <input type="number" class="form-control" id="updatedDirection1Green" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatedSignalDirection2">Updated Signal Direction 2:</label>
+                        <input type="text" class="form-control" id="updatedSignalDirection2" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatedDirection2Green">Updated Direction 2 Green Time:</label>
+                        <input type="number" class="form-control" id="updatedDirection2Green" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="updateTrafficSignal">Update</button>
             </div>
         </div>
     </div>
@@ -168,39 +224,76 @@
                         .Height("400px")
                         .DataSource(dataManger => {
                             dataManger.Url("/Home/TrafficSignalsList").Key("id").CrossDomain(false);
+                            dataManger.UpdateUrl("/Admin/UpdateTrafficSignalsList").Adaptor("UrlAdaptor");
                         })
                         .Columns(col => {
                             col.Field("id").HeaderText("ID").Width("120").Add();
                             col.Field("Address").HeaderText("Address").Width("150").Add();
                             col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").Add();
                             
-                            //button to incident report of specific violation
-                            col.HeaderText("Actions").Template(@" <button class='btn custom-access' onclick='onAccess(this)'>Access</button> 
-                            <button class='btn custom-live' onclick='onLive(this)'>Live</button>").TextAlign(Syncfusion.EJ2.Grids.TextAlign.Center).Width("200").Add();
-                    col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onAccess(this)'>Access</button> <button class='k-button custom-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
+                            //button to incident report of specific violation and footage
+                            col.HeaderText("Actions").Template("<button class='btn common-btn btn-access' onclick='onAccess(this)'>Access</button> <button class='btn common-btn btn-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
                             
                         })
                         .AllowPaging()
+                        .EditSettings(editSettings => editSettings
+                            .AllowEditing(false)
+                        )
                         .Render()
                     )
                 </div>
-            </div>    
+        </div>    
 </div>
 
 @section Scripts{
 
     <script>
-
         $(document).ready(function () {
             $('#saveTrafficSignal').click(function () {
+                // Retrieve input values
+                var address = $('#signalAddress').val().trim();
+                var direction1 = $('#signalDirection').val().trim();
+                var direction2 = $('#signalDirection2').val().trim();
+                var green1 = $('#signalGreen').val().trim();
+                var green2 = $('#signalGreen2').val().trim();
+
+                // Regular expression to check if input is a valid number
+                var isInteger = /^\d+$/;
+
+                // Validate strings (ensure they are not numbers and not empty)
+                if (!address || !isNaN(address)) {
+                    alert("Error: Address must be a valid string and cannot be a number.");
+                    return;
+                }
+                if (!direction1 || !isNaN(direction1)) {
+                    alert("Error: Direction 1 must be a valid string and cannot be a number.");
+                    return;
+                }
+                if (!direction2 || !isNaN(direction2)) {
+                    alert("Error: Direction 2 must be a valid string and cannot be a number.");
+                    return;
+                }
+
+                // Validate green light times (must be integers)
+                if (!isInteger.test(green1)) {
+                    alert("Error: Green Light 1 must be a valid positive integer.");
+                    return;
+                }
+                if (!isInteger.test(green2)) {
+                    alert("Error: Green Light 2 must be a valid positive integer.");
+                    return;
+                }
+
+                // Prepare data object
                 var signalData = {
-                    Address: $('#signalAddress').val(),
-                    Direction1: $('#signalDirection').val(),
-                    Direction2: $('#signalDirection2').val(),
-                    Direction1Green: $('#signalGreen').val(),
-                    Direction2Green: $('#signalGreen2').val()
+                    Address: address,
+                    Direction1: direction1,
+                    Direction2: direction2,
+                    Direction1Green: parseInt(green1),
+                    Direction2Green: parseInt(green2)
                 };
 
+                // Proceed with AJAX request
                 $.ajax({
                     url: '@Url.Action("SaveTrafficSignal", "Home")', // Correct ASP.NET MVC routing
                     type: 'POST',
@@ -220,9 +313,139 @@
                     error: function (xhr, status, error) {
                         console.error('AJAX Error:', error);
                         console.error('Response Text:', xhr.responseText);
+                        alert("An error occurred while saving. Please try again.");
                     }
                 });
             });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+        var grid = document.getElementById("adminSignalGrid").ej2_instances[0];
+
+            grid.rowSelected = function (args) {
+                if (!args.data) {
+                    console.error("No row data found.");
+                    return;
+                }
+
+                // Set the modal data-id to the selected row's ID
+                $("#editTrafficSignalModal").attr("data-id", args.data.id);
+
+                // Open the modal first
+                $("#editTrafficSignalModal").modal("show");  // Open the modal (bootstrap)
+
+                // Populate fields immediately after the modal shows
+                setTimeout(function() {
+                    // Fix field names based on data object (use lowercase keys from args.data)
+                    $("#updatedSignalAddress").val(args.data.address ?? ""); 
+                    $("#updatedSignalDirection1").val(args.data.direction1 ?? ""); 
+                    $("#updatedDirection1Green").val(args.data.direction1Green ?? ""); 
+                    $("#updatedSignalDirection2").val(args.data.direction2 ?? ""); 
+                    $("#updatedDirection2Green").val(args.data.direction2Green ?? ""); 
+                    $("#updatedDeviceStreamUID").val(args.data.deviceStreamUID ?? ""); 
+                    $("#updatedIsActive").prop("checked", args.data.isActive ?? false); // Ensure checkbox is correctly set
+
+                    // Log values after fields are populated
+                    console.log("Modal fields populated with data:", {
+                        address: $("#updatedSignalAddress").val(),
+                        direction1: $("#updatedSignalDirection1").val(),
+                        direction1Green: $("#updatedDirection1Green").val(),
+                        direction2: $("#updatedSignalDirection2").val(),
+                        direction2Green: $("#updatedDirection2Green").val(),
+                        deviceStreamUID: $("#updatedDeviceStreamUID").val(),
+                        isActive: $("#updatedIsActive").prop("checked")
+                    });
+                }, 500);  // Delay setting values to ensure modal has fully opened
+            };
+        });
+
+        // Handle Update Button Click
+        $("#updateTrafficSignal").click(function () {
+            var id = $("#editTrafficSignalModal").attr("data-id"); // Retrieve stored ID
+            console.log("ID from modal:", id);  // Debugging: Check ID value
+
+            if (!id || isNaN(id) || id <= 0) {
+                alert("Error: Invalid Signal ID.");
+                return;
+            }
+
+            // Retrieve form values and ensure they are safe to use
+            var address = $("#updatedSignalAddress").val();
+            address = (address && typeof address === 'string') ? address.trim() : "";  // Safely trim
+
+            var direction1 = $("#updatedSignalDirection1").val();
+            direction1 = (direction1 && typeof direction1 === 'string') ? direction1.trim() : "";  // Safely trim
+
+            var direction2 = $("#updatedSignalDirection2").val();
+            direction2 = (direction2 && typeof direction2 === 'string') ? direction2.trim() : "";  // Safely trim
+
+            var green1 = $("#updatedDirection1Green").val().trim();
+            var green2 = $("#updatedDirection2Green").val().trim();
+            
+            var deviceStreamUID = $("#updatedDeviceStreamUID").val();
+            deviceStreamUID = (deviceStreamUID && typeof deviceStreamUID === 'string') ? deviceStreamUID.trim() : "";  // Safely trim
+
+            var isActive = $("#updatedIsActive").prop("checked"); // Retrieve checkbox value
+
+            var isInteger = /^\d+$/;
+
+            // Validation
+            if (!address || !isNaN(address)) {
+                alert("Error: Address must be a valid string.");
+                return;
+            }
+            if (!direction1 || !isNaN(direction1)) {
+                alert("Error: Direction 1 must be a valid string.");
+                return;
+            }
+            if (!direction2 || !isNaN(direction2)) {
+                alert("Error: Direction 2 must be a valid string.");
+                return;
+            }
+            if (!isInteger.test(green1)) {
+                alert("Error: Green Light 1 must be a valid positive integer.");
+                return;
+            }
+            if (!isInteger.test(green2)) {
+                alert("Error: Green Light 2 must be a valid positive integer.");
+                return;
+            }
+
+            var updatedData = {
+                ID: id, // Now we have a valid ID
+                Address: address,
+                Direction1: direction1,
+                Direction1Green: parseInt(green1),
+                Direction2: direction2,
+                Direction2Green: parseInt(green2),
+            };
+
+            console.log("Updated data being sent:", updatedData);
+
+            $.ajax({
+                url: '/Home/UpdateTrafficSignal',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(updatedData),
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        var grid = document.getElementById('adminSignalGrid').ej2_instances[0];
+                        grid.refresh(); // Refresh grid after successful update
+                        $("#editTrafficSignalModal").modal("hide");
+                    } else {
+                        alert("Error updating traffic signal: " + response.message);
+                    }
+                },
+                error: function (xhr) {
+                    alert("An error occurred: " + xhr.responseText);
+                }
+            });
+        });
+
+        // Ensure modals close correctly on button click
+        $(".close, .btn-secondary").click(function () {
+            $(".modal").modal("hide");
         });
 
         // Access button functionality
