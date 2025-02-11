@@ -15,17 +15,17 @@
         background: #808080 !important;
     }
 
-    .container {
-        padding-top: 25px;
-        max-width: 95%;
-    }
-
-    h2 {
-        padding-left: 45px
+    .title-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 85%;
+        padding: 5px;
+        margin: 0 auto; 
     }
 
     .spacer {
-        margin-left: 5px; 
+        margin-left: 10px; 
     }
 
     .btn-primary{
@@ -66,22 +66,22 @@
     }
 
     .common-btn {
-    font-size: 16px;
-    font-weight: bold;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+        font-size: 1.5vw;  /* Font size based on viewport width */
+        font-weight: bold;
+        padding: 0.5vw 0.5vw; /* Padding based on viewport width */
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
     .btn-live {
         background-color: #ff4d4d;
-        color: white;
     }
 
     .btn-live:hover {
         background-color: #e60000; 
+        color: white;
     }
 
     .btn-live:active {
@@ -90,12 +90,12 @@
     }
 
     .btn-access {
-        background-color: #dcda63;
-        color: black;
+        background-color: #f5f371;
     }
 
     .btn-access:hover {
-        background-color: #c9c453;
+        background-color: #f9ed03;
+        color: white;
     }
 
     .btn-access:active {
@@ -104,12 +104,12 @@
     }
 
     .btn-add {
-        background-color: orange;
-        color: black;
+        background-color: rgb(235, 179, 74);
     }
 
     .btn-add:hover {
-        background-color: #e69500;
+        background-color: #faa301;
+        color: white;
     }
 
     .btn-add:active {
@@ -117,12 +117,28 @@
         background-color: #cc8400;
     }
 
+    .container{
+        display: flex;
+        justify-content: center;   /* Centers the content horizontally */
+        width: 100%;
+    }
+
+    .resize{
+        width: 95%;
+    }
+
+    .e-content {
+        width: 100%;
+    }
+
 
 </style>
 
-<h2 style="display: inline-block;">Traffic Signals</h2>
-<!-- Button trigger modal -->
-<button type="button" class="btn common-btn btn-add" style="margin-left: 797px;" data-toggle="modal" data-target="#exampleModalCenter">Add</button>
+<div class="title-container">
+    <h2>Traffic Signals</h2>
+        <!-- Button trigger modal -->
+        <button type="button" class="btn common-btn btn-add" data-toggle="modal" data-target="#exampleModalCenter">Add</button>
+</div>
 
 <!-- Add New Signal Modal -->
 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -218,6 +234,7 @@
 </div>
 
 <div class="container">
+    <div class="resize">
             <div class="e-content"> 
                 <div>
                     @(Html.EJS().Grid("adminSignalGrid")
@@ -242,7 +259,8 @@
                         .Render()
                     )
                 </div>
-        </div>    
+        </div> 
+    </div>   
 </div>
 
 @section Scripts{
@@ -306,8 +324,6 @@
                             $('#apiKey').val(response.apiKey);
                             $('#page1').hide();
                             $('#page2').show();
-                            var grid = document.getElementById('adminSignalGrid').ej2_instances[0];
-                            grid.refresh(); // Refresh grid after successful update
                         } else {
                             console.error("Invalid response format:", response);
                         }
