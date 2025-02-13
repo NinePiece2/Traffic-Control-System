@@ -1,2 +1,0 @@
-required-package1
-required-package2
