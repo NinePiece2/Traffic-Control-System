@@ -14,7 +14,7 @@ class API:
         """Fetch a new token from the token URL and update expiration time."""
         token_url = config.Config().get("API_URL") + "Token/GetToken?userID="
         key = config.Config().get("API_KEY")
-        response_token = requests.get(token_url + urllib.parse.quote(key, safe=''))
+        response_token = requests.get(token_url + urllib.parse.quote(key, safe=''),verify = False)
         if response_token.status_code == 200:
             self.token = response_token.text
             #print(f"Token received: {self.token}")
@@ -70,15 +70,39 @@ class API:
             'Authorization': f'Bearer {self.token}'
         }
 
-        response_stream = requests.get(stream_url, headers=headers)
+        response_stream = requests.get(stream_url, headers=headers,verify = False)
         
         if response_stream.status_code == 200:
-            #print(f"Stream Client Key Response: {response_stream.text}")
-            data = json.loads(response_stream.text)
-            return data["deviceStreamKEY"]
+            print(f"Stream Client Key Response: {response_stream.text}")
+            #data = json.loads(response_stream.text)
+            #return data["deviceStreamKEY"]
         else:
             print(f"Failed to fetch stream client key. Status code: {response_stream.status_code}")
             print(f"Response Content: {response_stream.text}")
+            
+    def getDirectionAndTime(self,id):
+        self._ensure_valid_token()
+        
+        if not self.token:
+            #print("No token available to proceed.")
+            return
+        
+        stream_url = f"{config.Config().get('API_URL')}Traffic/GetDirectionAndTime?ID={id}"
+
+        headers = {
+            'Authorization': f'Bearer {self.token}'
+        }
+
+        response_stream = requests.get(stream_url, headers=headers,verify = False)
+        
+        if response_stream.status_code == 200:
+            print(f"Get Direction and Time Response: {response_stream.text}")
+            #data = json.loads(response_stream.text)
+            #return data["deviceStreamKEY"]
+        else:
+            print(f"Failed to fetch Direction and Time. Status code: {response_stream.status_code}")
+            print(f"Response Content: {response_stream.text}")
+        
             
     def add_traffic_violation(self, ActiveSignalID, LicensePlate, VideoURL):
         self._ensure_valid_token()
@@ -117,4 +141,5 @@ class API:
 if __name__ == "__main__":
     api = API()
     api.get_stream_client_key("device1")
-    api.post_AddTrafficViolation(1,"randomtest","http://sagu.com/sagu.sagu4")
+    api.add_traffic_violation(4,"test4","http://test4.com/test4")
+    api.getDirectionAndTime("8")

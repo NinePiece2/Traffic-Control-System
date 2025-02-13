@@ -1,0 +1,7 @@
+setup.py
+SmartTrafficControlSystemClient.egg-info/PKG-INFO
+SmartTrafficControlSystemClient.egg-info/SOURCES.txt
+SmartTrafficControlSystemClient.egg-info/dependency_links.txt
+SmartTrafficControlSystemClient.egg-info/entry_points.txt
+SmartTrafficControlSystemClient.egg-info/requires.txt
+SmartTrafficControlSystemClient.egg-info/top_level.txt

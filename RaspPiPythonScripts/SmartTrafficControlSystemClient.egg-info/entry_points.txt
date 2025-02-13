@@ -1,0 +1,2 @@
+[console_scripts]
+my-app = SmartTrafficControlSystemClient.core:main

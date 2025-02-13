@@ -49,6 +49,36 @@ namespace Traffic_Control_System_API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetDirectionAndTime")]
+        public IActionResult GetDirectionAndTime(int id)
+        {
+            try
+            {
+                var activeSignal = _applicationDbContext.ActiveSignals
+                    .FirstOrDefault(x => x.ID == id && x.IsActive == true);
+
+                if (activeSignal == null)
+                {
+                    return NotFound($"No active signal found for ID: {id}");
+                }
+
+                return Ok(new
+                {
+                    Direction1 = activeSignal.Direction1,
+                    Direction2 = activeSignal.Direction2,
+                    Direction1Time = activeSignal.Direction1Green,
+                    Direction2Time = activeSignal.Direction2Green
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
         [HttpPost]
         [Route("AddTrafficViolation")]
         public IActionResult AddTrafficViolation([FromBody] TrafficViolationsModel model)
