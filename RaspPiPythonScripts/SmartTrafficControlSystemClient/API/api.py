@@ -14,7 +14,7 @@ class API:
         """Fetch a new token from the token URL and update expiration time."""
         token_url = config.Config().get("API_URL") + "Token/GetToken?userID="
         key = config.Config().get("API_KEY")
-        response_token = requests.get(token_url + urllib.parse.quote(key, safe=''),verify = False)
+        response_token = requests.get(token_url + urllib.parse.quote(key, safe=''))
         if response_token.status_code == 200:
             self.token = response_token.text
             #print(f"Token received: {self.token}")
@@ -70,12 +70,12 @@ class API:
             'Authorization': f'Bearer {self.token}'
         }
 
-        response_stream = requests.get(stream_url, headers=headers,verify = False)
+        response_stream = requests.get(stream_url, headers=headers)
         
         if response_stream.status_code == 200:
-            print(f"Stream Client Key Response: {response_stream.text}")
-            #data = json.loads(response_stream.text)
-            #return data["deviceStreamKEY"]
+            #print(f"Stream Client Key Response: {response_stream.text}")
+            data = json.loads(response_stream.text)
+            return data["deviceStreamKEY"]
         else:
             print(f"Failed to fetch stream client key. Status code: {response_stream.status_code}")
             print(f"Response Content: {response_stream.text}")
@@ -93,12 +93,12 @@ class API:
             'Authorization': f'Bearer {self.token}'
         }
 
-        response_stream = requests.get(stream_url, headers=headers,verify = False)
+        response_stream = requests.get(stream_url, headers=headers)
         
         if response_stream.status_code == 200:
             print(f"Get Direction and Time Response: {response_stream.text}")
-            #data = json.loads(response_stream.text)
-            #return data["deviceStreamKEY"]
+            data = json.loads(response_stream.text)
+            return data
         else:
             print(f"Failed to fetch Direction and Time. Status code: {response_stream.status_code}")
             print(f"Response Content: {response_stream.text}")
@@ -125,7 +125,7 @@ class API:
         }
         
         try:
-            response_violation = requests.post(stream_url, json=payload, headers = headers, verify=False)
+            response_violation = requests.post(stream_url, json=payload, headers = headers)
             
             if response_violation.status_code == 200:
                 print(f"Traffic Violation Added: {response_violation.json()}")
@@ -140,6 +140,6 @@ class API:
 
 if __name__ == "__main__":
     api = API()
-    api.get_stream_client_key("device1")
-    api.add_traffic_violation(4,"test4","http://test4.com/test4")
-    api.getDirectionAndTime("8")
+    print(api.get_stream_client_key("device1"))
+    #print(api.add_traffic_violation(5,"test5","http://test5.com/test5"))
+    print(api.getDirectionAndTime("8"))
