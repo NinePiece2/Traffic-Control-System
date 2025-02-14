@@ -1,17 +1,202 @@
 ﻿@using Microsoft.Extensions.Configuration;
 @model Traffic_Control_System.Models.VideStreamViewModel
 @{
-    ViewData["Title"] = "Video Test";
+    ViewData["Title"] = "Traffic Control - Live View";
 }
 
 <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
 <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
 
-<div>
-    <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" data-setup='{}'>
-        <source src="@Model.VideoURL" type="application/x-mpegURL">
-    </video>
+<style>
+    .page-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 75vh;
+        border: 1px solid red;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+
+    .video-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40%;
+        height: 100%;
+        overflow: hidden;
+        border: 1px solid yellow;
+        margin-right: 10px;
+    }
+
+    .video-container video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .info-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        margin-left: 10px;
+        width: 50%;
+        height: 100%;
+        max-height: 100%;
+        border: 1px solid blue;
+    }
+
+    .intersection-info {
+        font-size: 18px;
+        margin-bottom: 10px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .directions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+
+    .direction-container {
+        margin-bottom: 20px;
+    }
+
+    .traffic-light {
+        display: flex;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100%;
+        margin-top: 5px;
+        padding-bottom: 10px;
+    }
+
+    .traffic-light div {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin: 5px 0;
+    }
+
+    .green { background-color: green; }
+    .yellow { background-color: yellow; }
+    .red { background-color: red; }
+
+    .countdown-container {
+        display: flex;
+        justify-content: space-evenly;
+        width: 100%;
+        padding-bottom: 30px;
+    }
+
+    .countdown {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .countdown span {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .timer {
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .manual-override-btn {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 18px;
+        background-color: grey;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+        width: 100%;
+    }
+
+    .manual-override-btn:hover {
+        background-color: silver;
+        color: black;
+    }
+</style>
+
+<div class="page-container">
+    <div class="video-container">
+        <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" data-setup='{}'>
+            <source src="@Model.VideoURL" type="application/x-mpegURL">
+        </video>
+    </div>
+
+    <div class="info-container">
+        <div class="intersection-info">
+            <p><strong>INTERSECTION NAME</strong></p>
+        </div>
+
+        <!-- Direction 1 -->
+        <div class="direction-container">
+            <p><strong>Direction 1:</strong> placeholder 1</p>
+        </div>
+        <div class="traffic-light">
+            <div class="green"></div>
+            <div class="yellow"></div>
+            <div class="red"></div>
+        </div>
+        
+        <div class="countdown-container">
+            <div class="countdown">
+                <span>Green</span>
+                <span id="timeGreen1">01:30</span> <!-- Green light timer -->
+            </div>
+            <div class="countdown">
+                <span>Yellow</span>
+                <span id="timeYellow1">00:10</span> <!-- Yellow light timer -->
+            </div>
+            <div class="countdown">
+                <span>Red</span>
+                <span id="timeRed1">02:00</span> <!-- Red light timer -->
+            </div>
+        </div>
+
+        <!-- Direction 2 -->
+        <div class="direction-container">
+            <p><strong>Direction 2:</strong> placeholder 2</p>
+        </div>
+        <div class="traffic-light">
+            <div class="green"></div>
+            <div class="yellow"></div>
+            <div class="red"></div>
+        </div>
+        
+        <div class="countdown-container">
+            <div class="countdown">
+                <span>Green</span>
+                <span id="timeGreen2">01:30</span> <!-- Green light timer -->
+            </div>
+            <div class="countdown">
+                <span>Yellow</span>
+                <span id="timeYellow2">00:10</span> <!-- Yellow light timer -->
+            </div>
+            <div class="countdown">
+                <span>Red</span>
+                <span id="timeRed2">02:00</span> <!-- Red light timer -->
+            </div>
+        </div>
+
+        <!-- Manual Override Button -->
+        <button class="manual-override-btn">Manual Override</button>
+    </div>
 </div>
+
 <script>
     var player = videojs('my-video', {
         controls: true,
@@ -21,4 +206,76 @@
     });
 
     player.play();
+
+    // Initial Timers
+    var green1 = 90;  // 1 minute 30 seconds for green in Direction 1
+    var yellow1 = 10; // 10 seconds for yellow in Direction 1
+
+    var green2 = 90;  // 1 minute 30 seconds for green in Direction 2
+    var yellow2 = 10; // 10 seconds for yellow in Direction 2
+
+    var red1 = green2 + yellow2; // Red duration for Direction 1 is equal to Direction 2's green + yellow time
+    var red2 = green1 + yellow1; // Red duration for Direction 2 is equal to Direction 1's green + yellow time
+
+    var currentDirection = 1;
+    var currentPhase1 = 'green'; // Phase for Direction 1
+    var currentPhase2 = 'red'; // Phase for Direction 2
+
+    function updateTimers() {
+        if (currentPhase1 === 'green') {
+            green1--; red2--;
+            updateUI('timeGreen1', green1);
+            updateUI('timeRed2', red2);
+            activateLight(1, 'green');
+            activateLight(2, 'red');
+            if (green1 <= 0) switchPhase(1, 'yellow');
+        } 
+        else if (currentPhase1 === 'yellow') {
+            yellow1--; red2--;
+            updateUI('timeYellow1', yellow1);
+            updateUI('timeRed2', red2);
+            activateLight(1, 'yellow');
+            activateLight(2, 'red');
+            if (yellow1 <= 0) switchPhase(1, 'red');
+        } 
+        else if (currentPhase1 === 'red') {
+            red1--; green2--;
+            updateUI('timeRed1', red1);
+            updateUI('timeGreen2', green2);
+            activateLight(1, 'red');
+            activateLight(2, 'green');
+            if (red1 <= 0) switchPhase(1, 'green');
+        }
+    }
+
+    function switchPhase(direction, newPhase) {
+        if (direction === 1) {
+            currentPhase1 = newPhase;
+            if (newPhase === 'green') { green1 = 90; red2 = green1 + yellow1; }
+            if (newPhase === 'yellow') yellow1 = 10;
+            if (newPhase === 'red') red1 = green2 + yellow2;
+        } else {
+            currentPhase2 = newPhase;
+            if (newPhase === 'green') { green2 = 90; red1 = green2 + yellow2; }
+            if (newPhase === 'yellow') yellow2 = 10;
+            if (newPhase === 'red') red2 = green1 + yellow1;
+        }
+    }
+
+    function updateUI(elementId, time) {
+        document.getElementById(elementId).innerText = formatTime(time);
+    }
+
+    function activateLight(direction, color) {
+        document.querySelectorAll(`.traffic-light:nth-of-type(${direction}) div`).forEach(light => {
+            light.style.opacity = 0.3;
+        });
+        document.querySelector(`.traffic-light:nth-of-type(${direction}) .${color}`).style.opacity = 1;
+    }
+
+    function formatTime(seconds) {
+        return new Date(seconds * 1000).toISOString().substr(14, 5);
+    }
+
+    setInterval(updateTimers, 1000);
 </script>
