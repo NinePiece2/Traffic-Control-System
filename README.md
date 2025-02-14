@@ -25,4 +25,6 @@ A **smart traffic control system** designed to efficiently manage and optimize t
 
 ## Client Install Instructions:
 
-```curl -O https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/installer.sh && sudo bash installer.sh```
+```sh
+curl -O https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/installer.sh && sudo bash installer.sh
+```
