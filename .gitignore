@@ -377,4 +377,3 @@ ffprobe.exe
 ffmpeg
 .vs/*
 RaspPiPythonScripts/SmartTrafficControlSystemClient/ConfigFile/config.json
-#RaspPiPythonScripts/SmartTrafficControlSystemClient/YOLO/*
