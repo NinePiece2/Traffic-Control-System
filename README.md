@@ -28,3 +28,15 @@ A **smart traffic control system** designed to efficiently manage and optimize t
 ```sh
 curl -O https://raw.githubusercontent.com/NinePiece2/Traffic-Control-System/refs/heads/master/RaspPiPythonScripts/installer.sh && sudo bash installer.sh
 ```
+
+### Client Debugging
+
+If you enconuter:
+
+```sh
+OSError: [Errno 12] Cannot allocate memory
+```
+
+Go to the file `sudo nano /boot/firmware/config.txt`
+
+Locate the line `dtoverlay=vc4-fkms-v3d` and change it to `dtoverlay=vc4-fkms-v3d,cma-256`

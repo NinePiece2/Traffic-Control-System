@@ -264,7 +264,7 @@ class VideoCapture:
                 self.height = 480
                 self.fps = intrinsics.inference_rate if hasattr(intrinsics, "inference_rate") else 30
                 self.picam2 = Picamera2(imx500_obj.camera_num)
-                config_params = self.picam2.create_preview_configuration(controls={"FrameRate": self.fps}, buffer_count=12)
+                config_params = self.picam2.create_preview_configuration(main={"format": 'XRGB8888'}, controls={"FrameRate": self.fps}, buffer_count=12)
                 self.picam2.configure(config_params)
                 self.picam2.start()
                 # Flag that we’re using IMX500 detection

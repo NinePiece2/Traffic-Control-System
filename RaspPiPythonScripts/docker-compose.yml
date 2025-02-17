@@ -6,6 +6,7 @@ services:
     volumes:
       - ./config:/app/ConfigFile
       - /run/udev:/run/udev:ro
+      - /sys/kernel/debug:/sys/kernel/debug:ro
     environment:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
