@@ -242,10 +242,10 @@ class VideoCapture:
         if platform.system() == 'Linux':
             self.use_picamera2 = True
             # Check if we should use the IMX500 detector (set USE_IMX500 in your config)
-            use_imx500 = config.Config().get("USE_IMX500", False)
+            use_imx500 = True
             if use_imx500 and IMX500 is not None:
                 # Initialize IMX500 object detection
-                model_path = config.Config().get("IMX500_MODEL_PATH", "/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk")
+                model_path ="/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk"
                 imx500_obj = IMX500(model_path)
                 intrinsics = imx500_obj.network_intrinsics
                 if not intrinsics:
@@ -253,7 +253,7 @@ class VideoCapture:
                     intrinsics = NetworkIntrinsics()
                     intrinsics.task = "object detection"
                 # Load labels from config or use default file
-                labels_file = config.Config().get("IMX500_LABELS", "assets/coco_labels.txt")
+                labels_file = "assets/coco_labels.txt"
                 try:
                     with open(labels_file, "r") as f:
                         intrinsics.labels = f.read().splitlines()
@@ -305,9 +305,9 @@ class VideoCapture:
             if hasattr(self, "use_imx500") and self.use_imx500:
                 metadata = self.picam2.capture_metadata()
                 # Get detection parameters from config (with defaults)
-                threshold = config.Config().get("IMX500_THRESHOLD", 0.55)
-                iou = config.Config().get("IMX500_IOU", 0.65)
-                max_detections = config.Config().get("IMX500_MAX_DETECTIONS", 10)
+                threshold = 0.55
+                iou = 0.65
+                max_detections = 10
                 detections = parse_detections(metadata, self.picam2, self.imx500_obj, threshold, iou, max_detections)
                 labels = get_labels(self.imx500_obj.network_intrinsics)
                 for detection in detections:
