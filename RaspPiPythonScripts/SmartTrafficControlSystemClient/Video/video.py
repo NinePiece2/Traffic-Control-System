@@ -10,16 +10,83 @@ from datetime import datetime, timezone
 import urllib.parse
 import jwt
 import platform
-import numpy as np  # Needed for YOLO processing
+import numpy as np
 
-# Attempt to import Picamera2 on Linux
+# Attempt to import Picamera2 and IMX500-related modules on Linux
 try:
     if platform.system() == 'Linux':
-        from picamera2 import Picamera2
+        from picamera2 import Picamera2, MappedArray
+        try:
+            from picamera2.devices import IMX500
+            from picamera2.devices.imx500 import NetworkIntrinsics, postprocess_nanodet_detection
+        except ImportError:
+            IMX500 = None
 except ImportError:
     pass
 
+# Global variable for detections
+last_detections = []
 
+# ----- IMX500 Object Detection Helpers -----
+class Detection:
+    def __init__(self, coords, category, conf, metadata, picam2, imx500_obj):
+        """Stores the detection bounding box, category and confidence.
+           Uses the imx500 helper to convert raw coordinates into pixel coordinates.
+        """
+        self.category = category
+        self.conf = conf
+        # Convert inference coordinates into pixel coordinates on the output image
+        self.box = imx500_obj.convert_inference_coords(coords, metadata, picam2)
+
+def parse_detections(metadata, picam2, imx500_obj, threshold, iou, max_detections):
+    """Parses the raw outputs from the IMX500 detector into Detection objects."""
+    global last_detections
+    intrinsics = imx500_obj.network_intrinsics
+    bbox_normalization = getattr(intrinsics, 'bbox_normalization', False)
+    bbox_order = getattr(intrinsics, 'bbox_order', 'yx')  # default order
+    np_outputs = imx500_obj.get_outputs(metadata, add_batch=True)
+    input_w, input_h = imx500_obj.get_input_size()
+    if np_outputs is None:
+        return last_detections
+    # Use nanodet postprocessing if specified
+    if getattr(intrinsics, 'postprocess', None) == "nanodet":
+        boxes, scores, classes = postprocess_nanodet_detection(
+            outputs=np_outputs[0],
+            conf=threshold,
+            iou_thres=iou,
+            max_out_dets=max_detections
+        )[0]
+        from picamera2.devices.imx500.postprocess import scale_boxes
+        boxes = scale_boxes(boxes, 1, 1, input_h, input_w, False, False)
+    else:
+        boxes, scores, classes = np_outputs[0][0], np_outputs[1][0], np_outputs[2][0]
+        if bbox_normalization:
+            boxes = boxes / input_h
+        if bbox_order == "xy":
+            boxes = boxes[:, [1, 0, 3, 2]]
+        boxes = np.array_split(boxes, 4, axis=1)
+        boxes = list(zip(*boxes))
+    detections = [
+        Detection(box, int(category), float(score), metadata, picam2, imx500_obj)
+        for box, score, category in zip(boxes, scores, classes)
+        if score > threshold
+    ]
+    last_detections = detections
+    return detections
+
+def get_labels(intrinsics):
+    """Returns a list of labels from intrinsics. Falls back to a default file if needed."""
+    labels = intrinsics.labels
+    if labels is None:
+        try:
+            with open("assets/coco_labels.txt", "r") as f:
+                labels = f.read().splitlines()
+        except Exception as e:
+            print("Error loading default labels:", e)
+            labels = []
+    return labels
+
+# ----- Upload and Streaming Classes (unchanged) -----
 class UploadClip:
     def __init__(self, filename):
         self.filename = filename
@@ -42,7 +109,7 @@ class UploadClip:
 
         try:
             decoded_token = jwt.decode(self.token, options={"verify_signature": False})
-            exp = decoded_token.get("exp")
+            exp = decoded_token.get("exp") 
             expiration_time = datetime.fromtimestamp(exp, tz=timezone.utc)
             current_time = datetime.now(tz=timezone.utc)
 
@@ -77,14 +144,12 @@ class UploadClip:
                 print("Status Code:", response.status_code)
                 print("Response:", response.text)
 
-
 class Streamer:
-    def __init__(self, rtmp_url, width, height, fps):
+    def __init__(self, rtmp_url, width, height):
         self.rtmp_url = rtmp_url
         self.width = width
         self.height = height
         self.process = None
-        self.fps = fps
 
     def start_stream(self):
         ffmpeg_path = './ffmpeg'
@@ -100,7 +165,6 @@ class Streamer:
             '-f', 'rawvideo',
             '-pixel_format', 'bgr24',  # Expecting 3-channel BGR
             '-video_size', f"{self.width}x{self.height}",
-            '-framerate', str(self.fps),
             '-i', '-',
             '-c:v', 'libx264',
             '-preset', 'veryfast',
@@ -118,7 +182,6 @@ class Streamer:
             if self.process.stdin:
                 self.process.stdin.close()
             self.process.wait()
-
 
 class Recorder:
     def __init__(self, video_capture, width, height, fps):
@@ -170,26 +233,52 @@ class Recorder:
             upload = UploadClip(self.filename)
             upload.upload_clip(config.Config().get("Device_ID"))
 
-
+# ----- Video Capture Class (Modified for IMX500) -----
 class VideoCapture:
     def __init__(self, rtmp_url):
         self.rtmp_url = rtmp_url
         self.running = True
 
-        # Decide between Picamera2 (Linux) and OpenCV VideoCapture (other OS).
         if platform.system() == 'Linux':
             self.use_picamera2 = True
-            self.picam2 = Picamera2()
-            # Set desired resolution / read from config if needed
-            self.width = 640
-            self.height = 480
-            self.fps = 30  # PiCamera2 approximate
-
-            config_params = self.picam2.create_video_configuration(
-                main={"format": 'XRGB8888', "size": (self.width, self.height)}
-            )
-            self.picam2.configure(config_params)
-            self.picam2.start()
+            # Check if we should use the IMX500 detector (set USE_IMX500 in your config)
+            use_imx500 = config.Config().get("USE_IMX500", False)
+            if use_imx500 and IMX500 is not None:
+                # Initialize IMX500 object detection
+                model_path = config.Config().get("IMX500_MODEL_PATH", "/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk")
+                imx500_obj = IMX500(model_path)
+                intrinsics = imx500_obj.network_intrinsics
+                if not intrinsics:
+                    from picamera2.devices.imx500 import NetworkIntrinsics
+                    intrinsics = NetworkIntrinsics()
+                    intrinsics.task = "object detection"
+                # Load labels from config or use default file
+                labels_file = config.Config().get("IMX500_LABELS", "assets/coco_labels.txt")
+                try:
+                    with open(labels_file, "r") as f:
+                        intrinsics.labels = f.read().splitlines()
+                except Exception as e:
+                    print("Error loading labels:", e)
+                self.width = 640
+                self.height = 480
+                self.fps = intrinsics.inference_rate if hasattr(intrinsics, "inference_rate") else 30
+                self.picam2 = Picamera2(imx500_obj.camera_num)
+                config_params = self.picam2.create_preview_configuration(controls={"FrameRate": self.fps}, buffer_count=12)
+                self.picam2.configure(config_params)
+                self.picam2.start()
+                # Flag that we’re using IMX500 detection
+                self.use_imx500 = True
+                self.imx500_obj = imx500_obj
+            else:
+                # Fallback: plain Picamera2
+                self.use_imx500 = False
+                self.picam2 = Picamera2()
+                self.width = 640
+                self.height = 480
+                self.fps = 30  # default fps
+                config_params = self.picam2.create_video_configuration(main={"format": 'XRGB8888', "size": (self.width, self.height)})
+                self.picam2.configure(config_params)
+                self.picam2.start()
         else:
             self.use_picamera2 = False
             self.cap = cv2.VideoCapture(int(config.Config().get("WebcamID")))
@@ -200,57 +289,34 @@ class VideoCapture:
             cam_fps = self.cap.get(cv2.CAP_PROP_FPS)
             self.fps = int(cam_fps) if cam_fps > 0 else 30
 
-        self.streamer = Streamer(self.rtmp_url, self.width, self.height, self.fps)
+        self.streamer = Streamer(self.rtmp_url, self.width, self.height)
         self.recorder = Recorder(self, self.width, self.height, self.fps)
-
-        # Initialize YOLO for object detection
-        try:
-            yolo_config_path = config.Config().get("YOLO_CONFIG")  # e.g., "yolov3.cfg"
-            yolo_weights_path = config.Config().get("YOLO_WEIGHTS")  # e.g., "yolov3.weights"
-            yolo_labels_path = config.Config().get("YOLO_LABELS")      # e.g., "coco.names"            
-            self.yolo_net = cv2.dnn.readNetFromDarknet(yolo_config_path, yolo_weights_path)
-            self.yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-            self.yolo_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
-            layer_names = self.yolo_net.getLayerNames()
-            layer_names = self.yolo_net.getLayerNames()
-            unconnected = self.yolo_net.getUnconnectedOutLayers()
-
-            # Handle different possible return types for getUnconnectedOutLayers()
-            if isinstance(unconnected, np.ndarray):
-                if unconnected.ndim == 2:
-                    self.yolo_output_layers = [layer_names[i[0]-1] for i in unconnected]
-                else:  # 1D array
-                    self.yolo_output_layers = [layer_names[i-1] for i in unconnected]
-            else:
-                # If not a numpy array, assume it's a scalar
-                self.yolo_output_layers = [layer_names[unconnected-1]]
-
-            with open(yolo_labels_path, "r") as f:
-                self.yolo_labels = [line.strip() for line in f.readlines()]
-            
-            try:
-                self.yolo_confidence_threshold = float(config.Config().get("YOLO_CONFIDENCE"))
-            except Exception:
-                self.yolo_confidence_threshold = 0.5
-
-            try:
-                self.yolo_nms_threshold = float(config.Config().get("YOLO_NMS"))
-            except Exception:
-                self.yolo_nms_threshold = 0.4
-
-            print("YOLO model loaded successfully.")
-        except Exception as e:
-            print("YOLO not configured or error loading YOLO model:", e)
-            self.yolo_net = None
 
     def read(self):
         """
         Returns (ret, frame).
-        If using picamera2 with 'XRGB8888' format, convert BGRA → BGR.
+        If using Picamera2 with 'XRGB8888' format, converts BGRA → BGR.
+        If using IMX500 detection, also retrieves metadata and draws bounding boxes.
         """
         if self.use_picamera2:
             frame = self.picam2.capture_array()
             frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+            # If IMX500 is enabled, run detection and overlay boxes
+            if hasattr(self, "use_imx500") and self.use_imx500:
+                metadata = self.picam2.capture_metadata()
+                # Get detection parameters from config (with defaults)
+                threshold = config.Config().get("IMX500_THRESHOLD", 0.55)
+                iou = config.Config().get("IMX500_IOU", 0.65)
+                max_detections = config.Config().get("IMX500_MAX_DETECTIONS", 10)
+                detections = parse_detections(metadata, self.picam2, self.imx500_obj, threshold, iou, max_detections)
+                labels = get_labels(self.imx500_obj.network_intrinsics)
+                for detection in detections:
+                    x, y, w, h = detection.box
+                    # Use label from detection if available, otherwise the numeric category
+                    label_text = f"{labels[detection.category]} ({detection.conf:.2f})" if detection.category < len(labels) else f"{detection.category} ({detection.conf:.2f})"
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    cv2.putText(frame, label_text, (x + 5, y + 15),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
             return True, frame
         else:
             return self.cap.read()
@@ -274,50 +340,11 @@ class VideoCapture:
                 print("Error: Failed to capture frame.")
                 break
 
-            # Run YOLO object detection (if available)
-            if self.yolo_net is not None:
-                # Create a blob from the frame and perform a forward pass
-                blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
-                self.yolo_net.setInput(blob)
-                layer_outputs = self.yolo_net.forward(self.yolo_output_layers)
-
-                boxes = []
-                confidences = []
-                class_ids = []
-                (H, W) = frame.shape[:2]
-
-                for output in layer_outputs:
-                    for detection in output:
-                        scores = detection[5:]
-                        class_id = int(np.argmax(scores))
-                        confidence = scores[class_id]
-                        if confidence > self.yolo_confidence_threshold:
-                            box = detection[0:4] * np.array([W, H, W, H])
-                            (centerX, centerY, width, height) = box.astype("int")
-                            x = int(centerX - (width / 2))
-                            y = int(centerY - (height / 2))
-                            boxes.append([x, y, int(width), int(height)])
-                            confidences.append(float(confidence))
-                            class_ids.append(class_id)
-
-                # Apply non-max suppression to suppress weak, overlapping bounding boxes
-                idxs = cv2.dnn.NMSBoxes(boxes, confidences, self.yolo_confidence_threshold, self.yolo_nms_threshold)
-
-                if len(idxs) > 0:
-                    for i in idxs.flatten():
-                        (x, y) = (boxes[i][0], boxes[i][1])
-                        (w, h) = (boxes[i][2], boxes[i][3])
-                        color = (0, 255, 0)  # Green bounding box
-                        cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-                        label = self.yolo_labels[class_ids[i]] if class_ids[i] < len(self.yolo_labels) else str(class_ids[i])
-                        text = f"{label}: {confidences[i]:.2f}"
-                        cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-            # Send annotated frame to streamer and add to recorder buffer
+            # Send frame to streamer and add to recorder buffer
             self.streamer.send_frame(frame)
             self.recorder.add_frame_to_buffer(frame)
 
-            # Optional: Display local preview (if desired)
+            # Optional local preview (uncomment if needed)
             # cv2.imshow("Webcam", frame)
             # key = cv2.waitKey(1)
             # if key & 0xFF == ord('r'):
