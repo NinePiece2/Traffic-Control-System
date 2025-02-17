@@ -2,9 +2,12 @@ FROM debian:bookworm
 
 # Install system python3.11 and tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 python3.11-dev python3-pip python3-distutils \
+    python3.11 python3.11-dev python3-distutils \
     wget gnupg ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python3.11 -m ensurepip --upgrade && \
+    python3.11 -m pip install --upgrade pip
 
 RUN wget -O /usr/share/keyrings/raspi.gpg.key \
     https://archive.raspberrypi.org/debian/raspberrypi.gpg.key && \
