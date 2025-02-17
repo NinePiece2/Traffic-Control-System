@@ -165,6 +165,7 @@ class Streamer:
             '-f', 'rawvideo',
             '-pixel_format', 'bgr24',  # Expecting 3-channel BGR
             '-video_size', f"{self.width}x{self.height}",
+            '-framerate','14'
             '-i', '-',
             '-c:v', 'libx264',
             '-preset', 'veryfast',
@@ -259,8 +260,8 @@ class VideoCapture:
                         intrinsics.labels = f.read().splitlines()
                 except Exception as e:
                     print("Error loading labels:", e)
-                self.width = 640
-                self.height = 480
+                self.width = 1920
+                self.height = 1080
                 self.fps = intrinsics.inference_rate if hasattr(intrinsics, "inference_rate") else 30
                 self.picam2 = Picamera2(imx500_obj.camera_num)
                 config_params = self.picam2.create_preview_configuration(controls={"FrameRate": self.fps}, buffer_count=12)
