@@ -16,6 +16,7 @@ RUN apt update && apt -y upgrade
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   python3-picamera2 \
+  imx500-models \
   ffmpeg \
   && apt-get clean \
   && apt-get autoremove \
