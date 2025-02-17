@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import urllib.parse
 import jwt
 import platform
+import numpy as np  # Needed for YOLO processing
 
 # Attempt to import Picamera2 on Linux
 try:
@@ -18,11 +19,12 @@ try:
 except ImportError:
     pass
 
+
 class UploadClip:
     def __init__(self, filename):
         self.filename = filename
         self.token = None
-    
+
     def _get_new_token(self):
         token_url = config.Config().get("Video_URL") + "Token/GetToken?userID="
         key = config.Config().get("API_KEY")
@@ -40,7 +42,7 @@ class UploadClip:
 
         try:
             decoded_token = jwt.decode(self.token, options={"verify_signature": False})
-            exp = decoded_token.get("exp") 
+            exp = decoded_token.get("exp")
             expiration_time = datetime.fromtimestamp(exp, tz=timezone.utc)
             current_time = datetime.now(tz=timezone.utc)
 
@@ -77,11 +79,12 @@ class UploadClip:
 
 
 class Streamer:
-    def __init__(self, rtmp_url, width, height):
+    def __init__(self, rtmp_url, width, height, fps):
         self.rtmp_url = rtmp_url
         self.width = width
         self.height = height
         self.process = None
+        self.fps = fps
 
     def start_stream(self):
         ffmpeg_path = './ffmpeg'
@@ -97,6 +100,7 @@ class Streamer:
             '-f', 'rawvideo',
             '-pixel_format', 'bgr24',  # Expecting 3-channel BGR
             '-video_size', f"{self.width}x{self.height}",
+            '-framerate', str(self.fps),
             '-i', '-',
             '-c:v', 'libx264',
             '-preset', 'veryfast',
@@ -186,7 +190,6 @@ class VideoCapture:
             )
             self.picam2.configure(config_params)
             self.picam2.start()
-
         else:
             self.use_picamera2 = False
             self.cap = cv2.VideoCapture(int(config.Config().get("WebcamID")))
@@ -197,8 +200,48 @@ class VideoCapture:
             cam_fps = self.cap.get(cv2.CAP_PROP_FPS)
             self.fps = int(cam_fps) if cam_fps > 0 else 30
 
-        self.streamer = Streamer(self.rtmp_url, self.width, self.height)
+        self.streamer = Streamer(self.rtmp_url, self.width, self.height, self.fps)
         self.recorder = Recorder(self, self.width, self.height, self.fps)
+
+        # Initialize YOLO for object detection
+        try:
+            yolo_config_path = config.Config().get("YOLO_CONFIG")  # e.g., "yolov3.cfg"
+            yolo_weights_path = config.Config().get("YOLO_WEIGHTS")  # e.g., "yolov3.weights"
+            yolo_labels_path = config.Config().get("YOLO_LABELS")      # e.g., "coco.names"            
+            self.yolo_net = cv2.dnn.readNetFromDarknet(yolo_config_path, yolo_weights_path)
+            self.yolo_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+            self.yolo_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+            layer_names = self.yolo_net.getLayerNames()
+            layer_names = self.yolo_net.getLayerNames()
+            unconnected = self.yolo_net.getUnconnectedOutLayers()
+
+            # Handle different possible return types for getUnconnectedOutLayers()
+            if isinstance(unconnected, np.ndarray):
+                if unconnected.ndim == 2:
+                    self.yolo_output_layers = [layer_names[i[0]-1] for i in unconnected]
+                else:  # 1D array
+                    self.yolo_output_layers = [layer_names[i-1] for i in unconnected]
+            else:
+                # If not a numpy array, assume it's a scalar
+                self.yolo_output_layers = [layer_names[unconnected-1]]
+
+            with open(yolo_labels_path, "r") as f:
+                self.yolo_labels = [line.strip() for line in f.readlines()]
+            
+            try:
+                self.yolo_confidence_threshold = float(config.Config().get("YOLO_CONFIDENCE"))
+            except Exception:
+                self.yolo_confidence_threshold = 0.5
+
+            try:
+                self.yolo_nms_threshold = float(config.Config().get("YOLO_NMS"))
+            except Exception:
+                self.yolo_nms_threshold = 0.4
+
+            print("YOLO model loaded successfully.")
+        except Exception as e:
+            print("YOLO not configured or error loading YOLO model:", e)
+            self.yolo_net = None
 
     def read(self):
         """
@@ -206,9 +249,7 @@ class VideoCapture:
         If using picamera2 with 'XRGB8888' format, convert BGRA → BGR.
         """
         if self.use_picamera2:
-            # Picamera2 returns a 4-channel (BGRA-like) image by default.
             frame = self.picam2.capture_array()
-            # Convert from BGRA to BGR
             frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
             return True, frame
         else:
@@ -233,11 +274,50 @@ class VideoCapture:
                 print("Error: Failed to capture frame.")
                 break
 
-            # Send frame to streamer and add to recorder buffer
+            # Run YOLO object detection (if available)
+            if self.yolo_net is not None:
+                # Create a blob from the frame and perform a forward pass
+                blob = cv2.dnn.blobFromImage(frame, 1/255.0, (416, 416), swapRB=True, crop=False)
+                self.yolo_net.setInput(blob)
+                layer_outputs = self.yolo_net.forward(self.yolo_output_layers)
+
+                boxes = []
+                confidences = []
+                class_ids = []
+                (H, W) = frame.shape[:2]
+
+                for output in layer_outputs:
+                    for detection in output:
+                        scores = detection[5:]
+                        class_id = int(np.argmax(scores))
+                        confidence = scores[class_id]
+                        if confidence > self.yolo_confidence_threshold:
+                            box = detection[0:4] * np.array([W, H, W, H])
+                            (centerX, centerY, width, height) = box.astype("int")
+                            x = int(centerX - (width / 2))
+                            y = int(centerY - (height / 2))
+                            boxes.append([x, y, int(width), int(height)])
+                            confidences.append(float(confidence))
+                            class_ids.append(class_id)
+
+                # Apply non-max suppression to suppress weak, overlapping bounding boxes
+                idxs = cv2.dnn.NMSBoxes(boxes, confidences, self.yolo_confidence_threshold, self.yolo_nms_threshold)
+
+                if len(idxs) > 0:
+                    for i in idxs.flatten():
+                        (x, y) = (boxes[i][0], boxes[i][1])
+                        (w, h) = (boxes[i][2], boxes[i][3])
+                        color = (0, 255, 0)  # Green bounding box
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+                        label = self.yolo_labels[class_ids[i]] if class_ids[i] < len(self.yolo_labels) else str(class_ids[i])
+                        text = f"{label}: {confidences[i]:.2f}"
+                        cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+            # Send annotated frame to streamer and add to recorder buffer
             self.streamer.send_frame(frame)
             self.recorder.add_frame_to_buffer(frame)
 
-            # Optional local preview
+            # Optional: Display local preview (if desired)
             # cv2.imshow("Webcam", frame)
             # key = cv2.waitKey(1)
             # if key & 0xFF == ord('r'):

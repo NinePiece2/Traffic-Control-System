@@ -1,4 +1,4 @@
-import DeviceControl.deviceControl as deviceControl
+#import DeviceControl.deviceControl as deviceControl
 import threading
 import API.api as api
 import Config.config as config
@@ -48,5 +48,5 @@ if __name__ == "__main__":
 
     # Initialize traffic light control and needed config settings
     # Need to use 2 threads for lights and camera
-    traffic_lights_thread = threading.Thread(target=deviceControl.start_traffic_light_control)
-    traffic_lights_thread.start()
+    #traffic_lights_thread = threading.Thread(target=deviceControl.start_traffic_light_control)
+    #traffic_lights_thread.start()
