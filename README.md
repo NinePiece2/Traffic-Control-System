@@ -34,4 +34,4 @@ OSError: [Errno 12] Cannot allocate memory
 
 Go to the file `sudo nano /boot/firmware/config.txt`
 
-Locate the line `dtoverlay=vc4-fkms-v3d` and change it to `dtoverlay=vc4-fkms-v3d,cma-256`
+Locate the line `dtoverlay=vc4-fkms-v3d` and change it to `dtoverlay=vc4-fkms-v3d,cma-256` and Restart the Raspberry Pi.
