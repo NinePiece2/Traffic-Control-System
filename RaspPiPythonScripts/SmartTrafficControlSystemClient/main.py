@@ -34,6 +34,8 @@ def incident_detected():
     filename = f"incident-{video_GUID}-{currentDateTime}.mp4"
     if video_capture_instance:
         video_capture_instance.record_clip(filename)  # Use the stored instance
+        print(f"Video clip saved as {filename}")
+        api_instance.add_traffic_violation(get_config_data()['Device_ID'], "Plate", filename)
     else:
         print("Error: VideoCapture instance is not running!")
 
