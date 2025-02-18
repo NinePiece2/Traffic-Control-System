@@ -54,7 +54,7 @@ namespace Traffic_Control_System_Video.Controllers
                 var folderPath = Path.Combine("ClipsFiles", deviceID);
 
                 // Ensure the folder exists
-                var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), folderPath);
+                var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), folderPath, fileName.Replace(" ", "-"));
                 Directory.CreateDirectory(directoryPath);
 
                 // Save the original video file

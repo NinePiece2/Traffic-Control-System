@@ -100,7 +100,7 @@ namespace Traffic_Control_System_API.Controllers
                 {
                     ActiveSignalID = activeSignalID,
                     LicensePlate = model.LicensePlate,
-                    VideoURL = model.Filename,
+                    Filename = model.Filename,
                     DateCreated = DateTime.Now 
                 };
 

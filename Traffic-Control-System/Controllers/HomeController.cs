@@ -98,10 +98,12 @@ namespace Traffic_Control_System.Controllers
                     .FirstOrDefault())
                 .Select(s => s.DeviceStreamID)
                 .FirstOrDefault();
+            
+            var folderName = violation.Filename.Replace(".mp4", "").Replace(" ", "-");
 
             var viewModel = new ReportViewModel
             {
-                VideoURL = $"/VideoServiceProxy/Clip/GetFile/{device}/hls/playlist.m3u8",
+                VideoURL = $"/VideoServiceProxy/Clip/GetFile/{device}/{folderName}/hls/playlist.m3u8",
                 DateCreated = violation.DateCreated,
                 LicensePlate = violation.LicensePlate
             };
