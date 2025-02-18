@@ -12,7 +12,8 @@ import jwt
 import platform
 import numpy as np
 import pytesseract  # For OCR
-
+import re
+import os
 # Optional: if Tesseract is not in your PATH, set the tesseract_cmd
 # pytesseract.pytesseract.tesseract_cmd = r"/usr/bin/tesseract"  # Adjust as needed
 
@@ -90,13 +91,15 @@ def get_labels(intrinsics):
             labels = []
     return labels
 
-# ----- License Plate Recognition Helper -----
 def recognize_license_plate(car_roi):
     """
     Given a region-of-interest (ROI) containing a car,
     locate and OCR the license plate.
-    Includes additional preprocessing (upscaling, adaptive threshold, dilation)
+    This function includes additional preprocessing (upscaling, adaptive threshold, dilation)
     for improved OCR accuracy.
+    It then post-processes the OCR result to enforce the format: "SNXX XXX"
+    (i.e. it must start with "SN", followed by exactly 2 non-space characters, a space,
+    and exactly 3 non-space characters).
     """
     # Convert to grayscale and reduce noise while preserving edges
     gray = cv2.cvtColor(car_roi, cv2.COLOR_BGR2GRAY)
@@ -127,7 +130,7 @@ def recognize_license_plate(car_roi):
     x, y, w, h = cv2.boundingRect(plate_contour)
     plate = plate[y:y+h, x:x+w]
     
-    # Upscale to enhance details (experiment with factor, e.g., 2 or 3)
+    # Upscale to enhance details (experiment with scaling factor)
     plate = cv2.resize(plate, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
     
     # Adaptive thresholding to get a clear binary image
@@ -138,10 +141,24 @@ def recognize_license_plate(car_roi):
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     plate = cv2.dilate(plate, kernel, iterations=1)
     
-    # Use Tesseract OCR with PSM 6 (or try 7 if needed)
+    # Use Tesseract OCR with PSM 6 (single block of text)
     config_tesseract = "--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
     text = pytesseract.image_to_string(plate, config=config_tesseract).strip()
+    
+    # Clean up the OCR result: remove all whitespace and convert to uppercase
+    text = "".join(text.split()).upper()
+    
+    # If text starts with 'SN' and has 7 characters (e.g. "SN12345"), insert a space after the 4th character
+    if text.startswith("SN") and len(text) == 7:
+        text = text[:4] + " " + text[4:]
+    
+    # Define the required pattern: "SN" + 2 non-space chars + space + 3 non-space chars.
+    pattern = r"^SN\S{2} \S{3}$"
+    if not re.fullmatch(pattern, text):
+        return None, (x, y, w, h)
+    
     return text, (x, y, w, h)
+
 
 
 # ----- Upload and Streaming Classes (unchanged) -----
@@ -197,6 +214,7 @@ class UploadClip:
             if response.status_code == 200:
                 print("File uploaded successfully!")
                 print("Response:", response.json())
+                os.remove(self.filename)
             else:
                 print("Failed to upload file.")
                 print("Status Code:", response.status_code)
