@@ -94,71 +94,77 @@ def get_labels(intrinsics):
 def recognize_license_plate(car_roi):
     """
     Given a region-of-interest (ROI) containing a car,
-    locate and OCR the license plate.
-    This function includes additional preprocessing (upscaling, adaptive threshold, dilation)
-    for improved OCR accuracy.
-    It then post-processes the OCR result to enforce the format: "SNXX XXX"
-    (i.e. it must start with "SN", followed by exactly 2 non-space characters, a space,
-    and exactly 3 non-space characters).
+    locate and OCR the license plate assuming it has a YELLOW background.
     """
-    # Convert to grayscale and reduce noise while preserving edges
-    gray = cv2.cvtColor(car_roi, cv2.COLOR_BGR2GRAY)
-    gray = cv2.bilateralFilter(gray, 11, 17, 17)
-    
-    # Edge detection (tune thresholds if needed)
-    edged = cv2.Canny(gray, 30, 150)
-    
-    # Find contours and sort them by area
-    cnts, _ = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]
-    
-    plate_contour = None
-    for c in cnts:
-        peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.018 * peri, True)
-        if len(approx) == 4:
-            plate_contour = approx
-            break
+    # Convert the ROI to HSV color space
+    hsv = cv2.cvtColor(car_roi, cv2.COLOR_BGR2HSV)
 
-    if plate_contour is None:
+    # Define HSV range for yellow plates (tweak values as needed)
+    lower_yellow = np.array([20, 100, 100], dtype=np.uint8)
+    upper_yellow = np.array([35, 255, 255], dtype=np.uint8)
+    
+    # Create a mask that isolates only yellow regions
+    mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+
+    # Optional: Clean up the mask using morphological operations
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    mask = cv2.erode(mask, kernel, iterations=1)
+    mask = cv2.dilate(mask, kernel, iterations=1)
+    
+    # Find contours in the mask
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
         return None, None
 
-    # Create mask and extract plate region
-    mask = np.zeros(gray.shape, np.uint8)
-    cv2.drawContours(mask, [plate_contour], 0, 255, -1)
-    plate = cv2.bitwise_and(gray, gray, mask=mask)
-    x, y, w, h = cv2.boundingRect(plate_contour)
-    plate = plate[y:y+h, x:x+w]
+    # Sort contours by area (largest first)
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
     
-    # Upscale to enhance details (experiment with scaling factor)
-    plate = cv2.resize(plate, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    # We�ll iterate through the biggest contours to find something
+    # that looks like a plate by aspect ratio, etc.
+    plate_candidate = None
+    plate_bbox = None
     
-    # Adaptive thresholding to get a clear binary image
-    plate = cv2.adaptiveThreshold(plate, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                  cv2.THRESH_BINARY, 11, 2)
+    for c in contours:
+        x, y, w, h = cv2.boundingRect(c)
+        area = w * h
+        aspect_ratio = w / float(h + 1e-5)  # avoid divide-by-zero
+        # Heuristic checks (tweak thresholds for your plate shape/size)
+        if area > 500:  # minimum area
+            # For typical rectangular plates, aspect ratio often 2�5 wide
+            if 2 < aspect_ratio < 6:  
+                plate_candidate = car_roi[y:y+h, x:x+w]
+                plate_bbox = (x, y, w, h)
+                break  # pick the first (largest) plausible region
     
-    # Apply dilation to join character segments
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    plate = cv2.dilate(plate, kernel, iterations=1)
-    
-    # Use Tesseract OCR with PSM 6 (single block of text)
-    config_tesseract = "--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
-    text = pytesseract.image_to_string(plate, config=config_tesseract).strip()
-    
-    # Clean up the OCR result: remove all whitespace and convert to uppercase
-    text = "".join(text.split()).upper()
-    
-    # If text starts with 'SN' and has 7 characters (e.g. "SN12345"), insert a space after the 4th character
-    if text.startswith("SN") and len(text) == 7:
-        text = text[:4] + " " + text[4:]
-    
-    # Define the required pattern: "SN" + 2 non-space chars + space + 3 non-space chars.
-    pattern = r"^SN\S{2} \S{3}$"
-    if not re.fullmatch(pattern, text):
-        return None, (x, y, w, h)
-    
-    return text, (x, y, w, h)
+    if plate_candidate is None:
+        return None, None
 
+    # ---- Preprocess the plate region for OCR ----
+    # Convert to grayscale
+    gray_plate = cv2.cvtColor(plate_candidate, cv2.COLOR_BGR2GRAY)
+
+    # Upscale to enhance details
+    gray_plate = cv2.resize(gray_plate, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+
+    # Try adaptive threshold
+    gray_plate = cv2.adaptiveThreshold(
+        gray_plate, 255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY,
+        11, 2
+    )
+
+    # Dilation to help join character segments
+    gray_plate = cv2.dilate(gray_plate, kernel, iterations=1)
+
+    # OCR with Tesseract
+    config_tesseract = "--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    text = pytesseract.image_to_string(gray_plate, config=config_tesseract).strip()
+
+    # Clean up the OCR result: remove extra whitespace, uppercase
+    text = "".join(text.split()).upper()
+
+    return text, plate_bbox
 
 
 # ----- Upload and Streaming Classes (unchanged) -----
