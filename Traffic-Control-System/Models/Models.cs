@@ -5,14 +5,14 @@ namespace Traffic_Control_System.Models
     public class  TrafficViolationsModel
     {
         [Required]
-        public int ActiveSignalID { get; set; }
+        public string DeviceID { get; set; }
 
         [Required(ErrorMessage = "License Plate is required.")]
         [StringLength(10, ErrorMessage = "License Plate cannot exceed 10 characters.")]
         public string? LicensePlate { get; set; }
 
         [Required(ErrorMessage = "Video URL is required.")]
-        public string? VideoURL { get; set; }
+        public string? Filename { get; set; }
     }
     
     public class UserList

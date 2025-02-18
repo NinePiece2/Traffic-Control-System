@@ -88,11 +88,19 @@ namespace Traffic_Control_System_API.Controllers
                     return BadRequest(ModelState);
                 }
 
+                var activeSignalID = _applicationDbContext.ActiveSignals
+                    .Where(x => x.DeviceStreamUID == _applicationDbContext.StreamClients
+                        .Where(c => c.DeviceStreamID == model.DeviceID)
+                        .Select(c => c.UID)
+                        .FirstOrDefault())
+                    .Select(x => x.ID)
+                    .FirstOrDefault();
+
                 var violation = new TrafficViolations
                 {
-                    ActiveSignalID = model.ActiveSignalID,
+                    ActiveSignalID = activeSignalID,
                     LicensePlate = model.LicensePlate,
-                    VideoURL = model.VideoURL,
+                    VideoURL = model.Filename,
                     DateCreated = DateTime.Now 
                 };
 
