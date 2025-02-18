@@ -154,7 +154,7 @@ class API:
         
         if response_stream.status_code == 200:
             data = json.loads(response_stream.text)
-            return data["GUID"]
+            return data["guid"]
         else:
             print(f"Failed to fetch Direction and Time. Status code: {response_stream.status_code}")
             print(f"Response Content: {response_stream.text}")

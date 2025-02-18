@@ -6,9 +6,11 @@
 </div>
 
 ## Table of Contents
-- [Introduction](#introduction)
-- [Client Install Instructions](#client-install-instructions)
-- [Client Debugging](#client-debugging)
+- [**Traffic Control System** 🚦](#traffic-control-system-)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Client Install Instructions:](#client-install-instructions)
+    - [Client Debugging](#client-debugging)
 
 ## Introduction
 
