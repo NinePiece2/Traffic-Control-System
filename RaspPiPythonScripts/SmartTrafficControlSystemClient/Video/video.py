@@ -94,16 +94,18 @@ def get_labels(intrinsics):
 def recognize_license_plate(car_roi):
     """
     Given a region-of-interest (ROI) containing a car,
-    attempt to locate and OCR the license plate.
-    This function uses grayscale conversion, bilateral filtering,
-    edge detection, contour approximation, and then Tesseract OCR.
+    locate and OCR the license plate.
+    Includes additional preprocessing (upscaling, adaptive threshold, dilation)
+    for improved OCR accuracy.
     """
-    # Convert to grayscale and filter noise while preserving edges
+    # Convert to grayscale and reduce noise while preserving edges
     gray = cv2.cvtColor(car_roi, cv2.COLOR_BGR2GRAY)
     gray = cv2.bilateralFilter(gray, 11, 17, 17)
-    edged = cv2.Canny(gray, 30, 200)
     
-    # Find contours and sort by area
+    # Edge detection (tune thresholds if needed)
+    edged = cv2.Canny(gray, 30, 150)
+    
+    # Find contours and sort them by area
     cnts, _ = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:10]
     
@@ -118,19 +120,29 @@ def recognize_license_plate(car_roi):
     if plate_contour is None:
         return None, None
 
-    # Create a mask for the plate region and extract it
+    # Create mask and extract plate region
     mask = np.zeros(gray.shape, np.uint8)
     cv2.drawContours(mask, [plate_contour], 0, 255, -1)
     plate = cv2.bitwise_and(gray, gray, mask=mask)
     x, y, w, h = cv2.boundingRect(plate_contour)
     plate = plate[y:y+h, x:x+w]
-    # Optional thresholding for better OCR performance
-    plate = cv2.threshold(plate, 150, 255, cv2.THRESH_BINARY)[1]
-
-    # Use Tesseract OCR; using PSM 7 (treat as a single line)
-    config_tesseract = "--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    
+    # Upscale to enhance details (experiment with factor, e.g., 2 or 3)
+    plate = cv2.resize(plate, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    
+    # Adaptive thresholding to get a clear binary image
+    plate = cv2.adaptiveThreshold(plate, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                  cv2.THRESH_BINARY, 11, 2)
+    
+    # Apply dilation to join character segments
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    plate = cv2.dilate(plate, kernel, iterations=1)
+    
+    # Use Tesseract OCR with PSM 6 (or try 7 if needed)
+    config_tesseract = "--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 "
     text = pytesseract.image_to_string(plate, config=config_tesseract).strip()
     return text, (x, y, w, h)
+
 
 # ----- Upload and Streaming Classes (unchanged) -----
 class UploadClip:
@@ -253,8 +265,9 @@ class Recorder:
         self.recording = True
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         self.writer = cv2.VideoWriter(self.filename, fourcc, self.fps, (self.width, self.height))
-        for frame in self.buffer:
+        for frame in list(self.buffer):
             self.writer.write(frame)
+
         threading.Thread(target=self.record_live_frames, daemon=True).start()
 
     def record_live_frames(self):
@@ -373,7 +386,7 @@ class VideoCapture:
                             cv2.rectangle(frame, (plate_x, plate_y), (plate_x + plate_w, plate_y + plate_h), (255, 0, 0), 2)
                             cv2.putText(frame, lp_text, (plate_x, plate_y - 10),
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-                            print("Detected License Plate:", lp_text)
+                            print(f"Detected License Plate {time.strftime('%Y-%m-%d %H:%M:%S')}:", lp_text, '\n')
             return True, frame
         else:
             return self.cap.read()
