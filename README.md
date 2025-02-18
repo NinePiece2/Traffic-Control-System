@@ -6,22 +6,15 @@
 </div>
 
 ## Table of Contents
+- [Introduction](#introduction)
+- [Client Install Instructions](#client-install-instructions)
+- [Client Debugging](#client-debugging)
 
 ## Introduction
 
 A **smart traffic control system** designed to efficiently manage and optimize traffic flow.
 
 ---
-
-## Database Management
-
-### Add a Migration for Database
-
-- ```Add-Migration <MigrationDescription> -Context ApplicationDbContext```
-
-### Update the Database
-
-- ```Update-Database -Context ApplicationDbContext```
 
 ## Client Install Instructions:
 
