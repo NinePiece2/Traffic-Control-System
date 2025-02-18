@@ -368,7 +368,7 @@ class VideoCapture:
             self.fps = int(cam_fps) if cam_fps > 0 else 30
 
         self.streamer = Streamer(self.rtmp_url, self.width, self.height)
-        self.recorder = Recorder(self, self.width, self.height, self.fps)
+        self.recorder = Recorder(self, self.width, self.height, 12 if self.use_imx500 else self.fps)
 
     def read(self):
         """
