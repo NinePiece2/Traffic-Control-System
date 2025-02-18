@@ -16,6 +16,7 @@ RUN apt update && apt -y upgrade
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   python3-picamera2 \
+  tesseract-ocr \
   imx500-models \
   ffmpeg \
   && apt-get clean \
@@ -27,7 +28,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 RUN pip install --upgrade pip setuptools
 
-RUN pip install gpiozero rpi-lgpio
+RUN pip install gpiozero rpi-lgpio Pillow pytesseract
 
 WORKDIR /app
 COPY . /app
