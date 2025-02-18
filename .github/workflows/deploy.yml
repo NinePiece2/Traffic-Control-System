@@ -1,0 +1,41 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - docker-compose.yml
+  repository_dispatch:
+    types: [build-completed]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for all builds to complete
+        uses: fountainhead/action-wait-for-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Build
+          ref: ${{ github.ref }}
+          repo: ${{ github.repository }}
+
+      - name: Pull latest Docker images
+        run: docker-compose pull
+
+      - name: Remove Old Container
+        run: docker-compose down
+
+      - name: Deploy with Docker Compose
+        env:
+          ASPNETCORE_ENVIRONMENT: ${{ secrets.ASPNETCORE_ENVIRONMENT }}
+          SyncfusionLicense: ${{ secrets.SyncfusionLicense }}
+          JWT_Key: ${{ secrets.JWT_Key }}
+        run: docker-compose up -d
+
+      - name: Remove unused Docker images
+        run: docker image prune -af
