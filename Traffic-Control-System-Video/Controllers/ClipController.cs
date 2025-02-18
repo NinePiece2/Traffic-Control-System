@@ -54,7 +54,7 @@ namespace Traffic_Control_System_Video.Controllers
                 var folderPath = Path.Combine("ClipsFiles", deviceID);
 
                 // Ensure the folder exists
-                var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), folderPath, fileName.Replace(" ", "-"));
+                var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), folderPath);
                 Directory.CreateDirectory(directoryPath);
 
                 // Save the original video file
@@ -135,7 +135,7 @@ namespace Traffic_Control_System_Video.Controllers
                     var hlsFileName = Path.GetFileName(hlsFile);
                     using (var stream = new FileStream(hlsFile, FileMode.Open))
                     {
-                        await _FTPFileService.UploadFileAsync(stream, hlsFileName, Path.Combine(folderPath, "hls"));
+                        await _FTPFileService.UploadFileAsync(stream, hlsFileName, Path.Combine(folderPath, fileName.Replace(".mp4", "").Replace(" ", "-"), "hls"));
                     }
                 }
 
