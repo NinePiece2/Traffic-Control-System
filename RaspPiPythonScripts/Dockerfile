@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget gnupg ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget -O /usr/share/keyrings/raspi.gpg.key \
+RUN wget --retry-connrefused --waitretry=5 --timeout=10 -O /usr/share/keyrings/raspi.gpg.key \
     https://archive.raspberrypi.org/debian/raspberrypi.gpg.key && \
     echo "deb [signed-by=/usr/share/keyrings/raspi.gpg.key] \
     http://archive.raspberrypi.org/debian bookworm main" \
