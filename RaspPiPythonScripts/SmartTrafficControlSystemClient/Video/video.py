@@ -290,7 +290,7 @@ class VideoCapture:
                     from picamera2.devices.imx500 import NetworkIntrinsics
                     intrinsics = NetworkIntrinsics()
                     intrinsics.task = "object detection"
-                labels_file = "assets/coco_labels.txt"
+                labels_file = "IMX500_assets/coco_labels.txt"
                 try:
                     with open(labels_file, "r") as f:
                         intrinsics.labels = f.read().splitlines()
