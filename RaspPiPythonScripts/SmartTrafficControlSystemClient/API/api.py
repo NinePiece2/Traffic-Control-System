@@ -137,6 +137,29 @@ class API:
         except requests.exceptions.RequestException as e:
             print(f"Error occurred during POST request: {e}")
         
+    def get_guid(self):
+        self._ensure_valid_token()
+        
+        if not self.token:
+            #print("No token available to proceed.")
+            return
+        
+        stream_url = f"{config.Config().get('API_URL')}Traffic/GetGUID"
+
+        headers = {
+            'Authorization': f'Bearer {self.token}'
+        }
+
+        response_stream = requests.get(stream_url, headers=headers)
+        
+        if response_stream.status_code == 200:
+            data = json.loads(response_stream.text)
+            return data["GUID"]
+        else:
+            print(f"Failed to fetch Direction and Time. Status code: {response_stream.status_code}")
+            print(f"Response Content: {response_stream.text}")
+
+
 
 if __name__ == "__main__":
     api = API()

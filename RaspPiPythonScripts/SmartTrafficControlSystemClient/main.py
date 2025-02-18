@@ -4,6 +4,7 @@ import API.api as api
 import Config.config as config
 import Video.video as video
 import json
+import time
 
 # Global variable to store the video capture instance
 video_capture_instance = None
@@ -29,9 +30,10 @@ def incident_detected():
     global video_capture_instance
     global api_instance
     video_GUID = api_instance.get_guid()
-    
+    currentDateTime = time.strftime("%Y-%m-%d %H:%M:%S")
+    filename = f"incident-{video_GUID}-{currentDateTime}.mp4"
     if video_capture_instance:
-        video_capture_instance.record_clip()  # Use the stored instance
+        video_capture_instance.record_clip(filename)  # Use the stored instance
     else:
         print("Error: VideoCapture instance is not running!")
 

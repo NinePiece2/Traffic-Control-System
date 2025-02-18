@@ -77,8 +77,6 @@ namespace Traffic_Control_System_API.Controllers
             }
         }
 
-
-
         [HttpPost]
         [Route("AddTrafficViolation")]
         public IActionResult AddTrafficViolation([FromBody] TrafficViolationsModel model)
@@ -107,6 +105,13 @@ namespace Traffic_Control_System_API.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.ToString()}");
             }
+        }
+
+        [HttpGet]
+        [Route("GetGUID")]
+        public IActionResult GetGUID()
+        {
+            return Ok(new {GUID = Guid.NewGuid()});
         }
     }
 }
