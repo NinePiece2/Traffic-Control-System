@@ -1,7 +1,10 @@
 # **Traffic Control System** 🚦  
 
 <div align="left">
-  <img src="https://github.com/NinePiece2/Traffic-Control-System/actions/workflows/docker.yml/badge.svg" alt="CI/CD Pipeline" />
+  <img src="https://github.com/NinePiece2/Traffic-Control-System/actions/workflows/build-mvc.yml/badge.svg" alt="CI MVC Appllication" />
+  <img src="https://github.com/NinePiece2/Traffic-Control-System/actions/workflows/build-api.yml/badge.svg" alt="CI API Appllication" />
+  <img src="https://github.com/NinePiece2/Traffic-Control-System/actions/workflows/build-video.yml/badge.svg" alt="CI Video Appllication" />
+  <img src="https://github.com/NinePiece2/Traffic-Control-System/actions/workflows/deploy.yml/badge.svg" alt="CD MVC, API and Video Appllications" />
   <img src="https://github.com/NinePiece2/Traffic-Control-System/actions/workflows/python-docker.yml/badge.svg" alt="Client CI Pipeline" />
 </div>
 
