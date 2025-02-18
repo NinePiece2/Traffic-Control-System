@@ -8,6 +8,7 @@ on:
       - docker-compose.yml
   repository_dispatch:
     types: [build-completed]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -22,7 +23,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           checkName: Build
           ref: ${{ github.ref }}
-          repo: ${{ github.repository }}
 
       - name: Pull latest Docker images
         run: docker-compose pull
