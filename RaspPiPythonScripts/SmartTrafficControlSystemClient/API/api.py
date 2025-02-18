@@ -104,7 +104,7 @@ class API:
             print(f"Response Content: {response_stream.text}")
         
             
-    def add_traffic_violation(self, ActiveSignalID, LicensePlate, VideoURL):
+    def add_traffic_violation(self, ActiveSignalID, LicensePlate, filename):
         self._ensure_valid_token()
         
         if not self.token:
@@ -119,9 +119,9 @@ class API:
         }
         
         payload = {
-            "ActiveSignalID": ActiveSignalID,
+            "DeviceID": ActiveSignalID,
             "LicensePlate": LicensePlate,
-            "VideoURL": VideoURL
+            "Filename": filename
         }
         
         try:

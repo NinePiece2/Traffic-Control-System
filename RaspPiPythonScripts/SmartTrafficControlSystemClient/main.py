@@ -50,6 +50,8 @@ if __name__ == "__main__":
     video_thread = threading.Thread(target=start_video_capture)
     video_thread.start()
 
+    time.sleep(10)
+    incident_detected()
     # Initialize traffic light control and needed config settings
     # Need to use 2 threads for lights and camera
     #traffic_lights_thread = threading.Thread(target=deviceControl.start_traffic_light_control)
