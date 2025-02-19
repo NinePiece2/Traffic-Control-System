@@ -16,7 +16,7 @@
             <h2>@Model.LicensePlate</h2>
         </div>
         <div class="col-12 text-center">
-            <h2>@Model.DateCreated.ToShortDateString() @Model.DateCreated.ToShortTimeString() EST</h2>
+            <h2>@Model.DateCreated.ToString("MM/dd/yyyy HH:mm:ss") UTC</h2>
         </div>
     </div>
 

@@ -66,7 +66,6 @@
     }
 
 </style>
-
 <h2>Incident Report</h2>
 <div class="container">
     <div class="e-content"> 
@@ -74,16 +73,25 @@
             @(Html.EJS().Grid("incidentReportGrid")
                 .Height("400px")
                 .DataSource(dataManger => {
-                    dataManger.Url($"/Home/IncidentReportsList?signalID={@Model.ActiveSignalID}").Key("UID").CrossDomain(false);
+                    dataManger.Url($"/Home/IncidentReportsList?signalID={@Model.ActiveSignalID}")
+                            .Key("UID")
+                            .CrossDomain(false)
+                            .Adaptor("UrlAdaptor");
                 })
                 .Columns(col => {
-                    col.Field("LicensePlate").HeaderText("License Plate").Width("150").Add();
                     col.Field("DateCreated").HeaderText("Date Created").Width("150").Add();
-
-                    col.HeaderText("Actions").Template("<button class='k-button custom-access' onclick='onReport(this)'>Report</button> ").Width("100").Add();
-                            
+                    col.Field("LicensePlate").HeaderText("License Plate").Width("150").Add();
+                    col.HeaderText("Actions")
+                    .Template("<button class='k-button custom-access' onclick='onReport(this)'>Report</button>")
+                    .Width("100")
+                    .Add();
                 })
                 .AllowPaging()
+                .PageSettings(ps => ps.PageSize(10))
+                .AllowFiltering()
+                .FilterSettings(fs => fs.Type(Syncfusion.EJ2.Grids.FilterType.Menu))
+                // Attach the queryCellInfo event to format date cells
+                .QueryCellInfo("queryCellInfo")
                 .Render()
             )
         </div>
@@ -108,5 +116,23 @@
             console.error("UID not found in the row.");
         }
     }
+
+    function queryCellInfo(args) {
+        if (args.column.field === "DateCreated") {
+            var dateValue = args.data.dateCreated;
+            if (dateValue) {
+                var localZone = moment.tz.guess();
+                var cleanedDate = dateValue.toString().replace(/\sGMT.*$/, '');
+                var utcDate = moment.utc(cleanedDate, "ddd MMM DD YYYY HH:mm:ss");
+                var localDate = utcDate.tz(localZone).format("MM/DD/YYYY HH:mm:ss z");
+
+                args.cell.innerText = localDate;
+                console.log("Original date:", dateValue);
+                console.log("Converted date:", localDate);
+            }
+        }
+    }
+
+
 </script>
 

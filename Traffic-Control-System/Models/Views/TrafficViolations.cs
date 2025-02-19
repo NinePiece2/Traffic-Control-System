@@ -9,7 +9,7 @@ namespace Traffic_Control_System.Models
     {
         public int UID { get; set; }
 
-        public DateTime DateCreated { get; set; }
+        public DateTime? DateCreated { get; set; }
 
         public string? LicensePlate { get; set; }
     }
