@@ -10,19 +10,169 @@ from datetime import datetime, timezone
 import urllib.parse
 import jwt
 import platform
+import numpy as np
+import pytesseract  # For OCR
+import re
+import os
+# Optional: if Tesseract is not in your PATH, set the tesseract_cmd
+# pytesseract.pytesseract.tesseract_cmd = r"/usr/bin/tesseract"  # Adjust as needed
 
-# Attempt to import Picamera2 on Linux
+# Attempt to import Picamera2 and IMX500-related modules on Linux
 try:
     if platform.system() == 'Linux':
-        from picamera2 import Picamera2
+        from picamera2 import Picamera2, MappedArray
+        try:
+            from picamera2.devices import IMX500
+            from picamera2.devices.imx500 import NetworkIntrinsics, postprocess_nanodet_detection
+        except ImportError:
+            IMX500 = None
 except ImportError:
     pass
 
+# Global variable for detections
+last_detections = []
+
+# ----- IMX500 Object Detection Helpers -----
+class Detection:
+    def __init__(self, coords, category, conf, metadata, picam2, imx500_obj):
+        """Stores the detection bounding box, category and confidence.
+           Uses the imx500 helper to convert raw coordinates into pixel coordinates.
+        """
+        self.category = category
+        self.conf = conf
+        # Convert inference coordinates into pixel coordinates on the output image
+        self.box = imx500_obj.convert_inference_coords(coords, metadata, picam2)
+
+def parse_detections(metadata, picam2, imx500_obj, threshold, iou, max_detections):
+    """Parses the raw outputs from the IMX500 detector into Detection objects."""
+    global last_detections
+    intrinsics = imx500_obj.network_intrinsics
+    bbox_normalization = getattr(intrinsics, 'bbox_normalization', False)
+    bbox_order = getattr(intrinsics, 'bbox_order', 'yx')  # default order
+    np_outputs = imx500_obj.get_outputs(metadata, add_batch=True)
+    input_w, input_h = imx500_obj.get_input_size()
+    if np_outputs is None:
+        return last_detections
+    # Use nanodet postprocessing if specified
+    if getattr(intrinsics, 'postprocess', None) == "nanodet":
+        boxes, scores, classes = postprocess_nanodet_detection(
+            outputs=np_outputs[0],
+            conf=threshold,
+            iou_thres=iou,
+            max_out_dets=max_detections
+        )[0]
+        from picamera2.devices.imx500.postprocess import scale_boxes
+        boxes = scale_boxes(boxes, 1, 1, input_h, input_w, False, False)
+    else:
+        boxes, scores, classes = np_outputs[0][0], np_outputs[1][0], np_outputs[2][0]
+        if bbox_normalization:
+            boxes = boxes / input_h
+        if bbox_order == "xy":
+            boxes = boxes[:, [1, 0, 3, 2]]
+        boxes = np.array_split(boxes, 4, axis=1)
+        boxes = list(zip(*boxes))
+    detections = [
+        Detection(box, int(category), float(score), metadata, picam2, imx500_obj)
+        for box, score, category in zip(boxes, scores, classes)
+        if score > threshold
+    ]
+    last_detections = detections
+    return detections
+
+def get_labels(intrinsics):
+    """Returns a list of labels from intrinsics. Falls back to a default file if needed."""
+    labels = intrinsics.labels
+    if labels is None:
+        try:
+            with open("assets/coco_labels.txt", "r") as f:
+                labels = f.read().splitlines()
+        except Exception as e:
+            print("Error loading default labels:", e)
+            labels = []
+    return labels
+
+def recognize_license_plate(car_roi):
+    """
+    Given a region-of-interest (ROI) containing a car,
+    locate and OCR the license plate assuming it has a YELLOW background.
+    """
+    # Convert the ROI to HSV color space
+    hsv = cv2.cvtColor(car_roi, cv2.COLOR_BGR2HSV)
+
+    # Define HSV range for yellow plates (tweak values as needed)
+    lower_yellow = np.array([20, 100, 100], dtype=np.uint8)
+    upper_yellow = np.array([35, 255, 255], dtype=np.uint8)
+    
+    # Create a mask that isolates only yellow regions
+    mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+
+    # Optional: Clean up the mask using morphological operations
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    mask = cv2.erode(mask, kernel, iterations=1)
+    mask = cv2.dilate(mask, kernel, iterations=1)
+    
+    # Find contours in the mask
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        return None, None
+
+    # Sort contours by area (largest first)
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    
+    # We�ll iterate through the biggest contours to find something
+    # that looks like a plate by aspect ratio, etc.
+    plate_candidate = None
+    plate_bbox = None
+    
+    for c in contours:
+        x, y, w, h = cv2.boundingRect(c)
+        area = w * h
+        aspect_ratio = w / float(h + 1e-5)  # avoid divide-by-zero
+        # Heuristic checks (tweak thresholds for your plate shape/size)
+        if area > 500:  # minimum area
+            # For typical rectangular plates, aspect ratio often 2�5 wide
+            if 2 < aspect_ratio < 6:  
+                plate_candidate = car_roi[y:y+h, x:x+w]
+                plate_bbox = (x, y, w, h)
+                break  # pick the first (largest) plausible region
+    
+    if plate_candidate is None:
+        return None, None
+
+    # ---- Preprocess the plate region for OCR ----
+    # Convert to grayscale
+    gray_plate = cv2.cvtColor(plate_candidate, cv2.COLOR_BGR2GRAY)
+
+    # Upscale to enhance details
+    gray_plate = cv2.resize(gray_plate, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+
+    # Try adaptive threshold
+    gray_plate = cv2.adaptiveThreshold(
+        gray_plate, 255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY,
+        11, 2
+    )
+
+    # Dilation to help join character segments
+    gray_plate = cv2.dilate(gray_plate, kernel, iterations=1)
+
+    # OCR with Tesseract
+    config_tesseract = "--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    text = pytesseract.image_to_string(gray_plate, config=config_tesseract).strip()
+
+    # Clean up the OCR result: remove extra whitespace, uppercase
+    text = "".join(text.split()).upper()
+
+    return text, plate_bbox
+
+
+# ----- Upload and Streaming Classes (unchanged) -----
 class UploadClip:
     def __init__(self, filename):
         self.filename = filename
         self.token = None
-    
+
     def _get_new_token(self):
         token_url = config.Config().get("Video_URL") + "Token/GetToken?userID="
         key = config.Config().get("API_KEY")
@@ -40,7 +190,7 @@ class UploadClip:
 
         try:
             decoded_token = jwt.decode(self.token, options={"verify_signature": False})
-            exp = decoded_token.get("exp") 
+            exp = decoded_token.get("exp")
             expiration_time = datetime.fromtimestamp(exp, tz=timezone.utc)
             current_time = datetime.now(tz=timezone.utc)
 
@@ -70,11 +220,11 @@ class UploadClip:
             if response.status_code == 200:
                 print("File uploaded successfully!")
                 print("Response:", response.json())
+                os.remove(self.filename)
             else:
                 print("Failed to upload file.")
                 print("Status Code:", response.status_code)
                 print("Response:", response.text)
-
 
 class Streamer:
     def __init__(self, rtmp_url, width, height):
@@ -95,8 +245,9 @@ class Streamer:
             ffmpeg_path,
             '-y',
             '-f', 'rawvideo',
-            '-pixel_format', 'bgr24',  # Expecting 3-channel BGR
+            '-pixel_format', 'bgr24',
             '-video_size', f"{self.width}x{self.height}",
+            '-framerate','12',
             '-i', '-',
             '-c:v', 'libx264',
             '-preset', 'veryfast',
@@ -115,7 +266,6 @@ class Streamer:
                 self.process.stdin.close()
             self.process.wait()
 
-
 class Recorder:
     def __init__(self, video_capture, width, height, fps):
         """
@@ -126,27 +276,22 @@ class Recorder:
         self.width = width
         self.height = height
         self.fps = fps
-        self.buffer = deque(maxlen=abs(fps) * 20)  # Buffer last 20 seconds
+        self.buffer = deque(maxlen=abs(fps) * 20)
         self.recording = False
         self.writer = None
         self.filename = None
 
     def add_frame_to_buffer(self, frame):
-        """Buffers the frame for up to 20s."""
         self.buffer.append(frame)
 
     def start_recording(self, filename):
-        """Save 20s of buffered frames + 10s of live frames."""
         self.filename = filename
         self.recording = True
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         self.writer = cv2.VideoWriter(self.filename, fourcc, self.fps, (self.width, self.height))
-
-        # Write the last 20 seconds first
-        for frame in self.buffer:
+        for frame in list(self.buffer):
             self.writer.write(frame)
 
-        # Continue recording live frames for 10 seconds
         threading.Thread(target=self.record_live_frames, daemon=True).start()
 
     def record_live_frames(self):
@@ -162,31 +307,56 @@ class Recorder:
         if self.writer:
             self.writer.release()
             self.writer = None
-            # Perform upload after done writing
             upload = UploadClip(self.filename)
             upload.upload_clip(config.Config().get("Device_ID"))
 
-
+# ----- Video Capture Class (Modified for IMX500) -----
 class VideoCapture:
     def __init__(self, rtmp_url):
         self.rtmp_url = rtmp_url
         self.running = True
 
-        # Decide between Picamera2 (Linux) and OpenCV VideoCapture (other OS).
         if platform.system() == 'Linux':
             self.use_picamera2 = True
-            self.picam2 = Picamera2()
-            # Set desired resolution / read from config if needed
-            self.width = 640
-            self.height = 480
-            self.fps = 30  # PiCamera2 approximate
-
-            config_params = self.picam2.create_video_configuration(
-                main={"format": 'XRGB8888', "size": (self.width, self.height)}
-            )
-            self.picam2.configure(config_params)
-            self.picam2.start()
-
+            use_imx500 = True
+            if use_imx500 and IMX500 is not None:
+                model_path = "/usr/share/imx500-models/imx500_network_ssd_mobilenetv2_fpnlite_320x320_pp.rpk"
+                imx500_obj = IMX500(model_path)
+                intrinsics = imx500_obj.network_intrinsics
+                if not intrinsics:
+                    from picamera2.devices.imx500 import NetworkIntrinsics
+                    intrinsics = NetworkIntrinsics()
+                    intrinsics.task = "object detection"
+                labels_file = "IMX500_assets/coco_labels.txt"
+                try:
+                    with open(labels_file, "r") as f:
+                        intrinsics.labels = f.read().splitlines()
+                except Exception as e:
+                    print("Error loading labels:", e)
+                self.width = 640
+                self.height = 480
+                self.fps = intrinsics.inference_rate if hasattr(intrinsics, "inference_rate") else 30
+                self.picam2 = Picamera2(imx500_obj.camera_num)
+                config_params = self.picam2.create_preview_configuration(
+                    main={"format": 'XRGB8888'},
+                    controls={"FrameRate": self.fps},
+                    buffer_count=12
+                )
+                self.picam2.configure(config_params)
+                self.picam2.start()
+                self.use_imx500 = True
+                self.imx500_obj = imx500_obj
+            else:
+                self.use_imx500 = False
+                self.picam2 = Picamera2()
+                self.width = 640
+                self.height = 480
+                self.fps = 30
+                config_params = self.picam2.create_video_configuration(
+                    main={"format": 'XRGB8888', "size": (self.width, self.height)}
+                )
+                self.picam2.configure(config_params)
+                self.picam2.start()
         else:
             self.use_picamera2 = False
             self.cap = cv2.VideoCapture(int(config.Config().get("WebcamID")))
@@ -198,18 +368,49 @@ class VideoCapture:
             self.fps = int(cam_fps) if cam_fps > 0 else 30
 
         self.streamer = Streamer(self.rtmp_url, self.width, self.height)
-        self.recorder = Recorder(self, self.width, self.height, self.fps)
+        self.recorder = Recorder(self, self.width, self.height, 12 if self.use_imx500 else self.fps)
 
     def read(self):
         """
         Returns (ret, frame).
-        If using picamera2 with 'XRGB8888' format, convert BGRA → BGR.
+        If using Picamera2 with 'XRGB8888' format, converts BGRA → BGR.
+        If using IMX500 detection, retrieves metadata and overlays bounding boxes.
+        Additionally, for detected 'car' objects, attempts license plate recognition.
         """
         if self.use_picamera2:
-            # Picamera2 returns a 4-channel (BGRA-like) image by default.
             frame = self.picam2.capture_array()
-            # Convert from BGRA to BGR
             frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+            # If IMX500 is enabled, run detection and overlay boxes
+            if hasattr(self, "use_imx500") and self.use_imx500:
+                metadata = self.picam2.capture_metadata()
+                threshold = 0.55
+                iou = 0.65
+                max_detections = 10
+                detections = parse_detections(metadata, self.picam2, self.imx500_obj, threshold, iou, max_detections)
+                labels = get_labels(self.imx500_obj.network_intrinsics)
+                for detection in detections:
+                    x, y, w, h = detection.box
+                    # Prepare label text
+                    if detection.category < len(labels):
+                        label_text = f"{labels[detection.category]} ({detection.conf:.2f})"
+                    else:
+                        label_text = f"{detection.category} ({detection.conf:.2f})"
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                    cv2.putText(frame, label_text, (x + 5, y + 15),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                    # If the detected object is a car, attempt to read its license plate.
+                    if labels[detection.category].lower() == "car":
+                        car_roi = frame[y:y+h, x:x+w]
+                        lp_text, plate_box = recognize_license_plate(car_roi)
+                        if lp_text and plate_box is not None:
+                            # Compute absolute coordinates of the plate region.
+                            plate_x = x + plate_box[0]
+                            plate_y = y + plate_box[1]
+                            plate_w, plate_h = plate_box[2], plate_box[3]
+                            cv2.rectangle(frame, (plate_x, plate_y), (plate_x + plate_w, plate_y + plate_h), (255, 0, 0), 2)
+                            cv2.putText(frame, lp_text, (plate_x, plate_y - 10),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+                            print(f"Detected License Plate {time.strftime('%Y-%m-%d %H:%M:%S')}:", lp_text, '\n')
             return True, frame
         else:
             return self.cap.read()
@@ -226,18 +427,14 @@ class VideoCapture:
 
     def start(self):
         self.streamer.start_stream()
-
         while self.running:
             ret, frame = self.read()
             if not ret or frame is None:
                 print("Error: Failed to capture frame.")
                 break
-
-            # Send frame to streamer and add to recorder buffer
             self.streamer.send_frame(frame)
             self.recorder.add_frame_to_buffer(frame)
-
-            # Optional local preview
+            # Optional: local preview (uncomment if needed)
             # cv2.imshow("Webcam", frame)
             # key = cv2.waitKey(1)
             # if key & 0xFF == ord('r'):
@@ -245,7 +442,6 @@ class VideoCapture:
             #     self.record_clip("recorded_clip.mp4")
             # if key & 0xFF == ord('q'):
             #     self.running = False
-
         self.stop()
 
     def stop(self):

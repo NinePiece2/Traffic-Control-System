@@ -80,7 +80,31 @@ class API:
             print(f"Failed to fetch stream client key. Status code: {response_stream.status_code}")
             print(f"Response Content: {response_stream.text}")
             
-    def add_traffic_violation(self, ActiveSignalID, LicensePlate, VideoURL):
+    def getDirectionAndTime(self,id):
+        self._ensure_valid_token()
+        
+        if not self.token:
+            #print("No token available to proceed.")
+            return
+        
+        stream_url = f"{config.Config().get('API_URL')}Traffic/GetDirectionAndTime?ID={id}"
+
+        headers = {
+            'Authorization': f'Bearer {self.token}'
+        }
+
+        response_stream = requests.get(stream_url, headers=headers)
+        
+        if response_stream.status_code == 200:
+            print(f"Get Direction and Time Response: {response_stream.text}")
+            data = json.loads(response_stream.text)
+            return data
+        else:
+            print(f"Failed to fetch Direction and Time. Status code: {response_stream.status_code}")
+            print(f"Response Content: {response_stream.text}")
+        
+            
+    def add_traffic_violation(self, ActiveSignalID, LicensePlate, filename):
         self._ensure_valid_token()
         
         if not self.token:
@@ -95,13 +119,13 @@ class API:
         }
         
         payload = {
-            "ActiveSignalID": ActiveSignalID,
+            "DeviceID": ActiveSignalID,
             "LicensePlate": LicensePlate,
-            "VideoURL": VideoURL
+            "Filename": filename
         }
         
         try:
-            response_violation = requests.post(stream_url, json=payload, headers = headers, verify=False)
+            response_violation = requests.post(stream_url, json=payload, headers = headers)
             
             if response_violation.status_code == 200:
                 print(f"Traffic Violation Added: {response_violation.json()}")
@@ -113,8 +137,32 @@ class API:
         except requests.exceptions.RequestException as e:
             print(f"Error occurred during POST request: {e}")
         
+    def get_guid(self):
+        self._ensure_valid_token()
+        
+        if not self.token:
+            #print("No token available to proceed.")
+            return
+        
+        stream_url = f"{config.Config().get('API_URL')}Traffic/GetGUID"
+
+        headers = {
+            'Authorization': f'Bearer {self.token}'
+        }
+
+        response_stream = requests.get(stream_url, headers=headers)
+        
+        if response_stream.status_code == 200:
+            data = json.loads(response_stream.text)
+            return data["guid"]
+        else:
+            print(f"Failed to fetch Direction and Time. Status code: {response_stream.status_code}")
+            print(f"Response Content: {response_stream.text}")
+
+
 
 if __name__ == "__main__":
     api = API()
-    api.get_stream_client_key("device1")
-    api.post_AddTrafficViolation(1,"randomtest","http://sagu.com/sagu.sagu4")
+    print(api.get_stream_client_key("device1"))
+    #print(api.add_traffic_violation(5,"test5","http://test5.com/test5"))
+    print(api.getDirectionAndTime("8"))

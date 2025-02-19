@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget gnupg ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget -O /usr/share/keyrings/raspi.gpg.key \
+RUN wget --retry-connrefused --waitretry=5 --timeout=10 -O /usr/share/keyrings/raspi.gpg.key \
     https://archive.raspberrypi.org/debian/raspberrypi.gpg.key && \
     echo "deb [signed-by=/usr/share/keyrings/raspi.gpg.key] \
     http://archive.raspberrypi.org/debian bookworm main" \
@@ -16,6 +16,8 @@ RUN apt update && apt -y upgrade
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   python3-picamera2 \
+  tesseract-ocr \
+  imx500-models \
   ffmpeg \
   && apt-get clean \
   && apt-get autoremove \
@@ -26,7 +28,7 @@ ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 RUN pip install --upgrade pip setuptools
 
-RUN pip install gpiozero rpi-lgpio
+RUN pip install gpiozero rpi-lgpio Pillow pytesseract
 
 WORKDIR /app
 COPY . /app

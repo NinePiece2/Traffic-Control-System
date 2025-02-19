@@ -1,9 +1,10 @@
-import DeviceControl.deviceControl as deviceControl
+#import DeviceControl.deviceControl as deviceControl
 import threading
 import API.api as api
 import Config.config as config
 import Video.video as video
 import json
+import time
 
 # Global variable to store the video capture instance
 video_capture_instance = None
@@ -29,9 +30,12 @@ def incident_detected():
     global video_capture_instance
     global api_instance
     video_GUID = api_instance.get_guid()
-    
+    currentDateTime = time.strftime("%Y-%m-%d %H:%M:%S")
+    filename = f"incident-{video_GUID}-{currentDateTime}.mp4"
     if video_capture_instance:
-        video_capture_instance.record_clip()  # Use the stored instance
+        video_capture_instance.record_clip(filename)  # Use the stored instance
+        print(f"Video clip saved as {filename}")
+        api_instance.add_traffic_violation(get_config_data()['Device_ID'], "Plate", filename)
     else:
         print("Error: VideoCapture instance is not running!")
 
@@ -45,8 +49,8 @@ if __name__ == "__main__":
     # Start video capture in a new thread
     video_thread = threading.Thread(target=start_video_capture)
     video_thread.start()
-
+    
     # Initialize traffic light control and needed config settings
     # Need to use 2 threads for lights and camera
-    traffic_lights_thread = threading.Thread(target=deviceControl.start_traffic_light_control)
-    traffic_lights_thread.start()
+    #traffic_lights_thread = threading.Thread(target=deviceControl.start_traffic_light_control)
+    #traffic_lights_thread.start()

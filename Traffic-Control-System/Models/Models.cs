@@ -5,14 +5,14 @@ namespace Traffic_Control_System.Models
     public class  TrafficViolationsModel
     {
         [Required]
-        public int ActiveSignalID { get; set; }
+        public string DeviceID { get; set; }
 
         [Required(ErrorMessage = "License Plate is required.")]
         [StringLength(10, ErrorMessage = "License Plate cannot exceed 10 characters.")]
         public string? LicensePlate { get; set; }
 
         [Required(ErrorMessage = "Video URL is required.")]
-        public string? VideoURL { get; set; }
+        public string? Filename { get; set; }
     }
     
     public class UserList
@@ -73,5 +73,26 @@ namespace Traffic_Control_System.Models
         public DateTime DateCreated { get; set; }
         public string? LicensePlate { get; set; }
         public string VideoURL { get; set; } = "~/VideoServiceProxy/";
+    }
+
+    public class PagingQueryModel
+    {
+        public int Take { get; set; } = 10;
+        public int Skip { get; set; } = 0;
+        public List<Filter>? Where { get; set; }
+    }
+
+    public class Filter
+    {
+        public bool IsComplex { get; set; } = false;  // Determines if this filter contains nested predicates
+        public string Condition { get; set; } = "and"; // Can be "and" or "or"
+        
+        public string Field { get; set; }  // The field name to filter on
+        public string Operator { get; set; }  // eq, greaterthan, lessthan, contains, etc.
+        public string Value { get; set; }  // The value for comparison
+
+        public bool IgnoreCase { get; set; } = false;  // Determines case sensitivity
+
+        public List<Filter>? Predicates { get; set; }  // Nested filters (for complex queries)
     }
 }

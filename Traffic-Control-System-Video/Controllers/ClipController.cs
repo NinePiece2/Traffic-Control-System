@@ -135,7 +135,7 @@ namespace Traffic_Control_System_Video.Controllers
                     var hlsFileName = Path.GetFileName(hlsFile);
                     using (var stream = new FileStream(hlsFile, FileMode.Open))
                     {
-                        await _FTPFileService.UploadFileAsync(stream, hlsFileName, Path.Combine(folderPath, "hls"));
+                        await _FTPFileService.UploadFileAsync(stream, hlsFileName, Path.Combine(folderPath, fileName.Replace(".mp4", "").Replace(" ", "-"), "hls"));
                     }
                 }
 

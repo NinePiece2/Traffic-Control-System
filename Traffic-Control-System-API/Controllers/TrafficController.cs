@@ -49,6 +49,34 @@ namespace Traffic_Control_System_API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("GetDirectionAndTime")]
+        public IActionResult GetDirectionAndTime(int id)
+        {
+            try
+            {
+                var activeSignal = _applicationDbContext.ActiveSignals
+                    .FirstOrDefault(x => x.ID == id && x.IsActive == true);
+
+                if (activeSignal == null)
+                {
+                    return NotFound($"No active signal found for ID: {id}");
+                }
+
+                return Ok(new
+                {
+                    Direction1 = activeSignal.Direction1,
+                    Direction2 = activeSignal.Direction2,
+                    Direction1Time = activeSignal.Direction1Green,
+                    Direction2Time = activeSignal.Direction2Green
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         [Route("AddTrafficViolation")]
         public IActionResult AddTrafficViolation([FromBody] TrafficViolationsModel model)
@@ -60,11 +88,19 @@ namespace Traffic_Control_System_API.Controllers
                     return BadRequest(ModelState);
                 }
 
+                var activeSignalID = _applicationDbContext.ActiveSignals
+                    .Where(x => x.DeviceStreamUID == _applicationDbContext.StreamClients
+                        .Where(c => c.DeviceStreamID == model.DeviceID)
+                        .Select(c => c.UID)
+                        .FirstOrDefault())
+                    .Select(x => x.ID)
+                    .FirstOrDefault();
+
                 var violation = new TrafficViolations
                 {
-                    ActiveSignalID = model.ActiveSignalID,
+                    ActiveSignalID = activeSignalID,
                     LicensePlate = model.LicensePlate,
-                    VideoURL = model.VideoURL,
+                    Filename = model.Filename,
                     DateCreated = DateTime.Now 
                 };
 
@@ -77,6 +113,13 @@ namespace Traffic_Control_System_API.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.ToString()}");
             }
+        }
+
+        [HttpGet]
+        [Route("GetGUID")]
+        public IActionResult GetGUID()
+        {
+            return Ok(new {GUID = Guid.NewGuid()});
         }
     }
 }

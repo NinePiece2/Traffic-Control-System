@@ -14,6 +14,7 @@ using Traffic_Control_System.Services;
 using Microsoft.AspNetCore.SignalR;
 using Traffic_Control_System.Hubs;
 using System.Security.Cryptography;
+using static Traffic_Control_System.FilterHelper;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -98,10 +99,12 @@ namespace Traffic_Control_System.Controllers
                     .FirstOrDefault())
                 .Select(s => s.DeviceStreamID)
                 .FirstOrDefault();
+            
+            var folderName = violation.Filename.Replace(".mp4", "").Replace(" ", "-");
 
             var viewModel = new ReportViewModel
             {
-                VideoURL = $"/VideoServiceProxy/Clip/GetFile/{device}/hls/playlist.m3u8",
+                VideoURL = $"/VideoServiceProxy/Clip/GetFile/{device}/{folderName}/hls/playlist.m3u8",
                 DateCreated = violation.DateCreated,
                 LicensePlate = violation.LicensePlate
             };
@@ -152,24 +155,39 @@ namespace Traffic_Control_System.Controllers
         }
 
 
-            public IActionResult IncidentReportsList(int signalID)
-            {
-                // Query the TrafficViolations table based on the ActiveSignalID
-                var violations = _applicationDbContext.TrafficViolations
-                    .Where(v => v.ActiveSignalID == signalID)
-                    .Select(v => new TrafficViolation
-                    {
-                        UID = v.UID,
-                        DateCreated = v.DateCreated,
-                        LicensePlate = v.LicensePlate
-                    })
-                    .ToList();
+        private string GetTimeZoneAbbreviation(TimeZoneInfo timeZone)
+        {
+            return new string(timeZone.StandardName.Where(char.IsUpper).ToArray());
+        }
 
-                // Return the result as JSON with the count
-                return Json(new { result = violations, count = violations.Count });
+
+        public IActionResult IncidentReportsList(int signalID, [FromBody] PagingQueryModel pagingModel)
+        {
+            var query = _applicationDbContext.TrafficViolations
+                .Where(v => v.ActiveSignalID == signalID)
+                .OrderByDescending(v => v.DateCreated)
+                .AsEnumerable();
+
+            // Then apply the filter:
+            if (pagingModel.Where != null && pagingModel.Where.Count > 0)
+            {
+                var filterExpression = ApplyFilters<TrafficViolations>(pagingModel.Where, "and").Compile();
+                query = query.Where(filterExpression);
             }
 
+            int totalCount = query.Count();
 
+            var violations = query.Skip(pagingModel.Skip).Take(pagingModel.Take)
+                .Select(v => new TrafficViolation
+                {
+                    UID = v.UID,
+                    DateCreated = v.DateCreated,
+                    LicensePlate = v.LicensePlate
+                })
+                .ToList();
+
+            return Json(new { result = violations, count = totalCount });
+        }
 
         public IActionResult IncidentReport(int ID)
         {
@@ -177,14 +195,13 @@ namespace Traffic_Control_System.Controllers
             if (ID == null)
             {
 
-                return NotFound(); // Or handle the case where the report isn't found
+                return NotFound();
             }
 
             var violation = new TrafficViolationsViewModel{
                 ActiveSignalID=ID
             };
 
-            // Pass the data to the view (or you can create a ViewModel)
             return View(violation);
         }
 
