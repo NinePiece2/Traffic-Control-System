@@ -68,7 +68,7 @@
     }
 
     .common-btn {
-        font-size: 0.7rem;  /* Font size based on viewport width */
+        font-size: 0.9rem;  /* Font size based on viewport width */
         font-weight: bold;
         padding: 0.2rem 0.4rem; /* Padding based on viewport width */
         border: none;
@@ -106,6 +106,7 @@
     }
 
     .btn-add {
+        font-size: 1.25rem;
         background-color: rgb(235, 179, 74);
     }
 
@@ -245,12 +246,11 @@
                             dataManger.Url("/Home/TrafficSignalsList").Key("ID").CrossDomain(false).Adaptor("UrlAdaptor");
                         })
                         .Columns(col => {
-                            col.Field("id").HeaderText("ID").Width("120").AllowFiltering(false).Add();
+                            col.Field("id").HeaderText("ID").Width("120").AllowFiltering(false).Visible(false).Add();
                             col.Field("Address").HeaderText("Address").Width("150").AllowFiltering(true).Add();
                             col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").AllowFiltering(false).Add();
-                            
-                            col.HeaderText("Actions").Template("<button class='btn common-btn btn-access' onclick='onAccess(this)'>Access</button> <button class='btn common-btn btn-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
-                            
+                            col.Field("LatestViolationDate").HeaderText("Latest Violation").Width("150").AllowFiltering(false).Add();
+                            col.HeaderText("Actions").Template("<button class='btn common-btn btn-access' onclick='onAccess(this)'>Access</button> <button class='btn common-btn btn-live' onclick='onLive(this)'>Live</button>").Width("100").AllowFiltering(false).Add();   
                         })
                         .AllowPaging()
                         .PageSettings(ps => ps.PageSize(10))
@@ -259,12 +259,30 @@
                         .AllowFiltering()
                         .FilterSettings(fs => fs.Type(Syncfusion.EJ2.Grids.FilterType.Menu)
                             .Columns(new string[] { "Address" }))
+                        .QueryCellInfo("queryCellInfo")
                         .Render()
                     )
                 </div>
         </div> 
     </div>   
 </div>
+
+<script>
+    function queryCellInfo(args) {
+            if (args.column.field === "LatestViolationDate") {
+                var dateValue = args.data.latestViolationDate;
+                if (dateValue) {
+                    var localZone = moment.tz.guess();
+                    var cleanedDate = dateValue.toString().replace(/\sGMT.*$/, '');
+                    var utcDate = moment.utc(cleanedDate, "ddd MMM DD YYYY HH:mm:ss");
+                    var localDate = utcDate.tz(localZone).format("MM/DD/YYYY HH:mm:ss z");
+
+                    args.cell.innerText = localDate;
+                }
+                else{args.cell.innerText = "No Violations";}
+            }
+        }
+</script>
 
 @section Scripts{
 
@@ -316,7 +334,7 @@
 
                 // Proceed with AJAX request
                 $.ajax({
-                    url: '@Url.Action("SaveTrafficSignal", "Home")', // Correct ASP.NET MVC routing
+                    url: '@Url.Action("SaveTrafficSignal", "Home")',
                     type: 'POST',
                     contentType: 'application/json; charset=utf-8',
                     data: JSON.stringify(signalData),
@@ -355,28 +373,25 @@
                 // Open the modal first
                 $("#editTrafficSignalModal").modal("show");  // Open the modal (bootstrap)
 
-                // Populate fields immediately after the modal shows
-                setTimeout(function() {
-                    // Fix field names based on data object (use lowercase keys from args.data)
-                    $("#updatedSignalAddress").val(args.data.address ?? ""); 
-                    $("#updatedSignalDirection1").val(args.data.direction1 ?? ""); 
-                    $("#updatedDirection1Green").val(args.data.direction1Green ?? ""); 
-                    $("#updatedSignalDirection2").val(args.data.direction2 ?? ""); 
-                    $("#updatedDirection2Green").val(args.data.direction2Green ?? ""); 
-                    $("#updatedDeviceStreamUID").val(args.data.deviceStreamUID ?? ""); 
-                    $("#updatedIsActive").prop("checked", args.data.isActive ?? false); // Ensure checkbox is correctly set
+                // Fix field names based on data object (use lowercase keys from args.data)
+                $("#updatedSignalAddress").val(args.data.address ?? ""); 
+                $("#updatedSignalDirection1").val(args.data.direction1 ?? ""); 
+                $("#updatedDirection1Green").val(args.data.direction1Green ?? ""); 
+                $("#updatedSignalDirection2").val(args.data.direction2 ?? ""); 
+                $("#updatedDirection2Green").val(args.data.direction2Green ?? ""); 
+                $("#updatedDeviceStreamUID").val(args.data.deviceStreamUID ?? ""); 
+                $("#updatedIsActive").prop("checked", args.data.isActive ?? false); // Ensure checkbox is correctly set
 
-                    // Log values after fields are populated
-                    console.log("Modal fields populated with data:", {
-                        address: $("#updatedSignalAddress").val(),
-                        direction1: $("#updatedSignalDirection1").val(),
-                        direction1Green: $("#updatedDirection1Green").val(),
-                        direction2: $("#updatedSignalDirection2").val(),
-                        direction2Green: $("#updatedDirection2Green").val(),
-                        deviceStreamUID: $("#updatedDeviceStreamUID").val(),
-                        isActive: $("#updatedIsActive").prop("checked")
-                    });
-                }, 500);  // Delay setting values to ensure modal has fully opened
+                // Log values after fields are populated
+                console.log("Modal fields populated with data:", {
+                    address: $("#updatedSignalAddress").val(),
+                    direction1: $("#updatedSignalDirection1").val(),
+                    direction1Green: $("#updatedDirection1Green").val(),
+                    direction2: $("#updatedSignalDirection2").val(),
+                    direction2Green: $("#updatedDirection2Green").val(),
+                    deviceStreamUID: $("#updatedDeviceStreamUID").val(),
+                    isActive: $("#updatedIsActive").prop("checked")
+                });
             };
         });
 

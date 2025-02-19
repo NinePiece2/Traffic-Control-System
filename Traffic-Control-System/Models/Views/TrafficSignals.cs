@@ -10,5 +10,6 @@ namespace Traffic_Control_System.Models
         public int? Direction2Green { get; set; }
         public int? DeviceStreamUID { get; set; }
         public int? NumofViolations { get; set; }
+        public DateTime? LatestViolationDate { get; set; }
     }
 }
