@@ -144,23 +144,33 @@ namespace Traffic_Control_System.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public IActionResult TrafficSignalsList()
+        [HttpPost]
+        public IActionResult TrafficSignalsList([FromBody] PagingQueryModel pagingModel)
         {
-            var userList = _applicationDbContext.TrafficSignals
+            Console.WriteLine(JsonConvert.SerializeObject(pagingModel));
+            if (pagingModel == null)
+            {
+                return BadRequest("Invalid paging model.");
+            }
+            var query = _applicationDbContext.TrafficSignals
+                .OrderBy(s => s.ID)
+                .AsEnumerable();
+
+            if (pagingModel.Where != null && pagingModel.Where.Count > 0)
+            {
+                var filterExpression = ApplyFilters<TrafficSignals>(pagingModel.Where, "and").Compile();
+                query = query.Where(filterExpression);
+            }
+
+            int totalCount = query.Count();
+
+            var signals = query.Skip(pagingModel.Skip).Take(pagingModel.Take)
                 .ToList();
             
-            return Json(new { result = userList, count = userList.Count });
-
-
+            return Json(new { result = signals, count = totalCount });
         }
 
-
-        private string GetTimeZoneAbbreviation(TimeZoneInfo timeZone)
-        {
-            return new string(timeZone.StandardName.Where(char.IsUpper).ToArray());
-        }
-
-
+        [HttpPost]
         public IActionResult IncidentReportsList(int signalID, [FromBody] PagingQueryModel pagingModel)
         {
             var query = _applicationDbContext.TrafficViolations

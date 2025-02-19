@@ -242,22 +242,20 @@
                     @(Html.EJS().Grid("adminSignalGrid")
                         .Height("400px")
                         .DataSource(dataManger => {
-                            dataManger.Url("/Home/TrafficSignalsList").Key("id").CrossDomain(false);
-                            dataManger.UpdateUrl("/Admin/UpdateTrafficSignalsList").Adaptor("UrlAdaptor");
+                            dataManger.Url("/Home/TrafficSignalsList").Key("ID").CrossDomain(false).Adaptor("UrlAdaptor");
                         })
                         .Columns(col => {
                             col.Field("id").HeaderText("ID").Width("120").Add();
                             col.Field("Address").HeaderText("Address").Width("150").Add();
                             col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").Add();
                             
-                            //button to incident report of specific violation and footage
                             col.HeaderText("Actions").Template("<button class='btn common-btn btn-access' onclick='onAccess(this)'>Access</button> <button class='btn common-btn btn-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
                             
                         })
                         .AllowPaging()
-                        .EditSettings(editSettings => editSettings
-                            .AllowEditing(false)
-                        )
+                        .PageSettings(ps => ps.PageSize(10))
+                        .AllowFiltering()
+                        .FilterSettings(fs => fs.Type(Syncfusion.EJ2.Grids.FilterType.Menu))
                         .Render()
                     )
                 </div>

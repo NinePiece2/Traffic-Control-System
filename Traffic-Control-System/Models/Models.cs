@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Traffic_Control_System.Models
 {
@@ -77,6 +78,7 @@ namespace Traffic_Control_System.Models
 
     public class PagingQueryModel
     {
+        public bool requiresCounts { get; set; } = false;
         public int Take { get; set; } = 10;
         public int Skip { get; set; } = 0;
         public List<Filter>? Where { get; set; }
@@ -84,15 +86,12 @@ namespace Traffic_Control_System.Models
 
     public class Filter
     {
-        public bool IsComplex { get; set; } = false;  // Determines if this filter contains nested predicates
-        public string Condition { get; set; } = "and"; // Can be "and" or "or"
-        
-        public string Field { get; set; }  // The field name to filter on
-        public string Operator { get; set; }  // eq, greaterthan, lessthan, contains, etc.
-        public string Value { get; set; }  // The value for comparison
-
-        public bool IgnoreCase { get; set; } = false;  // Determines case sensitivity
-
-        public List<Filter>? Predicates { get; set; }  // Nested filters (for complex queries)
+        public bool IsComplex { get; set; } = false;
+        public string Condition { get; set; } = "and";
+        public string? Field { get; set; }
+        public string? Operator { get; set; }
+        public object? Value { get; set; }
+        public bool IgnoreCase { get; set; } = false;
+        public List<Filter>? Predicates { get; set; }
     }
 }
