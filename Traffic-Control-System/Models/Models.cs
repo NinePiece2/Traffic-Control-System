@@ -82,6 +82,7 @@ namespace Traffic_Control_System.Models
         public int Take { get; set; } = 10;
         public int Skip { get; set; } = 0;
         public List<Filter>? Where { get; set; }
+        public List<SortDescriptor>? Sorted { get; set; }
     }
 
     public class Filter
@@ -90,8 +91,15 @@ namespace Traffic_Control_System.Models
         public string Condition { get; set; } = "and";
         public string? Field { get; set; }
         public string? Operator { get; set; }
-        public object? Value { get; set; }
+        public string? Value { get; set; }
         public bool IgnoreCase { get; set; } = false;
         public List<Filter>? Predicates { get; set; }
     }
+
+    public class SortDescriptor
+    {
+        public string Name { get; set; }
+        public string Direction { get; set; }
+    }
+
 }

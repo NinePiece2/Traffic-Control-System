@@ -245,17 +245,20 @@
                             dataManger.Url("/Home/TrafficSignalsList").Key("ID").CrossDomain(false).Adaptor("UrlAdaptor");
                         })
                         .Columns(col => {
-                            col.Field("id").HeaderText("ID").Width("120").Add();
-                            col.Field("Address").HeaderText("Address").Width("150").Add();
-                            col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").Add();
+                            col.Field("id").HeaderText("ID").Width("120").AllowFiltering(false).Add();
+                            col.Field("Address").HeaderText("Address").Width("150").AllowFiltering(true).Add();
+                            col.Field("NumofViolations").HeaderText("Number of Violations").Width("150").AllowFiltering(false).Add();
                             
                             col.HeaderText("Actions").Template("<button class='btn common-btn btn-access' onclick='onAccess(this)'>Access</button> <button class='btn common-btn btn-live' onclick='onLive(this)'>Live</button>").Width("100").Add();
                             
                         })
                         .AllowPaging()
                         .PageSettings(ps => ps.PageSize(10))
+                        .AllowSorting()
+                        .SortSettings(sort => sort.Columns(new { field = "NumofViolations", direction = "descending" }))
                         .AllowFiltering()
-                        .FilterSettings(fs => fs.Type(Syncfusion.EJ2.Grids.FilterType.Menu))
+                        .FilterSettings(fs => fs.Type(Syncfusion.EJ2.Grids.FilterType.Menu)
+                            .Columns(new string[] { "Address" }))
                         .Render()
                     )
                 </div>

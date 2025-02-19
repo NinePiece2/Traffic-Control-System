@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.SignalR;
 using Traffic_Control_System.Hubs;
 using System.Security.Cryptography;
 using static Traffic_Control_System.FilterHelper;
+using System.Linq.Expressions;
 
 namespace Traffic_Control_System.Controllers
 {
@@ -147,28 +148,52 @@ namespace Traffic_Control_System.Controllers
         [HttpPost]
         public IActionResult TrafficSignalsList([FromBody] PagingQueryModel pagingModel)
         {
-            Console.WriteLine(JsonConvert.SerializeObject(pagingModel));
-            if (pagingModel == null)
-            {
-                return BadRequest("Invalid paging model.");
-            }
-            var query = _applicationDbContext.TrafficSignals
-                .OrderBy(s => s.ID)
-                .AsEnumerable();
+            var query = _applicationDbContext.TrafficSignals.AsEnumerable();
 
+            // Then apply the filter:
             if (pagingModel.Where != null && pagingModel.Where.Count > 0)
             {
                 var filterExpression = ApplyFilters<TrafficSignals>(pagingModel.Where, "and").Compile();
                 query = query.Where(filterExpression);
             }
 
-            int totalCount = query.Count();
+            var query2 = query.AsQueryable();
 
-            var signals = query.Skip(pagingModel.Skip).Take(pagingModel.Take)
-                .ToList();
-            
+            // Apply sorting if provided
+            if (pagingModel.Sorted != null && pagingModel.Sorted.Any())
+            {
+                foreach (var sort in pagingModel.Sorted)
+                {
+                    var parameter = Expression.Parameter(typeof(TrafficSignals), "s");
+                    var property = Expression.Property(parameter, sort.Name);
+                    var lambda = Expression.Lambda(property, parameter);
+
+                    string methodName = sort.Direction == "ascending" ? "OrderBy" : "OrderByDescending";
+                    var methodCallExpression = Expression.Call(
+                        typeof(Queryable),
+                        methodName,
+                        new Type[] { typeof(TrafficSignals), property.Type },
+                        query2.Expression,
+                        lambda
+                    );
+
+                    query2 = query2.Provider.CreateQuery<TrafficSignals>(methodCallExpression);
+                }
+            }
+            else
+            {
+                // Default sorting if none is provided
+                query = query.OrderBy(s => s.ID);
+            }
+
+            int totalCount = query2.Count();
+
+            var signals = query2.Skip(pagingModel.Skip).Take(pagingModel.Take).ToList();
+
             return Json(new { result = signals, count = totalCount });
         }
+
+
 
         [HttpPost]
         public IActionResult IncidentReportsList(int signalID, [FromBody] PagingQueryModel pagingModel)
