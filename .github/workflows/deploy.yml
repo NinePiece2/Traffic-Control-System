@@ -12,12 +12,23 @@ on:
 
 concurrency:
   group: deploy-environment
-  cancel-in-progress: false  # Ensures ongoing deployments are not canceled
+  cancel-in-progress: false  # Prevents new deployments from canceling an ongoing one
 
 jobs:
   deploy:
     runs-on: self-hosted
     steps:
+      - name: Check for Running Deployments
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUNNING_WORKFLOWS=$(gh run list --repo ${{ github.repository }} --workflow deploy.yml --status in_progress --json databaseId --jq 'length')
+          if [ "$RUNNING_WORKFLOWS" -gt 0 ]; then
+            echo "🚨 Another deployment is already running. Exiting."
+            exit 0
+          fi
+        shell: bash
+
       - name: Checkout code
         uses: actions/checkout@v4
 
