@@ -18,11 +18,37 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Wait for all builds to complete
-        uses: fountainhead/action-wait-for-check@v1.2.0
+        uses: actions/github-script@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: build
-          ref: ${{ github.ref }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const checkRuns = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.ref,
+            });
+
+            const builds = checkRuns.data.check_runs.filter(check => check.name.includes("build"));
+            
+            console.log("Waiting for all builds:", builds.map(b => b.name));
+
+            let allCompleted = false;
+            while (!allCompleted) {
+              await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10s before retrying
+
+              const updatedChecks = await github.rest.checks.listForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: context.ref,
+              });
+
+              const updatedBuilds = updatedChecks.data.check_runs.filter(check => check.name.includes("build"));
+              allCompleted = updatedBuilds.every(b => b.status === "completed");
+
+              console.log("Current statuses:", updatedBuilds.map(b => `${b.name}: ${b.status}`));
+            }
+
+            console.log("All builds completed!");
 
       - name: Pull latest Docker images
         run: docker-compose pull
