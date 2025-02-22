@@ -160,7 +160,7 @@ namespace Traffic_Control_System_Video
                     {
                         options.OutputPathResolver = new HlsOutputPathResolver(outputDir);
                         options.SegmentListSize = 5;
-                        options.CleanupDelay = TimeSpan.FromSeconds(10.0);
+                        options.CleanupDelay = TimeSpan.FromSeconds(5.0);
                         options.MinSegmentLength = TimeSpan.FromSeconds(0.5);
                     })
             );

@@ -14,7 +14,6 @@
         align-items: center;
         width: 100%;
         height: 75vh;
-        border: 1px solid red;
         padding: 5px;
         box-sizing: border-box;
     }
@@ -26,15 +25,14 @@
         width: 40%;
         height: 100%;
         overflow: hidden;
-        border: 1px solid yellow;
         margin-right: 10px;
         aspect-ratio: 16 / 9;
         position: relative;
     }
 
-    .video-container video, .video-container img {
+    .video-container video, .video-container img, .video-container .vjs-tech, .video-container .video-js{
         width: 100%;
-        object-fit: cover;
+        object-fit: contain;
         position: absolute;
     }
 
@@ -47,7 +45,6 @@
         width: 50%;
         height: 100%;
         max-height: 100%;
-        border: 1px solid blue;
     }
 
     .intersection-info {
@@ -225,29 +222,23 @@
     var player = videojs('my-video', {
         controls: true,
         autoplay: false,
+        muted: true,
         preload: 'auto',
         techOrder: ['html5']
     });
 
     player.play();
 
-    player.on('canplay', function () {
-        console.log("Video is ready, attempting to play...");
-        player.play().catch(error => {
-            console.warn("Autoplay failed due to browser restrictions:", error);
-        });
-    });
-
     player.on('error', function () {
-            console.error("Video error detected!");
+            //console.error("Video error detected!");
             
             // Hide the video player and show the image
             document.getElementById("my-video").style.display = "none";
             document.getElementById("error-image").style.display = "block";
 
-            // Retry the video every 2 seconds
+            // Retry the video every 5 seconds
             let retryInterval = setInterval(() => {
-                console.log("Retrying video...");
+                //console.log("Retrying video...");
                 player.src(player.currentSrc()); // Reload the same video source
                 player.load();
                 player.play().then(() => {
@@ -260,9 +251,9 @@
                     // Stop retrying since the video is working
                     clearInterval(retryInterval);
                 }).catch((err) => {
-                    console.warn("Retry failed, still an error:", err);
+                    //console.warn("Retry failed, still an error:", err);
                 });
-            }, 2000);
+            }, 3000);
         });
 
     // Initial Timers
