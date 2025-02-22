@@ -129,7 +129,7 @@ namespace Traffic_Control_System_Video.Controllers
                 }
 
                 // Upload the HLS files (playlist and segments) to FTP
-                var hlsFiles = Directory.GetFiles(hlsFolderPath);
+                var hlsFiles = Directory.GetFiles(hlsFolderPath).Where(file => !file.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)).ToArray();
                 foreach (var hlsFile in hlsFiles)
                 {
                     var hlsFileName = Path.GetFileName(hlsFile);
