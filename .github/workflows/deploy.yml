@@ -10,6 +10,10 @@ on:
     types: [build-completed]
   workflow_dispatch:
 
+concurrency:
+  group: deploy-environment
+  cancel-in-progress: false  # Ensures ongoing deployments are not canceled
+
 jobs:
   deploy:
     runs-on: self-hosted
