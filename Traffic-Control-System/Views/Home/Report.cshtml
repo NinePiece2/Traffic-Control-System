@@ -6,6 +6,46 @@
 
 <link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
 <script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
+<style>
+    .page-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 75vh;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+
+    .video-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40%;
+        height: 100%;
+        overflow: hidden;
+        margin-right: 10px;
+        aspect-ratio: 16 / 9;
+        position: relative;
+    }
+
+    .video-container video, .video-container img, .video-container .vjs-tech, .video-container .video-js{
+        width: 100%;
+        object-fit: contain;
+        position: absolute;
+    }
+
+    .info-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        margin-left: 10px;
+        width: 50%;
+        height: 100%;
+        max-height: 100%;
+    }
+</style>
 
 <div class="container">
     <div class="row justify-content-center">
@@ -20,12 +60,12 @@
         </div>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" data-setup='{}'>
-                <source src="@Model.VideoURL" type="application/x-mpegURL">
-            </video>
-        </div>
+    <div class="video-container">
+        <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" data-setup='{}'>
+            <source src="@Model.VideoURL" type="application/x-mpegURL">
+        </video>
+        <img id="error-image" src="/Images/error-placeholder.jpg" alt="Video unavailable" 
+            style="display: none; position: relative;">
     </div>
 </div>
 
@@ -33,9 +73,38 @@
     var player = videojs('my-video', {
         controls: true,
         autoplay: false,
+        muted: true,
+        loop: true,
         preload: 'auto',
         techOrder: ['html5']
     });
 
     player.play();
+
+    player.on('error', function () {
+        //console.error("Video error detected!");
+        
+        // Hide the video player and show the image
+        document.getElementById("my-video").style.display = "none";
+        document.getElementById("error-image").style.display = "block";
+
+        // Retry the video every 5 seconds
+        let retryInterval = setInterval(() => {
+            //console.log("Retrying video...");
+            player.src(player.currentSrc()); // Reload the same video source
+            player.load();
+            player.play().then(() => {
+                console.log("Video is now playing!");
+
+                // Show the video and hide the image
+                document.getElementById("my-video").style.display = "block";
+                document.getElementById("error-image").style.display = "none";
+
+                // Stop retrying since the video is working
+                clearInterval(retryInterval);
+            }).catch((err) => {
+                //console.warn("Retry failed, still an error:", err);
+            });
+        }, 3000);
+    });
 </script>

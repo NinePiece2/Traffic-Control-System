@@ -230,31 +230,31 @@
     player.play();
 
     player.on('error', function () {
-            //console.error("Video error detected!");
-            
-            // Hide the video player and show the image
-            document.getElementById("my-video").style.display = "none";
-            document.getElementById("error-image").style.display = "block";
+        //console.error("Video error detected!");
+        
+        // Hide the video player and show the image
+        document.getElementById("my-video").style.display = "none";
+        document.getElementById("error-image").style.display = "block";
 
-            // Retry the video every 5 seconds
-            let retryInterval = setInterval(() => {
-                //console.log("Retrying video...");
-                player.src(player.currentSrc()); // Reload the same video source
-                player.load();
-                player.play().then(() => {
-                    console.log("Video is now playing!");
+        // Retry the video every 5 seconds
+        let retryInterval = setInterval(() => {
+            //console.log("Retrying video...");
+            player.src(player.currentSrc()); // Reload the same video source
+            player.load();
+            player.play().then(() => {
+                console.log("Video is now playing!");
 
-                    // Show the video and hide the image
-                    document.getElementById("my-video").style.display = "block";
-                    document.getElementById("error-image").style.display = "none";
+                // Show the video and hide the image
+                document.getElementById("my-video").style.display = "block";
+                document.getElementById("error-image").style.display = "none";
 
-                    // Stop retrying since the video is working
-                    clearInterval(retryInterval);
-                }).catch((err) => {
-                    //console.warn("Retry failed, still an error:", err);
-                });
-            }, 3000);
-        });
+                // Stop retrying since the video is working
+                clearInterval(retryInterval);
+            }).catch((err) => {
+                //console.warn("Retry failed, still an error:", err);
+            });
+        }, 3000);
+    });
 
     // Initial Timers
     var green1 = 90;  // 1 minute 30 seconds for green in Direction 1
