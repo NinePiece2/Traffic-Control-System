@@ -32,8 +32,13 @@
         color: #050505 !important;
         background-color: orange;
         border-color: orange;
-        font-size: 0.75rem; /* UPDATED: Smaller text */
+        font-size: 0.9rem; /* UPDATED: Smaller text */
         padding: 0.2rem 0.4rem; /* UPDATED: Reduced padding */
+    }
+
+    .btn-secondary{
+        font-size: 0.9rem;
+        padding: 0.2rem 0.4rem;
     }
 
     .btn-primary:focus {
@@ -160,20 +165,20 @@
                         <input type="text" class="form-control" id="signalAddress" placeholder="Enter traffic signal address" required>
                     </div>
                     <div class="form-group">
-                        <label for="signalDirection">Direction1:</label>
+                        <label for="signalDirection">Direction 1:</label>
                         <input type="text" class="form-control" id="signalDirection" placeholder="Enter direction" required>
                     </div>
                     <div class="form-group">
-                        <label for="signalGreen">GreenLight1:</label>
-                        <input type="text" class="form-control" id="signalGreen" placeholder="Enter green light time" required>
+                        <label for="signalGreen">Green Light Time (Direction 1):</label>
+                        <input type="text" class="form-control" id="signalGreen" placeholder="Enter green light time" value="60" required>
                     </div>
                     <div class="form-group">
                         <label for="signalDirection2">Direction2:</label>
                         <input type="text" class="form-control" id="signalDirection2" placeholder="Enter direction" required>
                     </div>
                     <div class="form-group mb-4">
-                        <label for="signalGreen2">GreenLight2:</label>
-                        <input type="text" class="form-control" id="signalGreen2" placeholder="Enter green light time" required>
+                        <label for="signalGreen2">Green Light Time (Direction 2):</label>
+                        <input type="text" class="form-control" id="signalGreen2" placeholder="Enter green light time" value="60" required>
                     </div>
                     <button type="button" class="btn btn-primary" id="saveTrafficSignal">Save, Next Page</button>
                 </form>

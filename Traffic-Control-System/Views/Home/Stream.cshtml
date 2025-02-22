@@ -28,12 +28,14 @@
         overflow: hidden;
         border: 1px solid yellow;
         margin-right: 10px;
+        aspect-ratio: 16 / 9;
+        position: relative;
     }
 
-    .video-container video {
+    .video-container video, .video-container img {
         width: 100%;
-        height: 100%;
         object-fit: cover;
+        position: absolute;
     }
 
     .info-container {
@@ -155,16 +157,18 @@
         <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" data-setup='{}'>
             <source src="@Model.VideoURL" type="application/x-mpegURL">
         </video>
+        <img id="error-image" src="/Images/error-placeholder.jpg" alt="Video unavailable" 
+            style="display: none; position: relative;">
     </div>
 
     <div class="info-container">
         <div class="intersection-info">
-            <p><strong>INTERSECTION NAME</strong></p>
+            <p><strong>@Model.Intersection</strong></p>
         </div>
 
         <!-- Direction 1 -->
         <div class="direction-container">
-            <p><strong>Direction 1:</strong> placeholder 1</p>
+            <p><strong>Direction 1:</strong> @Model.Direction1</p>
         </div>
         <div class="traffic-light1">
             <div class="green1"></div>
@@ -189,7 +193,7 @@
 
         <!-- Direction 2 -->
         <div class="direction-container">
-            <p><strong>Direction 2:</strong> placeholder 2</p>
+            <p><strong>Direction 2:</strong> @Model.Direction2</p>
         </div>
         <div class="traffic-light2">
             <div class="green2"></div>
@@ -226,6 +230,40 @@
     });
 
     player.play();
+
+    player.on('canplay', function () {
+        console.log("Video is ready, attempting to play...");
+        player.play().catch(error => {
+            console.warn("Autoplay failed due to browser restrictions:", error);
+        });
+    });
+
+    player.on('error', function () {
+            console.error("Video error detected!");
+            
+            // Hide the video player and show the image
+            document.getElementById("my-video").style.display = "none";
+            document.getElementById("error-image").style.display = "block";
+
+            // Retry the video every 2 seconds
+            let retryInterval = setInterval(() => {
+                console.log("Retrying video...");
+                player.src(player.currentSrc()); // Reload the same video source
+                player.load();
+                player.play().then(() => {
+                    console.log("Video is now playing!");
+
+                    // Show the video and hide the image
+                    document.getElementById("my-video").style.display = "block";
+                    document.getElementById("error-image").style.display = "none";
+
+                    // Stop retrying since the video is working
+                    clearInterval(retryInterval);
+                }).catch((err) => {
+                    console.warn("Retry failed, still an error:", err);
+                });
+            }, 2000);
+        });
 
     // Initial Timers
     var green1 = 90;  // 1 minute 30 seconds for green in Direction 1

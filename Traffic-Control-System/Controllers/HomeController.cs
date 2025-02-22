@@ -63,20 +63,25 @@ namespace Traffic_Control_System.Controllers
             {
                 return BadRequest("ID Can Not be Null");
             }
+            
+            var signal = _applicationDbContext.TrafficSignals
+                .Where(ts => ts.DeviceStreamUID == Int32.Parse(ID))
+                .FirstOrDefault();
 
-            int IDint = Int32.Parse(ID);
             var device = _applicationDbContext.StreamClients
-                .Where(s => s.UID == _applicationDbContext.TrafficSignals
-                    .Where(ts => ts.DeviceStreamUID == IDint)
-                    .Select(ts => ts.DeviceStreamUID)
-                    .FirstOrDefault())
+                .Where(s => s.UID == signal.DeviceStreamUID)
                 .Select(s => s.DeviceStreamID)
                 .FirstOrDefault();
 
 
             var viewModel = new VideStreamViewModel
             {
-                VideoURL = $"/VideoServiceProxy/Stream/{device}/output.m3u8"
+                VideoURL = $"/VideoServiceProxy/Stream/{device}/output.m3u8",
+                Intersection = signal.Address,
+                Direction1 = signal.Direction1,
+                Direction2 = signal.Direction2,
+                Direction1GreenTime = signal.Direction1Green,
+                Direction2GreenTime = signal.Direction2Green
             };
             return View(viewModel);
         }

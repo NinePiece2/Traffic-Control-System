@@ -67,6 +67,11 @@ namespace Traffic_Control_System.Models
     public class VideStreamViewModel
     {
         public string VideoURL { get; set; } = "~/VideoServiceProxy/";
+        public string? Intersection { get; set; }
+        public string? Direction1 { get; set; }
+        public string? Direction2 { get; set; }
+        public int? Direction1GreenTime { get; set; }
+        public int? Direction2GreenTime { get; set; }
     }
 
     public class ReportViewModel
