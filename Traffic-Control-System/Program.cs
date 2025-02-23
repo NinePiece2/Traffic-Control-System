@@ -5,7 +5,6 @@ using Traffic_Control_System.Data;
 using Traffic_Control_System.Models;
 using Traffic_Control_System.Services;
 using Traffic_Control_System.Hubs;
-using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace Traffic_Control_System
