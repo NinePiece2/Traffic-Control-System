@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
 using Traffic_Control_System.Models;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace Traffic_Control_System.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IDataProtectionKeyContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -19,6 +20,8 @@ namespace Traffic_Control_System.Data
         public DbSet<TrafficSignals> TrafficSignals { get; set; }
         public DbSet<TrafficViolations> TrafficViolations { get; set; }
         public DbSet<ActiveSignals> ActiveSignals { get; set; }
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
