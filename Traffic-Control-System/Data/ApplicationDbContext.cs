@@ -21,6 +21,7 @@ namespace Traffic_Control_System.Data
         public DbSet<TrafficViolations> TrafficViolations { get; set; }
         public DbSet<ActiveSignals> ActiveSignals { get; set; }
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
+        public DbSet<SignalRClient> SignalRClient { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -66,6 +67,11 @@ namespace Traffic_Control_System.Data
             builder.Entity<ActiveSignals>(entity =>
             {
                 entity.HasKey(e => e.ID);
+            });
+
+            builder.Entity<SignalRClient>(entity =>
+            {
+                entity.HasKey(e => e.UID);
             });
         }
     }

@@ -1,59 +1,76 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
+using Traffic_Control_System.Data;
+using Traffic_Control_System.Models;
 
 namespace Traffic_Control_System.Hubs
 {
     public class ControlHub : Hub
     {
-        //// Thread-safe dictionary to map unique identifiers to connection IDs
-        //private static readonly ConcurrentDictionary<string, string> _clientConnections = new();
+        private readonly ApplicationDbContext _context;
 
-        //// Called when a client connects
-        //public override Task OnConnectedAsync()
-        //{
-        //    Console.WriteLine($"Client connected: {Context.ConnectionId}");
-        //    return base.OnConnectedAsync();
-        //}
+        public ControlHub(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-        //// Called when a client disconnects
-        //public override Task OnDisconnectedAsync(Exception exception)
-        //{
-        //    string connectionId = Context.ConnectionId;
-
-        //    // Remove the connection ID from the dictionary
-        //    foreach (var pair in _clientConnections)
-        //    {
-        //        if (pair.Value == connectionId)
-        //        {
-        //            _clientConnections.TryRemove(pair.Key, out _);
-        //            break;
-        //        }
-        //    }
-
-        //    Console.WriteLine($"Client disconnected: {connectionId}");
-        //    return base.OnDisconnectedAsync(exception);
-        //}
-
-        //// Method for the client to register with a unique identifier
-        //public Task RegisterClient(string clientId)
-        //{
-        //    string connectionId = Context.ConnectionId;
-
-        //    // Map the unique identifier to the current connection ID
-        //    _clientConnections[clientId] = connectionId;
-
-        //    Console.WriteLine($"Registered client '{clientId}' with connection ID '{connectionId}'");
-        //    return Task.CompletedTask;
-        //}
-
-        // Send a message to a specific client using their unique identifier
-
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             string connectionId = Context.ConnectionId;
-            Clients.Client(connectionId).SendAsync("ReceiveConnectionId", connectionId);
+            await Clients.Client(connectionId).SendAsync("ReceiveConnectionId", connectionId);
 
-            return base.OnConnectedAsync();
+            string clientType = Context.GetHttpContext()?.Request.Query["clientType"] ?? "Unknown";
+            int? activeSignalId = null;
+
+            if (clientType == "JavaScript")
+            {
+                string activeSignalIdString = Context.GetHttpContext()?.Request.Query["activeSignalId"];
+                if (!string.IsNullOrEmpty(activeSignalIdString) && int.TryParse(activeSignalIdString, out int parsedUid))
+                {
+                    activeSignalId = parsedUid;
+                }
+            } else if(clientType == "Python"){
+                string deviceIdString = Context.GetHttpContext()?.Request.Query["deviceId"];
+
+                if (deviceIdString != null){
+                    deviceIdString = deviceIdString.Trim();
+                }
+
+                activeSignalId = _context.ActiveSignals
+                    .Where(a => a.DeviceStreamUID == _context.StreamClients
+                        .Where(c => c.DeviceStreamID == deviceIdString)
+                        .Select(c => c.UID)
+                        .FirstOrDefault())
+                    .Select(a => a.ID)
+                    .FirstOrDefault();
+            }
+            
+            
+            var newClient = new SignalRClient
+            {
+                ActiveSignalID = activeSignalId,
+                ConnectionID = connectionId,
+                ClientType = clientType,
+                LastUpdated = DateTime.UtcNow
+            };
+
+            _context.SignalRClient.Add(newClient);
+            await _context.SaveChangesAsync();
+
+            await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            string connectionId = Context.ConnectionId;
+            var client = await _context.SignalRClient.FirstOrDefaultAsync(c => c.ConnectionID == connectionId);
+            if (client != null)
+            {
+                _context.SignalRClient.Remove(client);
+                await _context.SaveChangesAsync();
+            }
+
+            await base.OnDisconnectedAsync(exception);
         }
 
         public string GetConnectionId()
@@ -61,18 +78,70 @@ namespace Traffic_Control_System.Hubs
             return Context.ConnectionId;
         }
 
-        public async Task SendMessage(string connectionId)
+        public async Task SendMessageToClientByDeviceID(string deviceID)
         {
-            //if (_clientConnections.TryGetValue(targetClientId, out string connectionId))
-           // {
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", "System", "Manual Override");
-            //}
-            //else
-            //{
-                //Console.WriteLine($"Client '{targetClientId}' not found.");
-            //}
+            var activeSignalId = _context.ActiveSignals
+                    .Where(a => a.DeviceStreamUID == _context.StreamClients
+                        .Where(c => c.DeviceStreamID == deviceID)
+                        .Select(c => c.UID)
+                        .FirstOrDefault())
+                    .Select(a => a.ID)
+                    .FirstOrDefault();
+
+            var signalRClients = await _context.SignalRClient.Where(c => c.ActiveSignalID == activeSignalId).ToListAsync();
+            if (signalRClients.Any())
+            {
+                foreach (var client in signalRClients)
+                {
+                    Console.WriteLine($"Sending message to {client.ClientType} client with connection ID {client.ConnectionID}.");
+                    await Clients.Client(client.ConnectionID).SendAsync("ReceiveMessage", "System", "Manual Override");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No active clients found for UID {activeSignalId}.");
+            }
+
         }
 
+        public async Task SendMessageToClientFromJS(string activeSignalId)
+        {
+            Console.WriteLine($"Sending message to JavaScript client with activeSignalId {activeSignalId}.");
+
+            if (!int.TryParse(activeSignalId, out int activeSignalIdInt))
+            {
+                Console.WriteLine("SendMessageToClientFromJS failed: activeSignalId is null or invalid.");
+                return;
+            }
+
+            if (activeSignalIdInt == 0)
+            {
+                Console.WriteLine("SendMessageToClientBySignalID failed: activeSignalId is null or invalid.");
+                return;
+            }
+
+            try{
+
+                var signalRClients = _context.SignalRClient
+                                        .Where(c => c.ActiveSignalID == activeSignalIdInt && c.ClientType == "Python")
+                                        .OrderByDescending(c => c.LastUpdated)
+                                        .FirstOrDefault();
+                Console.WriteLine($"Sending message to Python client with connection ID {signalRClients.ConnectionID}.");
+                await Clients.Client(signalRClients.ConnectionID).SendAsync("ReceiveMessage", "System", "Manual Override");
+            }
+            catch (Exception e){
+                Console.WriteLine($"Error: {e.Message}");
+            }
+        }
+
+        public async Task SendMessage(string connectionId)
+        {
+            await Clients.Client(connectionId).SendAsync("ReceiveMessage", "System", "Manual Override");
+        }
+
+        public async Task BroadcastMessage(string user, string message)
+        {
+            await Clients.All.SendAsync("ReceiveMessage", user, message);
+        }
     }
 }
-

@@ -190,7 +190,7 @@
             style="display: none; position: relative;">
     </div>
     <!-- Manual Override Button -->
-        <button class="manual-override-btn">Manual Override</button>
+        <button id="manualOverride" class="manual-override-btn">Manual Override</button>
     </div>
     
 
@@ -572,3 +572,49 @@
         updateTimers();
     }, 1000);
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeSignalID = urlParams.get('ID');
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(`/controlhub?clientType=JavaScript&activeSignalID=${activeSignalID}`)
+            .build();
+
+        connection.on("ReceiveMessage", function (user, message) {
+            const msg = user + ": " + message;
+            const li = document.createElement("li");
+            li.textContent = msg;
+            document.getElementById("messages").appendChild(li);
+        });
+
+        connection.start().then(function () {
+
+            document.getElementById("manualOverride").addEventListener("click", function (event) {
+                const activeSignalID = urlParams.get('ID');
+                connection.invoke("SendMessageToClientFromJS", activeSignalID).catch(function (err) {
+                    return console.error(err.toString());
+                });
+                event.preventDefault();
+            });
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+    });
+</script>
+
+<div style="
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 300px;
+    text-align: right;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    color: black; /* Ensures all text inside is black */
+">
+    <ol id="messages" style="text-align: left; max-height: 200px; overflow-y: auto; color: black;"></ol>
+</div>
