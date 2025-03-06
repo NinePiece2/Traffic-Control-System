@@ -377,4 +377,4 @@ ffprobe.exe
 ffmpeg
 .vs/*
 RaspPiPythonScripts/SmartTrafficControlSystemClient/ConfigFile/config.json
-*.zip
+/CADFiles/PCB/Traffic Control System/Traffic Control System-backups
