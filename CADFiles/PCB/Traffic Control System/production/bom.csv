@@ -1,0 +1,4 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"D1, D2, D3",LED_D5.0mm_Clear,3,LED,
+J1,SolderWire-0.25sqmm_1x04_P4.2mm_D0.65mm_OD1.7mm,1,Conn_01x04_Pin,
+"R1, R2",R_Box_L13.0mm_W4.0mm_P9.00mm,2,220 Ohm,
