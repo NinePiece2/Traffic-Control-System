@@ -176,9 +176,13 @@
                         <label for="signalDirection2">Direction2:</label>
                         <input type="text" class="form-control" id="signalDirection2" placeholder="Enter direction" required>
                     </div>
-                    <div class="form-group mb-4">
+                    <div class="form-group">
                         <label for="signalGreen2">Green Light Time (Direction 2):</label>
                         <input type="text" class="form-control" id="signalGreen2" placeholder="Enter green light time" value="60" required>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="pedestrianWalkTime">Pedestrian Walk Time:</label>
+                        <input type="text" class="form-control" id="pedestrianWalkTime" placeholder="Enter Pedestrian Walk Wait Time" value="30" required>
                     </div>
                     <button type="button" class="btn btn-primary" id="saveTrafficSignal">Save, Next Page</button>
                 </form>
@@ -186,12 +190,63 @@
 
             <div class="modal-body" style="color: black; display: none;" id="page2">
                 <div class="form-group">
-                    <label for="deviceStreamId">Device Stream ID:</label>
-                    <input type="text" class="form-control" id="deviceStreamId" readonly>
+                    <label for="deviceStreamId">Device ID:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="deviceStreamId" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('deviceStreamId', this)">Copy</button>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="form-group">
+                    <label for="streamURL">Stream URL:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="streamURL" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('streamURL', this)">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="apiURL">API URL:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="apiURL" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('apiURL', this)">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="videoURL">Video URL:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="videoURL" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('videoURL', this)">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="mvcURL">MVC URL:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="mvcURL" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('mvcURL', this)">Copy</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group mb-4">
                     <label for="apiKey">API Key:</label>
-                    <input type="text" class="form-control" id="apiKey" readonly>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="apiKey" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('apiKey', this)">Copy</button>
+                        </div>
+                    </div>
                 </div>
                 <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
             </div>
@@ -230,6 +285,10 @@
                     <div class="form-group">
                         <label for="updatedDirection2Green">Updated Direction 2 Green Time:</label>
                         <input type="number" class="form-control" id="updatedDirection2Green" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="updatedPedestrianWalkTime">Updated Pedestrian Walk Time:</label>
+                        <input type="number" class="form-control" id="updatedPedestrianWalkTime" required>
                     </div>
                 </form>
             </div>
@@ -287,6 +346,42 @@
                 else{args.cell.innerText = "No Violations";}
             }
         }
+    
+    function copyToClipboard(elementId, btn) {
+        const input = document.getElementById(elementId);
+        if (!input) {
+        console.error(`Element with id "${elementId}" not found.`);
+        return;
+        }
+        // Select the text content
+        input.select();
+        input.setSelectionRange(0, 99999); // For mobile devices
+
+        // Use the Clipboard API if available
+        if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(input.value).then(() => {
+            showCopiedFeedback(btn);
+        }).catch(err => {
+            console.error("Failed to copy: ", err);
+        });
+        } else {
+        // Fallback for older browsers
+        document.execCommand("copy");
+        showCopiedFeedback(btn);
+        }
+    }
+    
+    function showCopiedFeedback(btn) {
+        const originalText = btn.innerText;
+        btn.innerText = "Copied!";
+        btn.classList.remove("btn-outline-secondary");
+        btn.classList.add("btn-success");
+        setTimeout(() => {
+        btn.innerText = originalText;
+        btn.classList.remove("btn-success");
+        btn.classList.add("btn-outline-secondary");
+        }, 2000);
+    }
 </script>
 
 @section Scripts{
@@ -300,6 +395,7 @@
                 var direction2 = $('#signalDirection2').val().trim();
                 var green1 = $('#signalGreen').val().trim();
                 var green2 = $('#signalGreen2').val().trim();
+                var pedestrianWalkTime = $('#pedestrianWalkTime').val().trim();
 
                 // Regular expression to check if input is a valid number
                 var isInteger = /^\d+$/;
@@ -328,13 +424,19 @@
                     return;
                 }
 
+                if (!isInteger.test(pedestrianWalkTime)) {
+                    alert("Error: Pedestrian Walk Time must be a valid positive integer.");
+                    return;
+                }
+
                 // Prepare data object
                 var signalData = {
                     Address: address,
                     Direction1: direction1,
                     Direction2: direction2,
                     Direction1Green: parseInt(green1),
-                    Direction2Green: parseInt(green2)
+                    Direction2Green: parseInt(green2),
+                    PedestrianWalkTime: parseInt(pedestrianWalkTime)
                 };
 
                 // Proceed with AJAX request
@@ -348,6 +450,10 @@
                         if (response && response.deviceStreamID && response.apiKey) {
                             $('#deviceStreamId').val(response.deviceStreamID);
                             $('#apiKey').val(response.apiKey);
+                            $('#streamURL').val(response.streamURL);
+                            $('#apiURL').val(response.apiURL);
+                            $('#videoURL').val(response.videoURL);
+                            $('#mvcURL').val(response.mvcURL);
                             $('#page1').hide();
                             $('#page2').show();
                         } else {
@@ -364,9 +470,13 @@
         });
 
         document.addEventListener("DOMContentLoaded", function () {
-        var grid = document.getElementById("adminSignalGrid").ej2_instances[0];
+            var grid = document.getElementById("adminSignalGrid").ej2_instances[0];
 
             grid.rowSelected = function (args) {
+                if (args.event && $(args.event.target).closest("button").length > 0) {
+                    return; // Skip row selection if a button was clicked.
+                }
+                
                 if (!args.data) {
                     console.error("No row data found.");
                     return;
@@ -384,19 +494,21 @@
                 $("#updatedDirection1Green").val(args.data.direction1Green ?? ""); 
                 $("#updatedSignalDirection2").val(args.data.direction2 ?? ""); 
                 $("#updatedDirection2Green").val(args.data.direction2Green ?? ""); 
+                $("#updatedPedestrianWalkTime").val(args.data.pedestrianWalkTime ?? "");
                 $("#updatedDeviceStreamUID").val(args.data.deviceStreamUID ?? ""); 
                 $("#updatedIsActive").prop("checked", args.data.isActive ?? false); // Ensure checkbox is correctly set
 
                 // Log values after fields are populated
-                console.log("Modal fields populated with data:", {
+                @* console.log("Modal fields populated with data:", {
                     address: $("#updatedSignalAddress").val(),
                     direction1: $("#updatedSignalDirection1").val(),
                     direction1Green: $("#updatedDirection1Green").val(),
                     direction2: $("#updatedSignalDirection2").val(),
                     direction2Green: $("#updatedDirection2Green").val(),
+                    pedestrianWalkTime: $("#updatedPedestrianWalkTime").val(),
                     deviceStreamUID: $("#updatedDeviceStreamUID").val(),
                     isActive: $("#updatedIsActive").prop("checked")
-                });
+                }); *@
             };
         });
 
@@ -422,6 +534,7 @@
 
             var green1 = $("#updatedDirection1Green").val().trim();
             var green2 = $("#updatedDirection2Green").val().trim();
+            var pedestrianWalkTime = $("#updatedPedestrianWalkTime").val().trim();
             
             var deviceStreamUID = $("#updatedDeviceStreamUID").val();
             deviceStreamUID = (deviceStreamUID && typeof deviceStreamUID === 'string') ? deviceStreamUID.trim() : "";  // Safely trim
@@ -451,6 +564,10 @@
                 alert("Error: Green Light 2 must be a valid positive integer.");
                 return;
             }
+            if (!isInteger.test(pedestrianWalkTime)) {
+                alert("Error: Pedestrian Walk Time must be a valid positive integer.");
+                return;
+            }
 
             var updatedData = {
                 ID: id, // Now we have a valid ID
@@ -459,9 +576,10 @@
                 Direction1Green: parseInt(green1),
                 Direction2: direction2,
                 Direction2Green: parseInt(green2),
+                PedestrianWalkTime: parseInt(pedestrianWalkTime)
             };
 
-            console.log("Updated data being sent:", updatedData);
+            //console.log("Updated data being sent:", updatedData);
 
             $.ajax({
                 url: '/Home/UpdateTrafficSignal',

@@ -14,6 +14,7 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/ssl.key
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - SyncfusionLicense=${SyncfusionLicense}
+      - BaseUrl=https://trafficcontrolsystem.romitsagu.com
       - VideoServiceURL=https://stream-trafficcontrolsystem.romitsagu.com
       - StreamServiceURL=https://stream1-trafficcontrolsystem.romitsagu.com
       - APIURL=https://api-trafficcontrolsystem.romitsagu.com

@@ -257,13 +257,15 @@ namespace Traffic_Control_System.Controllers
 
             // Validate and convert GreenLight values
             if (!int.TryParse(trafficSignal.Direction1Green?.ToString(), out int green1) ||
-                !int.TryParse(trafficSignal.Direction2Green?.ToString(), out int green2))
+                !int.TryParse(trafficSignal.Direction2Green?.ToString(), out int green2) ||
+                !int.TryParse(trafficSignal.PedestrianWalkTime?.ToString(), out int walkTime))
             {
                 return Json(new { error = "Invalid green light times." });
             }
             
             trafficSignal.Direction1Green = green1;
             trafficSignal.Direction2Green = green2;
+            trafficSignal.PedestrianWalkTime = walkTime;
 
             StreamClients newstreamClient = new StreamClients();
             // Generate a unique DeviceStreamId
@@ -294,8 +296,17 @@ namespace Traffic_Control_System.Controllers
             _applicationDbContext.Add(trafficSignal);
             _applicationDbContext.SaveChanges();
 
+            var output = new{
+                DeviceStreamID = newstreamClient.DeviceStreamID, 
+                APIKey = config["API_KEY"],
+                StreamURL = config["VideoServiceURL"].Replace("https://", "rtmp://") + "/live/",
+                ApiURL = config["APIURL"] + "/",
+                VideoURL = config["VideoServiceURL"] + "/",
+                MvcURL = config["BaseUrl"] + "/"
+            };
+
             // Return the generated keys
-            return Json(new {DeviceStreamID = newstreamClient.DeviceStreamID, APIKey = config["API_KEY"] });
+            return Json(output);
         }
 
         public IActionResult SignalRTest() { return View(); }
@@ -335,12 +346,18 @@ namespace Traffic_Control_System.Controllers
                     return BadRequest(new { success = false, message = "Green signal times must be non-negative integers." });
                 }
 
+                if (signal.PedestrianWalkTime < 0 )
+                {
+                    return BadRequest(new { success = false, message = "Pedestrian Walk Time must be non-negative integers." });
+                }
+
                 // Update existing ActiveSignals entry
                 existingSignal.Address = signal.Address;
                 existingSignal.Direction1 = signal.Direction1;
                 existingSignal.Direction2 = signal.Direction2;
                 existingSignal.Direction1Green = signal.Direction1Green;
                 existingSignal.Direction2Green = signal.Direction2Green;
+                existingSignal.PedestrianWalkTime = signal.PedestrianWalkTime;
 
                 // Update the entity in the database
                 _applicationDbContext.ActiveSignals.Update(existingSignal);
