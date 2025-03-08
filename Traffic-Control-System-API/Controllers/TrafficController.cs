@@ -51,16 +51,23 @@ namespace Traffic_Control_System_API.Controllers
 
         [HttpGet]
         [Route("GetDirectionAndTime")]
-        public IActionResult GetDirectionAndTime(int id)
+        public IActionResult GetDirectionAndTime(string DeviceStreamID)
         {
             try
             {
+                var streamClient = _applicationDbContext.StreamClients.FirstOrDefault(x => x.DeviceStreamID == DeviceStreamID);
+
+                if (streamClient == null)
+                {
+                    return NotFound($"No stream client found for DeviceStreamID: {DeviceStreamID}");
+                }
+
                 var activeSignal = _applicationDbContext.ActiveSignals
-                    .FirstOrDefault(x => x.ID == id && x.IsActive == true);
+                    .FirstOrDefault(x => x.DeviceStreamUID == streamClient.UID && x.IsActive == true);
 
                 if (activeSignal == null)
                 {
-                    return NotFound($"No active signal found for ID: {id}");
+                    return NotFound($"No active signal found for ID: {streamClient.UID}");
                 }
 
                 return Ok(new
