@@ -2,7 +2,7 @@ import DeviceControl.deviceControl as deviceControl
 import threading
 import API.api as api
 import Config.config as config
-#import Video.video as video
+import Video.video as video
 import SignalR.signalRClient as signalRClient
 import json
 import time
@@ -44,8 +44,9 @@ def incident_detected():
         print("Error: VideoCapture instance is not running!")
 
 def start_device_control():
-    global device_control_thread
-    device_control_thread = deviceControl.TrafficLightController()
+    global device_control_instance
+    device_control_instance = deviceControl.TrafficLightController()
+    device_control_instance.traffic_cycle()
 
 def update_config():
     if get_config_data()['IsDebug'] == 1:

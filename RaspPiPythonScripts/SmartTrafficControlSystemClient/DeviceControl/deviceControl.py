@@ -28,8 +28,8 @@ class TrafficLightController:
 
         # Define pedestrian buttons (One per direction)
         self.pedestrian_buttons = {
-            "light1": Button(4),  # GPIO 4 for direction 1
-            "light2": Button(5)   # GPIO 5 for direction 2
+            "light1": Button(12),  # GPIO 4 for direction 1
+            "light2": Button(13)   # GPIO 5 for direction 2
         }
 
         # Attach event listeners for pedestrian buttons
@@ -93,10 +93,12 @@ class TrafficLightController:
 
         # Green light phase
         print(f"{light_name} is GREEN for {green_time} seconds.")
+        self.switch_light(light_name, "green")
         start_time = time.time()
         while time.time() - start_time < green_time:
             if self.interrupt_flag.is_set():
-                return
+                print(f"Interrupt detected during {light_name} green phase.")
+                break  # Interrupt green phase, but go to yellow
 
         # If pedestrian button is pressed, extend green time
         if self.pedestrian_buttons[light_name].is_pressed:
@@ -108,12 +110,19 @@ class TrafficLightController:
         self.switch_light(light_name, "yellow")
         print(f"{light_name} is YELLOW for 4 seconds.")
         time.sleep(4)
-        if self.interrupt_flag.is_set():
-            return
+        # if self.interrupt_flag.is_set():
+        #     print(f"Interrupt detected during {light_name} yellow phase.")
+        #     return  # Exit early if interrupted, after completing the yellow phase
 
         # Red light phase
         self.switch_light(light_name, "red")
         print(f"{light_name} is RED.")
+        
+        # Add a 2-second delay when both lights are red
+        print("Both lights are RED for 2 seconds.")
+        time.sleep(2)
+
+
 
     def start(self):
         """Starts the traffic light system in a separate thread."""
