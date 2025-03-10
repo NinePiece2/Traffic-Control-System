@@ -94,7 +94,7 @@ namespace Traffic_Control_System.Hubs
                     .Select(a => a.ID)
                     .FirstOrDefault();
 
-            var signalRClients = await _context.SignalRClient.Where(c => c.ActiveSignalID == activeSignalId).ToListAsync();
+            var signalRClients = await _context.SignalRClient.Where(c => c.ActiveSignalID == activeSignalId && c.ClientType == "JavaScript").ToListAsync();
             if (signalRClients.Any())
             {
                 foreach (var client in signalRClients)
