@@ -123,7 +123,6 @@ class TrafficLightController:
         # Green light phase
         self.switch_light(light_name, "green")
         start_time = time.time()
-        remaining
         while time.time() - start_time < green_time:
             time.sleep(0.5)
             remaining = green_time - (time.time() - start_time)
@@ -133,10 +132,10 @@ class TrafficLightController:
             )
             if self.pedestrian_button_pressed[light_name]:
                 if (remaining > pedestrian_time):
-                    remaining_time = pedestrian_time
+                    remaining = pedestrian_time
                 else:
-                    remaining_time = remaining, pedestrian_time
-                print(f"Pedestrian crossing activated for {light_name}! Decreasing time to {remaining_time} seconds.")
+                    remaining = remaining, pedestrian_time
+                print(f"Pedestrian crossing activated for {light_name}! Decreasing time to {remaining} seconds.")
             self.pedestrian_button_pressed[other_light_name] = False
             self.pedestrian_button_pressed[light_name] = False
             if self.interrupt_flag.is_set():
