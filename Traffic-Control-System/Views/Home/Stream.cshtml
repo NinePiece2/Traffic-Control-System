@@ -571,14 +571,14 @@
         // Helper function to activate the specific colored light for both primary and secondary traffic lights in each direction
         function activateColorLight(direction, colour, time) {
             if (direction === 1) {
-                if (colour === 'green') {
+                if (colour === 'Green') {
                     $('.green1, .red2').each(function () {
                         $(this).css('opacity', '1');
                     });
                     $('.yellow1, .yellow2, .red1, .green2').each(function () {
                         $(this).css('opacity', '0.3');
                     });
-                } else if (colour === 'yellow') {
+                } else if (colour === 'Yellow') {
                     $('.yellow1, .red2').each(function () {
                         $(this).css('opacity', '1');
                     });
@@ -594,14 +594,14 @@
                     });
                 }
             } else {
-                if (colour === 'green') {
+                if (colour === 'Green') {
                     $('.green2, .red1').each(function () {
                         $(this).css('opacity', '1');
                     });
                     $('.yellow1, .yellow2, .red2, .green1').each(function () {
                         $(this).css('opacity', '0.3');
                     });
-                } else if (colour === 'yellow') {
+                } else if (colour === 'Yellow') {
                     $('.yellow2, .red1').each(function () {
                         $(this).css('opacity', '1');
                     });
