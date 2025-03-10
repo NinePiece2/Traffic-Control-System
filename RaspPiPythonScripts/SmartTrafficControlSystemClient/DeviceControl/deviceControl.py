@@ -4,6 +4,7 @@ import time
 import threading
 from gpiozero import LED, Button, PWMOutputDevice
 import Config.config as config
+import threading
 
 # Only set the mock pin factory if the OS is not Linux
 if platform.system() != "Linux":
@@ -55,8 +56,6 @@ class TrafficLightController:
 
     def pedestrian_pressed(self, light_name):
         """Handles pedestrian button press event for the given direction."""
-        #print(f"Pedestrian button for {light_name} pressed! Adjusting cycle...")
-        #self.interrupt_flag.set()
         self.pedestrian_button_pressed[light_name] = True
 
     def update_config(self):
@@ -96,6 +95,14 @@ class TrafficLightController:
         time.sleep(duration)
         for buzzer in self.buzzers.values():
             buzzer.off()
+
+    def play_buzzer_tone_in_thread(self, frequency, duration):
+        """
+        Runs the play_buzzer_tone method in a separate thread.
+        """
+        # Create and start a new thread to run the play_buzzer_tone method
+        tone_thread = threading.Thread(target=self.play_buzzer_tone, args=(frequency, duration))
+        tone_thread.start()
     
     def incident_detected(self):
         for buzzer in self.buzzers.values():
@@ -107,6 +114,24 @@ class TrafficLightController:
             for frequency in frequencies:
                 self.play_buzzer_tone(frequency, duration)
 
+    def play_jingle_in_thread(self, tones, durations):
+        """
+        Runs the play_jingle method in a separate thread.
+        """
+        jingle_thread = threading.Thread(target=self.play_jingle, args=(tones, durations))
+        jingle_thread.start()
+
+    def start_walking_jingle(self):
+        """ Jingle for when it's safe to walk """
+        self.play_jingle_in_thread([1000, 1500, 2000], [0.2, 0.2, 0.2])
+
+    def prepare_to_stop_jingle(self):
+        """ Jingle for when the light is about to change """
+        self.play_jingle_in_thread([2000, 1500, 2000], [0.3, 0.3, 0.3])
+
+    def do_not_walk_jingle(self):
+        """ Jingle for when pedestrians should stop immediately """
+        self.play_jingle_in_thread([5000, 3000, 1000, 5000, 3000, 1000], [0.15, 0.15, 0.15, 0.15, 0.15, 0.15])
 
     def traffic_cycle(self):
         """Main traffic light cycle that alternates between directions."""
@@ -134,6 +159,8 @@ class TrafficLightController:
         # Green light phase
         self.switch_light(light_name, "green")
         start_time = time.time()
+        endFlag = False
+        self.start_walking_jingle()
         while time.time() - start_time < green_time:
             time.sleep(0.5)
             remaining = green_time - (time.time() - start_time)
@@ -150,8 +177,11 @@ class TrafficLightController:
             if self.interrupt_flag.is_set():
                 print(f"Interrupt detected during {light_name} green phase.")
                 break  # Interrupt green phase, but go to yellow
+            if (remaining <= 5 and endFlag == False):
+                self.prepare_to_stop_jingle()
+                endFlag = True
 
-        self.play_buzzer_tone(frequency=440, duration=0.5)
+        self.do_not_walk_jingle()
 
         # Yellow light phase
         self.switch_light(light_name, "yellow")
@@ -172,8 +202,6 @@ class TrafficLightController:
                 config.Config().get('Device_ID'),
                 f"Status: {light_name} || Colour: Red || Time: {2 - (time.time() - start_time)}"
             )
-
-        self.play_buzzer_tone(frequency=330, duration=0.5)
 
     def start(self):
         """Starts the traffic light system in a separate thread."""
