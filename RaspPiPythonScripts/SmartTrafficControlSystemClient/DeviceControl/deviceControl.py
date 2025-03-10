@@ -96,6 +96,17 @@ class TrafficLightController:
         time.sleep(duration)
         for buzzer in self.buzzers.values():
             buzzer.off()
+    
+    def incident_detected(self):
+        for buzzer in self.buzzers.values():
+            buzzer.off()
+        frequencies = [1000, 2000, 1500, 2500, 3000, 2500, 1500, 2000]  # Frequencies in Hz
+        duration = 0.1  # Duration for each tone in seconds
+        
+        for _ in range(10):  # Number of times to repeat the siren pattern
+            for frequency in frequencies:
+                self.play_buzzer_tone(frequency, duration)
+
 
     def traffic_cycle(self):
         """Main traffic light cycle that alternates between directions."""
@@ -132,17 +143,14 @@ class TrafficLightController:
             )
             if self.pedestrian_button_pressed[light_name]:
                 if (remaining > pedestrian_time):
-                    remaining = pedestrian_time
-                else:
-                    remaining = remaining, pedestrian_time
-                print(f"Pedestrian crossing activated for {light_name}! Decreasing time to {remaining} seconds.")
+                    green_time = pedestrian_time
+                    start_time = time.time()
             self.pedestrian_button_pressed[other_light_name] = False
             self.pedestrian_button_pressed[light_name] = False
             if self.interrupt_flag.is_set():
                 print(f"Interrupt detected during {light_name} green phase.")
                 break  # Interrupt green phase, but go to yellow
 
-        # Example: play a short tone on buzzers at the end of green phase
         self.play_buzzer_tone(frequency=440, duration=0.5)
 
         # Yellow light phase
@@ -164,7 +172,7 @@ class TrafficLightController:
                 config.Config().get('Device_ID'),
                 f"Status: {light_name} || Colour: Red || Time: {2 - (time.time() - start_time)}"
             )
-        # Optionally, you can play a tone on buzzers during red phase too
+
         self.play_buzzer_tone(frequency=330, duration=0.5)
 
     def start(self):
