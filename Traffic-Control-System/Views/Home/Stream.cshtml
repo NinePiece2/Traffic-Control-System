@@ -215,15 +215,15 @@
         <div class="countdown-container">
             <div class="countdown">
                 <span>Green</span>
-                <span id="timeGreen1">01:30</span> <!-- Green light timer -->
+                <span class="timeGreen1">01:30</span> <!-- Green light timer -->
             </div>
             <div class="countdown">
                 <span>Yellow</span>
-                <span id="timeYellow1">00:10</span> <!-- Yellow light timer -->
+                <span class="timeYellow1">00:10</span> <!-- Yellow light timer -->
             </div>
             <div class="countdown">
                 <span>Red</span>
-                <span id="timeRed1">02:00</span> <!-- Red light timer -->
+                <span class="timeRed1">02:00</span> <!-- Red light timer -->
             </div>
         </div>
         </div>
@@ -238,15 +238,15 @@
         <div class="countdown-container-2">
             <div class="countdown-2">
                 <span>Green</span>
-                <span id="timeGreen1">01:30</span> <!-- Green light timer -->
+                <span class="timeGreen1">01:30</span> <!-- Green light timer -->
             </div>
             <div class="countdown-2">
                 <span>Yellow</span>
-                <span id="timeYellow1">00:10</span> <!-- Yellow light timer -->
+                <span class="timeYellow1">00:10</span> <!-- Yellow light timer -->
             </div>
             <div class="countdown-2">
                 <span>Red</span>
-                <span id="timeRed1">02:00</span> <!-- Red light timer -->
+                <span class="timeRed1">02:00</span> <!-- Red light timer -->
             </div>
         </div>
         </div>
@@ -268,15 +268,15 @@
         <div class="countdown-container">
             <div class="countdown">
                 <span>Green</span>
-                <span id="timeGreen2">01:30</span> <!-- Green light timer -->
+                <span class="timeGreen2">01:30</span> <!-- Green light timer -->
             </div>
             <div class="countdown">
                 <span>Yellow</span>
-                <span id="timeYellow2">00:10</span> <!-- Yellow light timer -->
+                <span class="timeYellow2">00:10</span> <!-- Yellow light timer -->
             </div>
             <div class="countdown">
                 <span>Red</span>
-                <span id="timeRed2">02:00</span> <!-- Red light timer -->
+                <span class="timeRed2">02:00</span> <!-- Red light timer -->
             </div>
         </div>
         </div>
@@ -291,15 +291,15 @@
         <div class="countdown-container-2">
             <div class="countdown-2">
                 <span>Green</span>
-                <span id="timeGreen2">01:30</span> <!-- Green light timer -->
+                <span class="timeGreen2">01:30</span> <!-- Green light timer -->
             </div>
             <div class="countdown-2">
                 <span>Yellow</span>
-                <span id="timeYellow2">00:10</span> <!-- Yellow light timer -->
+                <span class="timeYellow2">00:10</span> <!-- Yellow light timer -->
             </div>
             <div class="countdown-2">
                 <span>Red</span>
-                <span id="timeRed2">02:00</span> <!-- Red light timer -->
+                <span class="timeRed2">02:00</span> <!-- Red light timer -->
             </div>
         </div>
         </div>
@@ -554,7 +554,7 @@
         } *@
 
         $(document).ready(function () {
-            $('#timeGreen1, #timeYellow1, #timeRed1, #timeGreen2, #timeYellow2, #timeRed2').each(function () {
+            $('.timeGreen1, .timeYellow1, .timeRed1, .timeGreen2, .timeYellow2, .timeRed2').each(function () {
                 $(this).text('');
             });
 
@@ -564,7 +564,11 @@
 
             $('.red1, .red2').each(function () {
                 $(this).css('opacity', '1');
-            }); 
+            });
+
+            $(`.timeGreen1`).each(function () {
+                console.log("Test");
+            });
         });
 
 
@@ -624,15 +628,14 @@
                 light.style.opacity = '1'; // Set the active light to 100% visibility
             });
 
-            $('#timeGreen1, #timeYellow1, #timeRed1, #timeGreen2, #timeYellow2, #timeRed2').each(function () {
+            $('.timeGreen1, .timeYellow1, .timeRed1, .timeGreen2, .timeYellow2, .timeRed2').each(function () {
                 $(this).text('');
             });
 
-            // Update the timer for the active light
-            $(`#time${colour}${direction}`).each(function () {
-                let timeStr = formatTime(time)
-                $(this).text(timeStr);
+            document.querySelectorAll(`.time${colour}${direction}`).forEach(element => {
+                element.innerText = formatTime(time);
             });
+
         }
 
 
