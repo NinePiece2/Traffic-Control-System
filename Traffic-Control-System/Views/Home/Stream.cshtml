@@ -624,9 +624,14 @@
                 light.style.opacity = '1'; // Set the active light to 100% visibility
             });
 
+            $('#timeGreen1, #timeYellow1, #timeRed1, #timeGreen2, #timeYellow2, #timeRed2').each(function () {
+                $(this).text('');
+            });
+
             // Update the timer for the active light
             $(`#time${colour}${direction}`).each(function () {
-                $(this).text(formatTime(time));
+                let timeStr = formatTime(time)
+                $(this).text(timeStr);
             });
         }
 
