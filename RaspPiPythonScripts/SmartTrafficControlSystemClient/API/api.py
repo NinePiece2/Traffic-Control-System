@@ -80,14 +80,14 @@ class API:
             print(f"Failed to fetch stream client key. Status code: {response_stream.status_code}")
             print(f"Response Content: {response_stream.text}")
             
-    def getDirectionAndTime(self,id):
+    def getDirectionAndTime(self, device_stream_id):
         self._ensure_valid_token()
         
         if not self.token:
             #print("No token available to proceed.")
             return
         
-        stream_url = f"{config.Config().get('API_URL')}Traffic/GetDirectionAndTime?ID={id}"
+        stream_url = f"{config.Config().get('API_URL')}Traffic/GetDirectionAndTime?DeviceStreamID={device_stream_id}"
 
         headers = {
             'Authorization': f'Bearer {self.token}'
@@ -96,7 +96,7 @@ class API:
         response_stream = requests.get(stream_url, headers=headers)
         
         if response_stream.status_code == 200:
-            print(f"Get Direction and Time Response: {response_stream.text}")
+            #print(f"Get Direction and Time Response: {response_stream.text}")
             data = json.loads(response_stream.text)
             return data
         else:
@@ -104,7 +104,7 @@ class API:
             print(f"Response Content: {response_stream.text}")
         
             
-    def add_traffic_violation(self, ActiveSignalID, LicensePlate, filename):
+    def add_traffic_violation(self, DeviceID, LicensePlate, filename):
         self._ensure_valid_token()
         
         if not self.token:
@@ -119,7 +119,7 @@ class API:
         }
         
         payload = {
-            "DeviceID": ActiveSignalID,
+            "DeviceID": DeviceID,
             "LicensePlate": LicensePlate,
             "Filename": filename
         }
@@ -164,5 +164,5 @@ class API:
 if __name__ == "__main__":
     api = API()
     print(api.get_stream_client_key("device1"))
-    #print(api.add_traffic_violation(5,"test5","http://test5.com/test5"))
-    print(api.getDirectionAndTime("8"))
+    #print(api.add_traffic_violation("device1","test5","http://test5.com/test5"))
+    print(api.getDirectionAndTime("device1"))

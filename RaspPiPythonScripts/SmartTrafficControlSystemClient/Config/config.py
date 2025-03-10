@@ -19,12 +19,16 @@ class Config:
         except FileNotFoundError:
             print("Config file not found. Using default configuration.")
             self.config = {
+                "IsDebug": 0,
                 "Stream_URL": "rtmp://localhost/live",
                 "API_URL": "https://localhost:5000/",
                 "Video_URL": "http://localhost:5000/",
                 "API_KEY": "API_KEY",
                 "Device_ID": "device0",
                 "Stream_Key": "STREAM_KEY",
+                "Direction_1_Green_Time": 60,
+                "Direction_2_Green_Time": 60,
+                "Pedestrian_Walk_Time": 30,
                 "WebcamID": "0"
             }
             # Create config file within ConfigFile folder
