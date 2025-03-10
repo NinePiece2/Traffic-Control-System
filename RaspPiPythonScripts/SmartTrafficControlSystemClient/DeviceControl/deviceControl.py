@@ -92,7 +92,7 @@ class TrafficLightController:
         print(f"Playing tone at {frequency}Hz for {duration} seconds on buzzers.")
         for buzzer in self.buzzers.values():
             buzzer.frequency = frequency
-            buzzer.value = 0.5  # 50% duty cycle (adjust for loudness)
+            buzzer.value = 0.2  # 20% duty cycle (adjust for loudness)
         time.sleep(duration)
         for buzzer in self.buzzers.values():
             buzzer.off()
