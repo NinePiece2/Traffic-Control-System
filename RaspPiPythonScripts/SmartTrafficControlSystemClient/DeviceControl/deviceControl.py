@@ -2,7 +2,7 @@ import os
 import platform
 import time
 import threading
-from gpiozero import LED, Button
+from gpiozero import LED, Button, PWMOutputDevice
 import Config.config as config
 
 # Only set the mock pin factory if the OS is not Linux
@@ -21,7 +21,7 @@ class TrafficLightController:
         self.interrupt_flag = threading.Event()
         self.signalR_client_callback = signalR_client_callback
 
-        # Define traffic lights
+        # Define traffic lights for two directions
         self.traffic_lights = {
             "light_dir_1": {"red": LED(17), "yellow": LED(27), "green": LED(22)},
             "light_dir_2": {"red": LED(23), "yellow": LED(24), "green": LED(25)}
@@ -29,15 +29,23 @@ class TrafficLightController:
 
         # Define pedestrian buttons (One per direction)
         self.pedestrian_buttons = {
-            "light_dir_1": Button(12),  # GPIO 4 for direction 1
-            "light_dir_2": Button(13)   # GPIO 5 for direction 2
+            "light_dir_1": Button(18),  # GPIO 18 for direction 1
+            "light_dir_2": Button(19)   # GPIO 19 for direction 2
         }
 
         # Attach event listeners for pedestrian buttons
         self.pedestrian_buttons["light_dir_1"].when_pressed = lambda: self.pedestrian_pressed("light_dir_1")
         self.pedestrian_buttons["light_dir_2"].when_pressed = lambda: self.pedestrian_pressed("light_dir_2")
 
-        # Track active light
+        # Define passive buzzers on pins 12, 13, 14, and 15 using PWMOutputDevice
+        self.buzzers = {
+            "buzzer1": PWMOutputDevice(12),
+            "buzzer2": PWMOutputDevice(13),
+            "buzzer3": PWMOutputDevice(14),
+            "buzzer4": PWMOutputDevice(15)
+        }
+
+        # Track active light (default direction)
         self.active_light = "light_dir_1"
 
     def pedestrian_pressed(self, light_name):
@@ -69,6 +77,20 @@ class TrafficLightController:
             light["red"].on()
             light["green"].off()
 
+    def play_buzzer_tone(self, frequency, duration):
+        """
+        Plays a tone on all buzzers.
+        frequency: The tone frequency in Hz.
+        duration: How long to play the tone (seconds).
+        """
+        print(f"Playing tone at {frequency}Hz for {duration} seconds on buzzers.")
+        for buzzer in self.buzzers.values():
+            buzzer.frequency = frequency
+            buzzer.value = 0.5  # 50% duty cycle (adjust for loudness)
+        time.sleep(duration)
+        for buzzer in self.buzzers.values():
+            buzzer.off()
+
     def traffic_cycle(self):
         """Main traffic light cycle that alternates between directions."""
         while True:
@@ -93,15 +115,21 @@ class TrafficLightController:
         self.switch_light(other_light_name, "red")
 
         # Green light phase
-        #print(f"{light_name} is GREEN for {green_time} seconds.")
         self.switch_light(light_name, "green")
         start_time = time.time()
         while time.time() - start_time < green_time:
             time.sleep(0.5)
-            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Green || Time: {green_time - (time.time() - start_time)}")
+            remaining = green_time - (time.time() - start_time)
+            self.signalR_client_callback.send_message_to_client_by_deviceId(
+                config.Config().get('Device_ID'),
+                f"Status: {light_name} || Colour: Green || Time: {remaining}"
+            )
             if self.interrupt_flag.is_set():
                 print(f"Interrupt detected during {light_name} green phase.")
                 break  # Interrupt green phase, but go to yellow
+
+        # Example: play a short tone on buzzers at the end of green phase
+        self.play_buzzer_tone(frequency=440, duration=0.5)
 
         # If pedestrian button is pressed, extend green time
         if self.pedestrian_buttons[light_name].is_pressed:
@@ -111,24 +139,25 @@ class TrafficLightController:
 
         # Yellow light phase
         self.switch_light(light_name, "yellow")
-        #print(f"{light_name} is YELLOW for 4 seconds.")
         start_time = time.time()
         while time.time() - start_time <= 4:
             time.sleep(0.5)
-            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Yellow || Time: {4 - (time.time() - start_time)}")
-
+            self.signalR_client_callback.send_message_to_client_by_deviceId(
+                config.Config().get('Device_ID'),
+                f"Status: {light_name} || Colour: Yellow || Time: {4 - (time.time() - start_time)}"
+            )
 
         # Red light phase
         self.switch_light(light_name, "red")
-        #print(f"{light_name} is RED.")
-        
-        # Add a 2-second delay when both lights are red
-        #print("Both lights are RED for 2 seconds.")
         start_time = time.time()
         while time.time() - start_time <= 2:
             time.sleep(0.5)
-            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Red || Time: {2 - (time.time() - start_time)}")
-
+            self.signalR_client_callback.send_message_to_client_by_deviceId(
+                config.Config().get('Device_ID'),
+                f"Status: {light_name} || Colour: Red || Time: {2 - (time.time() - start_time)}"
+            )
+        # Optionally, you can play a tone on buzzers during red phase too
+        self.play_buzzer_tone(frequency=330, duration=0.5)
 
     def start(self):
         """Starts the traffic light system in a separate thread."""
@@ -142,10 +171,19 @@ class TrafficLightController:
             light["red"].off()
             light["yellow"].off()
             light["green"].off()
+        for buzzer in self.buzzers.values():
+            buzzer.off()
 
-# Initialize and Start the Traffic Light System
+
+# Example usage:
 if __name__ == "__main__":
-    traffic_controller = TrafficLightController()
+    # Replace with your actual SignalR client callback object that has send_message_to_client_by_deviceId() method.
+    class DummyCallback:
+        def send_message_to_client_by_deviceId(self, device_id, message):
+            print(f"[Device {device_id}]: {message}")
+
+    dummy_callback = DummyCallback()
+    traffic_controller = TrafficLightController(dummy_callback)
     traffic_controller.start()
 
     try:
@@ -153,7 +191,4 @@ if __name__ == "__main__":
             time.sleep(1)  # Keep the main thread alive
     except KeyboardInterrupt:
         print("Traffic Light System Shutting Down...")
-        for light in traffic_controller.traffic_lights.values():
-            light["red"].off()
-            light["yellow"].off()
-            light["green"].off()
+        traffic_controller.stop()
