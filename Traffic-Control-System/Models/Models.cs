@@ -72,6 +72,7 @@ namespace Traffic_Control_System.Models
         public string? Direction2 { get; set; }
         public int? Direction1GreenTime { get; set; }
         public int? Direction2GreenTime { get; set; }
+        public bool IsClientConnected { get; set; }
     }
 
     public class ReportViewModel
@@ -105,6 +106,16 @@ namespace Traffic_Control_System.Models
     {
         public string Name { get; set; }
         public string Direction { get; set; }
+    }
+
+    public class PopUpModel
+    {
+        public string ID { get; set; }
+        public bool textArea { get; set; }
+        public string confirmBtnMessage { get; set; }
+        public string hintMessage { get; set; }
+        public string cancelBtnMessage { get; set; }
+        public string reminderText { get; set; }
     }
 
 }

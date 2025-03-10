@@ -73,6 +73,9 @@ namespace Traffic_Control_System.Controllers
                 .Select(s => s.DeviceStreamID)
                 .FirstOrDefault();
 
+            var clientConnected = _applicationDbContext.SignalRClient
+                .Where(s => s.ActiveSignalID == signal.DeviceStreamUID && s.ClientType == "Python")
+                .Count() > 0;
 
             var viewModel = new VideStreamViewModel
             {
@@ -81,7 +84,8 @@ namespace Traffic_Control_System.Controllers
                 Direction1 = signal.Direction1,
                 Direction2 = signal.Direction2,
                 Direction1GreenTime = signal.Direction1Green,
-                Direction2GreenTime = signal.Direction2Green
+                Direction2GreenTime = signal.Direction2Green,
+                IsClientConnected = clientConnected
             };
             return View(viewModel);
         }
@@ -372,6 +376,12 @@ namespace Traffic_Control_System.Controllers
 
                 return StatusCode(500, new { success = false, message = "An error occurred while saving the entity changes. Please check the inner exception for details." });
             }
+        }
+
+        public ActionResult RenderPopUpModel()
+        {
+            PopUpModel modal = new PopUpModel { ID = "PopUpModel", textArea = false, cancelBtnMessage = "", confirmBtnMessage = "Okay", reminderText = "No Traffic Light client has been configured for this light." };
+            return PartialView("~/Views/Shared/PopUpModel.cshtml", modal);
         }
     }
 }

@@ -172,12 +172,65 @@
         cursor: pointer;
         text-align: center;
         width: 100%;
+        position: relative; /* For positioning the SVG */
+        transition: transform 0.1s ease-out, background-color 0.2s ease-out, opacity 0.2s ease-out;
     }
 
     .manual-override-btn:hover {
         background-color: silver;
         color: black;
     }
+
+    .manual-override-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Disabled state styling */
+    .manual-override-btn.disabled,
+    .manual-override-btn:disabled {
+        background-color: #aaa;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Progress circle styling */
+    .progress-circle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        display: none; /* Hidden by default */
+    }
+
+    .circle-bg {
+        fill: none;
+        stroke: #eee;
+        stroke-width: 3;
+    }
+
+    .circle {
+        fill: none;
+        stroke: #3498db;
+        stroke-width: 3;
+        stroke-linecap: round;
+        transform: rotate(-90deg);
+        transform-origin: center;
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+    }
+
+    /* The animation that fills the circle */
+    .progress-animation .circle {
+        animation: progress 2s linear forwards;
+    }
+
+    @@keyframes progress {
+        from { stroke-dashoffset: 100; }
+        to { stroke-dashoffset: 0; }
+    }
+
 </style>
 
 <div class="page-container">
@@ -190,7 +243,22 @@
             style="display: none; position: relative;">
     </div>
     <!-- Manual Override Button -->
-        <button id="manualOverride" class="manual-override-btn">Manual Override</button>
+        <button id="manualOverride" class="manual-override-btn">
+            Manual Override
+            <!-- The progress circle is hidden by default -->
+            <svg class="progress-circle" viewBox="0 0 36 36">
+                <!-- Background circle (static) -->
+                <path class="circle-bg" d="M18 2.0845
+                a 15.9155 15.9155 0 0 1 0 31.831
+                a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                <!-- Animated circle; stroke-dasharray is set to 100 (percent) -->
+                <path class="circle" d="M18 2.0845
+                a 15.9155 15.9155 0 0 1 0 31.831
+                a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+        </button>
+
+
     </div>
     
 
@@ -306,6 +374,8 @@
         </div>
     </div>
 </div>
+
+<div id="PopUpModelSection"></div>
 
 @section scripts {
     <script>
@@ -440,6 +510,15 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
+            if ('@Model.IsClientConnected' === 'False') {
+                $("#PopUpModelSection").load('@Url.Action("RenderPopUpModel", "Home")', function () {
+                    $('#PopUpModelBtn').click(function () {
+                        $('#PopUpModel').modal('hide');
+                    });
+                    $('#PopUpModel').modal('show');
+                });
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             const activeSignalID = urlParams.get('ID');
             const connection = new signalR.HubConnectionBuilder()
@@ -481,14 +560,38 @@
 
             connection.start().then(function () {
                 document.getElementById("manualOverride").addEventListener("click", function (event) {
+                    let btn = this;
+                    // Show the progress circle and trigger the animation by adding a class
+                    const progressCircle = btn.querySelector('.progress-circle');
+                    progressCircle.style.display = 'block';
+                    // Force reflow so that if the class was present before, the animation restarts:
+                    void progressCircle.offsetWidth;
+                    progressCircle.classList.add("progress-animation");
+                    
+                    // Disable the button
+                    btn.disabled = true;
+                    btn.classList.add("disabled");
+                    
+                    // Re-enable the button after 2 seconds and hide the progress circle
+                    setTimeout(function(){
+                        btn.disabled = false;
+                        btn.classList.remove("disabled");
+                        // Remove animation class and hide the progress circle so it's ready for next click
+                        progressCircle.classList.remove("progress-animation");
+                        progressCircle.style.display = 'none';
+                    }, 2000);
+                    
+                    // Get the activeSignalID and invoke the SignalR method
                     const activeSignalID = urlParams.get('ID');
-                    connection.invoke("SendMessageToClientFromJS", activeSignalID, "Manual Override").catch(function (err) {
-                        return console.error(err.toString());
-                    });
+                    connection.invoke("SendMessageToClientFromJS", activeSignalID, "Manual Override")
+                        .catch(function (err) {
+                            console.error(err.toString());
+                        });
+                    
                     event.preventDefault();
                 });
             }).catch(function (err) {
-                return console.error(err.toString());
+                console.error(err.toString());
             });
 
             connection.onclose(error => {
