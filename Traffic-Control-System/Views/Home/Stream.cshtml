@@ -309,6 +309,8 @@
 
 @section scripts {
     <script>
+        videojs.log.level('off')
+
         var player = videojs('my-video', {
             controls: true,
             autoplay: false,
@@ -326,7 +328,7 @@
             document.getElementById("my-video").style.display = "none";
             document.getElementById("error-image").style.display = "block";
 
-            // Retry the video every 5 seconds
+            // Retry the video every 3 seconds
             let retryInterval = setInterval(() => {
                 //console.log("Retrying video...");
                 player.src(player.currentSrc()); // Reload the same video source
@@ -431,16 +433,11 @@
 
         }
 
-
         function formatTime(seconds) {
             var minutes = Math.floor(seconds / 60);
             seconds = seconds % 60;
             return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }
-
-        @* setInterval(function() {
-            updateTimers();
-        }, 1000); *@
 
         document.addEventListener("DOMContentLoaded", function () {
             const urlParams = new URLSearchParams(window.location.search);
