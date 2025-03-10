@@ -654,6 +654,7 @@
             const activeSignalID = urlParams.get('ID');
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl(`/controlhub?clientType=JavaScript&activeSignalID=${activeSignalID}`)
+                .withAutomaticReconnect([0, 2000, 10000, 30000])
                 .build();
 
             connection.on("ReceiveMessage", function (user, message) {
@@ -681,7 +682,7 @@
                     }
                 });
 
-                console.log(data);
+                //console.log(data);
 
                 activateColorLight(data.lightDirection, data.colour, data.time);
 
@@ -698,6 +699,11 @@
                 });
             }).catch(function (err) {
                 return console.error(err.toString());
+            });
+
+            connection.onclose(error => {
+                // Try restarting the connection manually if needed:
+                connection.start().catch(err => console.error("Failed to restart connection:", err.toString()));
             });
         });
     </script>
