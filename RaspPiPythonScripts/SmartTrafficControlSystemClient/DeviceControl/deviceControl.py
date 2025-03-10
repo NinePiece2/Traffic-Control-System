@@ -93,12 +93,12 @@ class TrafficLightController:
         self.switch_light(other_light_name, "red")
 
         # Green light phase
-        print(f"{light_name} is GREEN for {green_time} seconds.")
+        #print(f"{light_name} is GREEN for {green_time} seconds.")
         self.switch_light(light_name, "green")
         start_time = time.time()
         while time.time() - start_time < green_time:
             time.sleep(0.5)
-            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Green ||Time: {green_time - (time.time() - start_time)}")
+            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Green || Time: {green_time - (time.time() - start_time)}")
             if self.interrupt_flag.is_set():
                 print(f"Interrupt detected during {light_name} green phase.")
                 break  # Interrupt green phase, but go to yellow
@@ -106,28 +106,28 @@ class TrafficLightController:
         # If pedestrian button is pressed, extend green time
         if self.pedestrian_buttons[light_name].is_pressed:
             remaining_time = max(green_time - (time.time() - start_time), pedestrian_time)
-            print(f"Pedestrian crossing activated for {light_name}! Extending time to {remaining_time} seconds.")
+            print(f"Pedestrian crossing activated for {light_name}! Decreasing time to {remaining_time} seconds.")
             time.sleep(remaining_time)
 
         # Yellow light phase
         self.switch_light(light_name, "yellow")
-        print(f"{light_name} is YELLOW for 4 seconds.")
+        #print(f"{light_name} is YELLOW for 4 seconds.")
         start_time = time.time()
         while time.time() - start_time <= 4:
             time.sleep(0.5)
-            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Yellow ||Time: {4 - (time.time() - start_time)}")
+            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Yellow || Time: {4 - (time.time() - start_time)}")
 
 
         # Red light phase
         self.switch_light(light_name, "red")
-        print(f"{light_name} is RED.")
+        #print(f"{light_name} is RED.")
         
         # Add a 2-second delay when both lights are red
-        print("Both lights are RED for 2 seconds.")
+        #print("Both lights are RED for 2 seconds.")
         start_time = time.time()
         while time.time() - start_time <= 2:
             time.sleep(0.5)
-            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Red ||Time: {2 - (time.time() - start_time)}")
+            self.signalR_client_callback.send_message_to_client_by_deviceId(config.Config().get('Device_ID'), f"Status: {light_name} || Colour: Red || Time: {2 - (time.time() - start_time)}")
 
 
     def start(self):

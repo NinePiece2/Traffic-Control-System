@@ -230,23 +230,23 @@
 
         <div class="traffic-light-wrapper-2">
         <div class="traffic-light1-2">
-            <div class="green1_2"></div>
-            <div class="yellow1_2"></div>
-            <div class="red1_2"></div>
+            <div class="green1"></div>
+            <div class="yellow1"></div>
+            <div class="red1"></div>
         </div>
         
         <div class="countdown-container-2">
             <div class="countdown-2">
                 <span>Green</span>
-                <span id="timeGreen1_2">01:30</span> <!-- Green light timer -->
+                <span id="timeGreen1">01:30</span> <!-- Green light timer -->
             </div>
             <div class="countdown-2">
                 <span>Yellow</span>
-                <span id="timeYellow1_2">00:10</span> <!-- Yellow light timer -->
+                <span id="timeYellow1">00:10</span> <!-- Yellow light timer -->
             </div>
             <div class="countdown-2">
                 <span>Red</span>
-                <span id="timeRed1_2">02:00</span> <!-- Red light timer -->
+                <span id="timeRed1">02:00</span> <!-- Red light timer -->
             </div>
         </div>
         </div>
@@ -283,23 +283,23 @@
 
         <div class="traffic-light-wrapper-2">
         <div class="traffic-light2-2">
-            <div class="green2_2"></div>
-            <div class="yellow2_2"></div>
-            <div class="red2_2"></div>
+            <div class="green2"></div>
+            <div class="yellow2"></div>
+            <div class="red2"></div>
         </div>
         
         <div class="countdown-container-2">
             <div class="countdown-2">
                 <span>Green</span>
-                <span id="timeGreen2_2">01:30</span> <!-- Green light timer -->
+                <span id="timeGreen2">01:30</span> <!-- Green light timer -->
             </div>
             <div class="countdown-2">
                 <span>Yellow</span>
-                <span id="timeYellow2_2">00:10</span> <!-- Yellow light timer -->
+                <span id="timeYellow2">00:10</span> <!-- Yellow light timer -->
             </div>
             <div class="countdown-2">
                 <span>Red</span>
-                <span id="timeRed2_2">02:00</span> <!-- Red light timer -->
+                <span id="timeRed2">02:00</span> <!-- Red light timer -->
             </div>
         </div>
         </div>
@@ -307,298 +307,390 @@
     </div>
 </div>
 
-<script>
-    var player = videojs('my-video', {
-        controls: true,
-        autoplay: false,
-        muted: true,
-        preload: 'auto',
-        techOrder: ['html5']
-    });
-
-    player.play();
-
-    player.on('error', function () {
-        //console.error("Video error detected!");
-        
-        // Hide the video player and show the image
-        document.getElementById("my-video").style.display = "none";
-        document.getElementById("error-image").style.display = "block";
-
-        // Retry the video every 5 seconds
-        let retryInterval = setInterval(() => {
-            //console.log("Retrying video...");
-            player.src(player.currentSrc()); // Reload the same video source
-            player.load();
-            player.play().then(() => {
-                console.log("Video is now playing!");
-
-                // Show the video and hide the image
-                document.getElementById("my-video").style.display = "block";
-                document.getElementById("error-image").style.display = "none";
-
-                // Stop retrying since the video is working
-                clearInterval(retryInterval);
-            }).catch((err) => {
-                //console.warn("Retry failed, still an error:", err);
-            });
-        }, 3000);
-    });
-
-    // Initial Timers
-    var green1 = 90;  // 1 minute 30 seconds for green in Direction 1 light 1
-    var yellow1 = 10; // 10 seconds for yellow in Direction 1 light 1
-    var green2 = 90;  // 1 minute 30 seconds for green in Direction 2 light 1
-    var yellow2 = 10; // 10 seconds for yellow in Direction 2 light 1
-
-    var green1_2 = 90;  // 1 minute 30 seconds for green in Direction 1 light 2
-    var yellow1_2 = 10; // 10 seconds for yellow in Direction 1 light 2
-    var green2_2 = 90;  // 1 minute 30 seconds for green in Direction 2 light 2
-    var yellow2_2 = 10; // 10 seconds for yellow in Direction 2 light 2
-
-    // Initial red durations for both directions
-    var red1 = green2 + yellow2; // Red duration for Direction 1 is equal to Direction 2's green + yellow time
-    var red2 = green1 + yellow1; // Red duration for Direction 2 is equal to Direction 1's green + yellow time
-    var red1_2 = green2_2 + yellow2_2; // Red duration for Direction 1 is equal to Direction 2's green + yellow time
-    var red2_2 = green1_2 + yellow1_2; // Red duration for Direction 2 is equal to Direction 1's green + yellow time
-
-    var currentDirection = 1;
-    var currentPhase1 = 'green'; // Phase for Direction 1
-    var currentPhase2 = 'red'; // Phase for Direction 2
-    var currentPhase1_2 = 'green_2'; // Phase for Direction 1 light 2
-    var currentPhase2_2 = 'red_2'; // Phase for Direction 2 light 2
-
-    function updateTimers() {
-        // Hide all timers initially
-        document.querySelectorAll('#timeGreen1, #timeYellow1, #timeRed1, #timeGreen2, #timeYellow2, #timeRed2').forEach(timer => {
-            timer.style.display = 'none';
+@section scripts {
+    <script>
+        var player = videojs('my-video', {
+            controls: true,
+            autoplay: false,
+            muted: true,
+            preload: 'auto',
+            techOrder: ['html5']
         });
 
-        document.querySelectorAll('#timeGreen1_2, #timeYellow1_2, #timeRed1_2, #timeGreen2_2, #timeYellow2_2, #timeRed2_2').forEach(timer => {
-            timer.style.display = 'none';
-        });
+        player.play();
 
-        // Update Direction 1
-        if (currentPhase1 === 'green' && currentPhase1_2 === 'green_2') {
-            green1--;
-            green1_2--;
-            red2--;
-            red2_2--;
-            document.getElementById(`timeGreen1`).innerText = formatTime(green1);
-            document.getElementById('timeGreen1').style.display = 'block';  // Show green timer for Direction 1
-            document.getElementById(`timeRed2`).innerText = formatTime(red2);
-            document.getElementById('timeRed2').style.display = 'block';  // Show red timer for Direction 2
+        player.on('error', function () {
+            //console.error("Video error detected!");
             
-            document.getElementById(`timeGreen1_2`).innerText = formatTime(green1_2);
-            document.getElementById('timeGreen1_2').style.display = 'block';  // Show green timer for Direction 1
-            document.getElementById(`timeRed2_2`).innerText = formatTime(red2_2);
-            document.getElementById('timeRed2_2').style.display = 'block';  // Show red timer for Direction 2
-            activateLight();  // Activate lights based on the active timers
-            if (green1 <= 0 && green1_2 ) {
-                currentPhase1 = 'yellow';
-                currentPhase1_2 = 'yellow_2';
-                green1 = 90;  // Reset green to 90 seconds when transitioning
-                green1_2 = 90;  // Reset green to 90 seconds when transitioning
-                red1 = green2 + yellow2; // Update red to match the new green and yellow sum
-                red1_2 = green2_2 + yellow2_2; // Update red to match the new green and yellow sum
-            }
-        } else if (currentPhase1 === 'yellow' && currentPhase1_2 === 'yellow_2') {
-            yellow1--;
-            yellow1_2--;
-            red2--;
-            red2_2--;
-            document.getElementById(`timeYellow1`).innerText = formatTime(yellow1);
-            document.getElementById('timeYellow1').style.display = 'block';  // Show yellow timer for Direction 1
-            document.getElementById(`timeRed2`).innerText = formatTime(red2);
-            document.getElementById('timeRed2').style.display = 'block';  // Show red timer for Direction 2
+            // Hide the video player and show the image
+            document.getElementById("my-video").style.display = "none";
+            document.getElementById("error-image").style.display = "block";
 
-            document.getElementById(`timeYellow1_2`).innerText = formatTime(yellow1_2);
-            document.getElementById('timeYellow1_2').style.display = 'block';  // Show yellow timer for Direction 1
-            document.getElementById(`timeRed2_2`).innerText = formatTime(red2_2);
-            document.getElementById('timeRed2_2').style.display = 'block';  // Show red timer for Direction 2
-            activateLight();  // Activate lights based on the active timers
-            if (yellow1 <= 0 && yellow1_2 <= 0) {
-                currentPhase1 = 'red';
-                currentPhase1_2 = 'red_2';
-                yellow1 = 10; // Reset yellow to 10 seconds when transitioning
-                yellow1_2 = 10;
-                red1 = green2 + yellow2; // Update red to match the new green and yellow sum
-                red1_2 = green2_2 + yellow2_2;
-            }
-        } else if (currentPhase1 === 'red' && currentPhase1_2 === 'red_2') {
-            red1--;
-            red1_2--;
-            document.getElementById(`timeRed1`).innerText = formatTime(red1);
-            document.getElementById('timeRed1').style.display = 'block';  // Show red timer for Direction 1
-            
-            document.getElementById(`timeRed1_2`).innerText = formatTime(red1_2);
-            document.getElementById('timeRed1_2').style.display = 'block';  // Show red timer for Direction 1
-            activateLight();  // Activate lights based on the active timers
-            if (red1 <= 0 && red1_2 <= 0) {
-                currentPhase1 = 'green';
-                currentPhase1_2 = 'green_2';
-                red1 = green2 + yellow2;
-                red1_2 = green2_2 + yellow2_2;  // Reset red to match the new green and yellow sum
-                currentDirection = 2; // Switch to Direction 2
-            }
-        }
+            // Retry the video every 5 seconds
+            let retryInterval = setInterval(() => {
+                //console.log("Retrying video...");
+                player.src(player.currentSrc()); // Reload the same video source
+                player.load();
+                player.play().then(() => {
+                    console.log("Video is now playing!");
 
-        // Update Direction 2 (only if it's active)
-        if (currentPhase2 === 'green' && currentPhase1_2 === 'green_2' && currentDirection === 2) {
-            green2--;
-            green2_2--;
-            red1--;
-            red1_2--;
-            document.getElementById(`timeGreen2`).innerText = formatTime(green2);
-            document.getElementById('timeGreen2').style.display = 'block';  // Show green timer for Direction 2
-            document.getElementById(`timeRed1`).innerText = formatTime(red1);
-            document.getElementById('timeRed1').style.display = 'block';  // Show red timer for Direction 1
+                    // Show the video and hide the image
+                    document.getElementById("my-video").style.display = "block";
+                    document.getElementById("error-image").style.display = "none";
 
-            document.getElementById(`timeGreen2_2`).innerText = formatTime(green2_2);
-            document.getElementById('timeGreen2_2').style.display = 'block';  // Show green timer for Direction 2
-            document.getElementById(`timeRed1_2`).innerText = formatTime(red1_2);
-            document.getElementById('timeRed1_2').style.display = 'block';  // Show red timer for Direction 1
-            activateLight();  // Activate lights based on the active timers
-            if (green2 <= 0 && green2_2 <= 0) {
-                currentPhase2 = 'yellow';
-                currentPhase2_2 = 'yellow_2';
-                green2 = 90;
-                green2_2 = 90; // Reset green to 90 seconds when transitioning
-                red2 = green2 + yellow2; // Update red to match the new green and yellow sum
-                red2_2 = green2_2 + yellow2_2;
-            }
-        } else if (currentPhase2 === 'yellow' && currentPhase2 === 'yellow_2' && currentDirection === 2) {
-            yellow2--;
-            yellow2_2--;
-            red1--;
-            red1_2--;
-            document.getElementById(`timeYellow2`).innerText = formatTime(yellow2);
-            document.getElementById('timeYellow2').style.display = 'block';  // Show yellow timer for Direction 2
-            document.getElementById(`timeRed1`).innerText = formatTime(red1);
-            document.getElementById('timeRed1').style.display = 'block';  // Show red timer for Direction 1
-
-            document.getElementById(`timeYellow2_2`).innerText = formatTime(yellow2_2);
-            document.getElementById('timeYellow2_2').style.display = 'block';  // Show yellow timer for Direction 2
-            document.getElementById(`timeRed1_2`).innerText = formatTime(red1_2);
-            document.getElementById('timeRed1_2').style.display = 'block';  // Show red timer for Direction 1
-            activateLight();  // Activate lights based on the active timers
-            if (yellow2 <= 0 && yellow2_2 <= 0) {
-                currentPhase2 = 'red';
-                currentPhase2_2 = 'red_2';
-                yellow2 = 10; // Reset yellow to 10 seconds when transitioning
-                yellow2_2 = 10;
-                red2 = green2 + yellow2; // Update red to match the new green and yellow sum
-                red2_2 = green2_2 + yellow2_2;
-            }
-        } else if (currentPhase2 === 'red' && currentPhase2_2 === 'red_2' && currentDirection === 2) {
-            red2--;
-            red2_2--;
-            document.getElementById(`timeRed2`).innerText = formatTime(red2);
-            document.getElementById('timeRed2').style.display = 'block';  // Show red timer for Direction 2
-            
-            document.getElementById(`timeRed2_2`).innerText = formatTime(red2_2);
-            document.getElementById('timeRed2_2').style.display = 'block';  // Show red timer for Direction 2
-            activateLight();  // Activate lights based on the active timers
-            if (red2 <= 0 && red2_2 <= 0) {
-                currentPhase2 = 'green';
-                currentPhase2_2 = 'green_2';
-                red2 = green1 + yellow1;  // Reset red to match Direction 1's green and yellow sum
-                red2_2 = green1_2 + yellow1_2;
-                currentDirection = 1; // Switch to Direction 1
-            }
-        }
-    }
-
-    function activateLight() {
-    // Hide all traffic lights
-    document.querySelectorAll('.traffic-light1 div, .traffic-light1-2 div, .traffic-light2 div, .traffic-light2-2 div').forEach(light => {
-        light.style.opacity = '0.2'; // Set all lights to barely visible
-    });
-
-    // Activate lights for Direction 1 (light 1 & light 2)
-        if (currentPhase1 === 'green' && currentPhase1_2 === 'green_2') {
-            activateColorLight(1, 'green');
-            activateColorLight(1_2, 'green_2'); // Light 2 for Direction 1
-            activateColorLight(2, 'red');
-            activateColorLight(2_2, 'red_2'); // Light 2 for Direction 2
-        } else if (currentPhase1 === 'yellow' && currentPhase1_2 === 'yellow_2') {
-            activateColorLight(1, 'yellow');
-            activateColorLight(1_2, 'yellow_2');
-            activateColorLight(2, 'red');
-            activateColorLight(2_2, 'red_2');
-        } else if (currentPhase1 === 'red' && currentPhase1_2 === 'red_2') {
-            activateColorLight(1, 'red');
-            activateColorLight(1_2, 'red_2');
-            activateColorLight(2, 'green');
-            activateColorLight(2_2, 'green_2');
-        }
-
-        // Activate lights for Direction 2 (light 1 & light 2)
-        if (currentPhase2 === 'green' && currentPhase2_2 === 'green_2' && currentDirection === 2) {
-            activateColorLight(2, 'green');
-            activateColorLight(2_2, 'green_2');
-            activateColorLight(1, 'red');
-            activateColorLight(1_2, 'red_2');
-        } else if (currentPhase2 === 'yellow' && currentPhase2_2 === 'yellow_2' && currentDirection === 2) {
-            activateColorLight(2, 'yellow');
-            activateColorLight(2_2, 'yellow_2');
-            activateColorLight(1, 'red');
-            activateColorLight(1_2, 'red_2');
-        } else if (currentPhase2 === 'red' && currentPhase2_2 === 'red_2' && currentDirection === 2) {
-            activateColorLight(2, 'red');
-            activateColorLight(2_2, 'red_2');
-            activateColorLight(1, 'green');
-            activateColorLight(1_2, 'green_2');
-        }
-    }
-
-    // Helper function to activate the specific colored light for both primary and secondary traffic lights in each direction
-    function activateColorLight(direction, color) {
-        let lights = document.querySelectorAll(`.traffic-light${direction} .${color}, .traffic-light${direction}-2 .${color}`);
-        
-        lights.forEach(light => {
-            light.style.opacity = '1'; // Set the active light to 100% visibility
-        });
-    }
-
-
-    function formatTime(seconds) {
-        var minutes = Math.floor(seconds / 60);
-        seconds = seconds % 60;
-        return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    }
-
-    setInterval(function() {
-        updateTimers();
-    }, 1000);
-</script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeSignalID = urlParams.get('ID');
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl(`/controlhub?clientType=JavaScript&activeSignalID=${activeSignalID}`)
-            .build();
-
-        connection.on("ReceiveMessage", function (user, message) {
-            @* const msg = user + ": " + message;
-            const li = document.createElement("li");
-            li.textContent = msg;
-            document.getElementById("messages").appendChild(li); *@
-            console.log(message);
-        });
-
-        connection.start().then(function () {
-            document.getElementById("manualOverride").addEventListener("click", function (event) {
-                const activeSignalID = urlParams.get('ID');
-                connection.invoke("SendMessageToClientFromJS", activeSignalID, "Manual Override").catch(function (err) {
-                    return console.error(err.toString());
+                    // Stop retrying since the video is working
+                    clearInterval(retryInterval);
+                }).catch((err) => {
+                    //console.warn("Retry failed, still an error:", err);
                 });
-                event.preventDefault();
-            });
-        }).catch(function (err) {
-            return console.error(err.toString());
+            }, 3000);
         });
-    });
-</script>
+
+        @* // Initial Timers
+        var green1 = 90;  // 1 minute 30 seconds for green in Direction 1 light 1
+        var yellow1 = 10; // 10 seconds for yellow in Direction 1 light 1
+        var green2 = 90;  // 1 minute 30 seconds for green in Direction 2 light 1
+        var yellow2 = 10; // 10 seconds for yellow in Direction 2 light 1
+
+        var green1_2 = 90;  // 1 minute 30 seconds for green in Direction 1 light 2
+        var yellow1_2 = 10; // 10 seconds for yellow in Direction 1 light 2
+        var green2_2 = 90;  // 1 minute 30 seconds for green in Direction 2 light 2
+        var yellow2_2 = 10; // 10 seconds for yellow in Direction 2 light 2
+
+        // Initial red durations for both directions
+        var red1 = green2 + yellow2; // Red duration for Direction 1 is equal to Direction 2's green + yellow time
+        var red2 = green1 + yellow1; // Red duration for Direction 2 is equal to Direction 1's green + yellow time
+        var red1_2 = green2_2 + yellow2_2; // Red duration for Direction 1 is equal to Direction 2's green + yellow time
+        var red2_2 = green1_2 + yellow1_2; // Red duration for Direction 2 is equal to Direction 1's green + yellow time
+
+        var currentDirection = 1;
+        var currentPhase1 = 'green'; // Phase for Direction 1
+        var currentPhase2 = 'red'; // Phase for Direction 2
+        var currentPhase1_2 = 'green_2'; // Phase for Direction 1 light 2
+        var currentPhase2_2 = 'red_2'; // Phase for Direction 2 light 2
+
+        function updateTimers() {
+            // Hide all timers initially
+            document.querySelectorAll('#timeGreen1, #timeYellow1, #timeRed1, #timeGreen2, #timeYellow2, #timeRed2').forEach(timer => {
+                timer.style.display = 'none';
+            });
+
+            document.querySelectorAll('#timeGreen1_2, #timeYellow1_2, #timeRed1_2, #timeGreen2_2, #timeYellow2_2, #timeRed2_2').forEach(timer => {
+                timer.style.display = 'none';
+            });
+
+            // Update Direction 1
+            if (currentPhase1 === 'green' && currentPhase1_2 === 'green_2') {
+                green1--;
+                green1_2--;
+                red2--;
+                red2_2--;
+                document.getElementById(`timeGreen1`).innerText = formatTime(green1);
+                document.getElementById('timeGreen1').style.display = 'block';  // Show green timer for Direction 1
+                document.getElementById(`timeRed2`).innerText = formatTime(red2);
+                document.getElementById('timeRed2').style.display = 'block';  // Show red timer for Direction 2
+                
+                document.getElementById(`timeGreen1_2`).innerText = formatTime(green1_2);
+                document.getElementById('timeGreen1_2').style.display = 'block';  // Show green timer for Direction 1
+                document.getElementById(`timeRed2_2`).innerText = formatTime(red2_2);
+                document.getElementById('timeRed2_2').style.display = 'block';  // Show red timer for Direction 2
+                activateLight();  // Activate lights based on the active timers
+                if (green1 <= 0 && green1_2 ) {
+                    currentPhase1 = 'yellow';
+                    currentPhase1_2 = 'yellow_2';
+                    green1 = 90;  // Reset green to 90 seconds when transitioning
+                    green1_2 = 90;  // Reset green to 90 seconds when transitioning
+                    red1 = green2 + yellow2; // Update red to match the new green and yellow sum
+                    red1_2 = green2_2 + yellow2_2; // Update red to match the new green and yellow sum
+                }
+            } else if (currentPhase1 === 'yellow' && currentPhase1_2 === 'yellow_2') {
+                yellow1--;
+                yellow1_2--;
+                red2--;
+                red2_2--;
+                document.getElementById(`timeYellow1`).innerText = formatTime(yellow1);
+                document.getElementById('timeYellow1').style.display = 'block';  // Show yellow timer for Direction 1
+                document.getElementById(`timeRed2`).innerText = formatTime(red2);
+                document.getElementById('timeRed2').style.display = 'block';  // Show red timer for Direction 2
+
+                document.getElementById(`timeYellow1_2`).innerText = formatTime(yellow1_2);
+                document.getElementById('timeYellow1_2').style.display = 'block';  // Show yellow timer for Direction 1
+                document.getElementById(`timeRed2_2`).innerText = formatTime(red2_2);
+                document.getElementById('timeRed2_2').style.display = 'block';  // Show red timer for Direction 2
+                activateLight();  // Activate lights based on the active timers
+                if (yellow1 <= 0 && yellow1_2 <= 0) {
+                    currentPhase1 = 'red';
+                    currentPhase1_2 = 'red_2';
+                    yellow1 = 10; // Reset yellow to 10 seconds when transitioning
+                    yellow1_2 = 10;
+                    red1 = green2 + yellow2; // Update red to match the new green and yellow sum
+                    red1_2 = green2_2 + yellow2_2;
+                }
+            } else if (currentPhase1 === 'red' && currentPhase1_2 === 'red_2') {
+                red1--;
+                red1_2--;
+                document.getElementById(`timeRed1`).innerText = formatTime(red1);
+                document.getElementById('timeRed1').style.display = 'block';  // Show red timer for Direction 1
+                
+                document.getElementById(`timeRed1_2`).innerText = formatTime(red1_2);
+                document.getElementById('timeRed1_2').style.display = 'block';  // Show red timer for Direction 1
+                activateLight();  // Activate lights based on the active timers
+                if (red1 <= 0 && red1_2 <= 0) {
+                    currentPhase1 = 'green';
+                    currentPhase1_2 = 'green_2';
+                    red1 = green2 + yellow2;
+                    red1_2 = green2_2 + yellow2_2;  // Reset red to match the new green and yellow sum
+                    currentDirection = 2; // Switch to Direction 2
+                }
+            }
+
+            // Update Direction 2 (only if it's active)
+            if (currentPhase2 === 'green' && currentPhase1_2 === 'green_2' && currentDirection === 2) {
+                green2--;
+                green2_2--;
+                red1--;
+                red1_2--;
+                document.getElementById(`timeGreen2`).innerText = formatTime(green2);
+                document.getElementById('timeGreen2').style.display = 'block';  // Show green timer for Direction 2
+                document.getElementById(`timeRed1`).innerText = formatTime(red1);
+                document.getElementById('timeRed1').style.display = 'block';  // Show red timer for Direction 1
+
+                document.getElementById(`timeGreen2_2`).innerText = formatTime(green2_2);
+                document.getElementById('timeGreen2_2').style.display = 'block';  // Show green timer for Direction 2
+                document.getElementById(`timeRed1_2`).innerText = formatTime(red1_2);
+                document.getElementById('timeRed1_2').style.display = 'block';  // Show red timer for Direction 1
+                activateLight();  // Activate lights based on the active timers
+                if (green2 <= 0 && green2_2 <= 0) {
+                    currentPhase2 = 'yellow';
+                    currentPhase2_2 = 'yellow_2';
+                    green2 = 90;
+                    green2_2 = 90; // Reset green to 90 seconds when transitioning
+                    red2 = green2 + yellow2; // Update red to match the new green and yellow sum
+                    red2_2 = green2_2 + yellow2_2;
+                }
+            } else if (currentPhase2 === 'yellow' && currentPhase2 === 'yellow_2' && currentDirection === 2) {
+                yellow2--;
+                yellow2_2--;
+                red1--;
+                red1_2--;
+                document.getElementById(`timeYellow2`).innerText = formatTime(yellow2);
+                document.getElementById('timeYellow2').style.display = 'block';  // Show yellow timer for Direction 2
+                document.getElementById(`timeRed1`).innerText = formatTime(red1);
+                document.getElementById('timeRed1').style.display = 'block';  // Show red timer for Direction 1
+
+                document.getElementById(`timeYellow2_2`).innerText = formatTime(yellow2_2);
+                document.getElementById('timeYellow2_2').style.display = 'block';  // Show yellow timer for Direction 2
+                document.getElementById(`timeRed1_2`).innerText = formatTime(red1_2);
+                document.getElementById('timeRed1_2').style.display = 'block';  // Show red timer for Direction 1
+                activateLight();  // Activate lights based on the active timers
+                if (yellow2 <= 0 && yellow2_2 <= 0) {
+                    currentPhase2 = 'red';
+                    currentPhase2_2 = 'red_2';
+                    yellow2 = 10; // Reset yellow to 10 seconds when transitioning
+                    yellow2_2 = 10;
+                    red2 = green2 + yellow2; // Update red to match the new green and yellow sum
+                    red2_2 = green2_2 + yellow2_2;
+                }
+            } else if (currentPhase2 === 'red' && currentPhase2_2 === 'red_2' && currentDirection === 2) {
+                red2--;
+                red2_2--;
+                document.getElementById(`timeRed2`).innerText = formatTime(red2);
+                document.getElementById('timeRed2').style.display = 'block';  // Show red timer for Direction 2
+                
+                document.getElementById(`timeRed2_2`).innerText = formatTime(red2_2);
+                document.getElementById('timeRed2_2').style.display = 'block';  // Show red timer for Direction 2
+                activateLight();  // Activate lights based on the active timers
+                if (red2 <= 0 && red2_2 <= 0) {
+                    currentPhase2 = 'green';
+                    currentPhase2_2 = 'green_2';
+                    red2 = green1 + yellow1;  // Reset red to match Direction 1's green and yellow sum
+                    red2_2 = green1_2 + yellow1_2;
+                    currentDirection = 1; // Switch to Direction 1
+                }
+            }
+        }
+
+        function activateLight() {
+        // Hide all traffic lights
+        document.querySelectorAll('.traffic-light1 div, .traffic-light1-2 div, .traffic-light2 div, .traffic-light2-2 div').forEach(light => {
+            light.style.opacity = '0.2'; // Set all lights to barely visible
+        });
+
+        // Activate lights for Direction 1 (light 1 & light 2)
+            if (currentPhase1 === 'green' && currentPhase1_2 === 'green_2') {
+                activateColorLight(1, 'green');
+                activateColorLight(1_2, 'green_2'); // Light 2 for Direction 1
+                activateColorLight(2, 'red');
+                activateColorLight(2_2, 'red_2'); // Light 2 for Direction 2
+            } else if (currentPhase1 === 'yellow' && currentPhase1_2 === 'yellow_2') {
+                activateColorLight(1, 'yellow');
+                activateColorLight(1_2, 'yellow_2');
+                activateColorLight(2, 'red');
+                activateColorLight(2_2, 'red_2');
+            } else if (currentPhase1 === 'red' && currentPhase1_2 === 'red_2') {
+                activateColorLight(1, 'red');
+                activateColorLight(1_2, 'red_2');
+                activateColorLight(2, 'green');
+                activateColorLight(2_2, 'green_2');
+            }
+
+            // Activate lights for Direction 2 (light 1 & light 2)
+            if (currentPhase2 === 'green' && currentPhase2_2 === 'green_2' && currentDirection === 2) {
+                activateColorLight(2, 'green');
+                activateColorLight(2_2, 'green_2');
+                activateColorLight(1, 'red');
+                activateColorLight(1_2, 'red_2');
+            } else if (currentPhase2 === 'yellow' && currentPhase2_2 === 'yellow_2' && currentDirection === 2) {
+                activateColorLight(2, 'yellow');
+                activateColorLight(2_2, 'yellow_2');
+                activateColorLight(1, 'red');
+                activateColorLight(1_2, 'red_2');
+            } else if (currentPhase2 === 'red' && currentPhase2_2 === 'red_2' && currentDirection === 2) {
+                activateColorLight(2, 'red');
+                activateColorLight(2_2, 'red_2');
+                activateColorLight(1, 'green');
+                activateColorLight(1_2, 'green_2');
+            }
+        } *@
+
+        $(document).ready(function () {
+            $('#timeGreen1, #timeYellow1, #timeRed1, #timeGreen2, #timeYellow2, #timeRed2').each(function () {
+                $(this).text('');
+            });
+
+            $('.green1, .yellow1, .green2, .yellow2').each(function () {
+                $(this).css('opacity', '0.3');
+            });
+
+            $('.red1, .red2').each(function () {
+                $(this).css('opacity', '1');
+            }); 
+        });
+
+
+        // Helper function to activate the specific colored light for both primary and secondary traffic lights in each direction
+        function activateColorLight(direction, colour, time) {
+            if (direction === 1) {
+                if (colour === 'green') {
+                    $('.green1, .red2').each(function () {
+                        $(this).css('opacity', '1');
+                    });
+                    $('.yellow1, .yellow2, .red1, .green2').each(function () {
+                        $(this).css('opacity', '0.3');
+                    });
+                } else if (colour === 'yellow') {
+                    $('.yellow1, .red2').each(function () {
+                        $(this).css('opacity', '1');
+                    });
+                    $('.green1, .yellow2, .red1, .green2').each(function () {
+                        $(this).css('opacity', '0.3');
+                    });
+                } else {
+                    $('.red1, .red2').each(function () {
+                        $(this).css('opacity', '1');
+                    });
+                    $('.green1, .yellow2, .yellow1, .green2').each(function () {
+                        $(this).css('opacity', '0.3');
+                    });
+                }
+            } else {
+                if (colour === 'green') {
+                    $('.green2, .red1').each(function () {
+                        $(this).css('opacity', '1');
+                    });
+                    $('.yellow1, .yellow2, .red2, .green1').each(function () {
+                        $(this).css('opacity', '0.3');
+                    });
+                } else if (colour === 'yellow') {
+                    $('.yellow2, .red1').each(function () {
+                        $(this).css('opacity', '1');
+                    });
+                    $('.green1, .yellow1, .red2, .green2').each(function () {
+                        $(this).css('opacity', '0.3');
+                    });
+                } else {
+                    $('.red2, .red1').each(function () {
+                        $(this).css('opacity', '1');
+                    });
+                    $('.green1, .yellow2, .yellow1, .green2').each(function () {
+                        $(this).css('opacity', '0.3');
+                    });
+                }
+            }
+
+            let lights = document.querySelectorAll(`.traffic-light${direction} .${colour}`);
+            
+            lights.forEach(light => {
+                light.style.opacity = '1'; // Set the active light to 100% visibility
+            });
+
+            // Update the timer for the active light
+            $(`#time${colour}${direction}`).each(function () {
+                $(this).text(formatTime(time));
+            });
+        }
+
+
+        function formatTime(seconds) {
+            var minutes = Math.floor(seconds / 60);
+            seconds = seconds % 60;
+            return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        @* setInterval(function() {
+            updateTimers();
+        }, 1000); *@
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeSignalID = urlParams.get('ID');
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl(`/controlhub?clientType=JavaScript&activeSignalID=${activeSignalID}`)
+                .build();
+
+            connection.on("ReceiveMessage", function (user, message) {
+                // Split the message into key-value pairs
+                const parts = message.split(" || ");
+
+                // Create an object to store extracted values
+                const data = {};
+
+                // Process each part
+                parts.forEach(part => {
+                    let [key, value] = part.split(": ").map(str => str.trim());
+
+                    if (key === "Status") {
+                        // Assume value is "light_dir_1" or "light_dir_2"
+                        const partsArr = value.split("_");
+                        // Get the last element and convert it to a number
+                        data.lightDirection = parseInt(partsArr[partsArr.length - 1], 10);
+                    }
+                    if (key === "Colour") {
+                        data.colour = value;
+                    }
+                    if (key === "Time") {
+                        data.time = Math.round(parseFloat(value)); // Convert to number and round
+                    }
+                });
+
+                console.log(data);
+
+                activateColorLight(data.lightDirection, data.colour, data.time);
+
+
+            });
+
+            connection.start().then(function () {
+                document.getElementById("manualOverride").addEventListener("click", function (event) {
+                    const activeSignalID = urlParams.get('ID');
+                    connection.invoke("SendMessageToClientFromJS", activeSignalID, "Manual Override").catch(function (err) {
+                        return console.error(err.toString());
+                    });
+                    event.preventDefault();
+                });
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+        });
+    </script>
+}
