@@ -1,5 +1,5 @@
 {
-    "IsDebug": 1,
+    "IsDebug": 0,
     "Stream_URL": "rtmp://streamURL/live/",
     "API_URL": "https://apiURL/",
     "Video_URL": "https://videoURL/",

@@ -45,7 +45,7 @@ def incident_detected():
 
 def start_device_control():
     global device_control_instance
-    device_control_instance = deviceControl.TrafficLightController()
+    device_control_instance = deviceControl.TrafficLightController(signalR)
     device_control_instance.traffic_cycle()
 
 def update_config():
@@ -66,8 +66,8 @@ def signalR_recieved_callback(msg):
     print(f"Received message: {msg}")
     if msg == "Manual Override":
         device_control_instance.manual_override()
-    elif msg == "Status Update":
-        signalR.send_message_to_client_by_deviceId(get_config_data()['Device_ID'], "Status: Direction: || Time: ")
+    # elif msg == "Status Update":
+    #     signalR.send_message_to_client_by_deviceId(get_config_data()['Device_ID'], "Status: Direction: || Time: ")
     elif msg == "Config Update":
         update_config()
         device_control_instance.config_update()
