@@ -37,7 +37,12 @@ class TrafficLightController:
         self.pedestrian_buttons["light_dir_1"].when_pressed = lambda: self.pedestrian_pressed("light_dir_1")
         self.pedestrian_buttons["light_dir_2"].when_pressed = lambda: self.pedestrian_pressed("light_dir_2")
 
-        # Define passive buzzers on pins 12, 13, 14, and 15 using PWMOutputDevice
+        self.pedestrian_button_pressed = {
+            "light_dir_1": False,
+            "light_dir_2": False
+        }
+
+        # Define passive buzzers on pins 12, 13, 14, and 15 using PWMOutputDevice (Buzzers need to be attached to 3.3v)
         self.buzzers = {
             "buzzer1": PWMOutputDevice(12),
             "buzzer2": PWMOutputDevice(13),
@@ -50,8 +55,9 @@ class TrafficLightController:
 
     def pedestrian_pressed(self, light_name):
         """Handles pedestrian button press event for the given direction."""
-        print(f"Pedestrian button for {light_name} pressed! Adjusting cycle...")
-        self.interrupt_flag.set()
+        #print(f"Pedestrian button for {light_name} pressed! Adjusting cycle...")
+        #self.interrupt_flag.set()
+        self.pedestrian_button_pressed[light_name] = True
 
     def update_config(self):
         """Updates the config dynamically and interrupts the current cycle."""
@@ -117,6 +123,7 @@ class TrafficLightController:
         # Green light phase
         self.switch_light(light_name, "green")
         start_time = time.time()
+        remaining
         while time.time() - start_time < green_time:
             time.sleep(0.5)
             remaining = green_time - (time.time() - start_time)
@@ -124,18 +131,20 @@ class TrafficLightController:
                 config.Config().get('Device_ID'),
                 f"Status: {light_name} || Colour: Green || Time: {remaining}"
             )
+            if self.pedestrian_button_pressed[light_name]:
+                if (remaining > pedestrian_time):
+                    remaining_time = pedestrian_time
+                else:
+                    remaining_time = remaining, pedestrian_time
+                print(f"Pedestrian crossing activated for {light_name}! Decreasing time to {remaining_time} seconds.")
+            self.pedestrian_button_pressed[other_light_name] = False
+            self.pedestrian_button_pressed[light_name] = False
             if self.interrupt_flag.is_set():
                 print(f"Interrupt detected during {light_name} green phase.")
                 break  # Interrupt green phase, but go to yellow
 
         # Example: play a short tone on buzzers at the end of green phase
         self.play_buzzer_tone(frequency=440, duration=0.5)
-
-        # If pedestrian button is pressed, extend green time
-        if self.pedestrian_buttons[light_name].is_pressed:
-            remaining_time = max(green_time - (time.time() - start_time), pedestrian_time)
-            print(f"Pedestrian crossing activated for {light_name}! Decreasing time to {remaining_time} seconds.")
-            time.sleep(remaining_time)
 
         # Yellow light phase
         self.switch_light(light_name, "yellow")
