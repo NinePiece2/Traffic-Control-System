@@ -78,8 +78,14 @@ namespace Traffic_Control_System.Hubs
             return Context.ConnectionId;
         }
 
-        public async Task SendMessageToClientByDeviceID(string deviceID)
+        public async Task SendMessageToClientByDeviceID(string deviceID, string message)
         {
+            if (string.IsNullOrEmpty(message))
+            {
+                Console.WriteLine("SendMessageToClientBySignalID failed: message is null or empty.");
+                return;
+            }
+
             var activeSignalId = _context.ActiveSignals
                     .Where(a => a.DeviceStreamUID == _context.StreamClients
                         .Where(c => c.DeviceStreamID == deviceID)
@@ -94,7 +100,7 @@ namespace Traffic_Control_System.Hubs
                 foreach (var client in signalRClients)
                 {
                     Console.WriteLine($"Sending message to {client.ClientType} client with connection ID {client.ConnectionID}.");
-                    await Clients.Client(client.ConnectionID).SendAsync("ReceiveMessage", "System", "Manual Override");
+                    await Clients.Client(client.ConnectionID).SendAsync("ReceiveMessage", "System", message);
                 }
             }
             else
@@ -104,9 +110,9 @@ namespace Traffic_Control_System.Hubs
 
         }
 
-        public async Task SendMessageToClientFromJS(string activeSignalId)
+        public async Task SendMessageToClientFromJS(string activeSignalId, string message)
         {
-            Console.WriteLine($"Sending message to JavaScript client with activeSignalId {activeSignalId}.");
+            //Console.WriteLine($"Sending message to JavaScript client with activeSignalId {activeSignalId}.");
 
             if (!int.TryParse(activeSignalId, out int activeSignalIdInt))
             {
@@ -120,14 +126,24 @@ namespace Traffic_Control_System.Hubs
                 return;
             }
 
-            try{
+            if (string.IsNullOrEmpty(message))
+            {
+                Console.WriteLine("SendMessageToClientBySignalID failed: message is null or empty.");
+                return;
+            }
 
-                var signalRClients = _context.SignalRClient
+            try{
+                var signalRClientsCount = _context.SignalRClient
                                         .Where(c => c.ActiveSignalID == activeSignalIdInt && c.ClientType == "Python")
                                         .OrderByDescending(c => c.LastUpdated)
-                                        .FirstOrDefault();
-                Console.WriteLine($"Sending message to Python client with connection ID {signalRClients.ConnectionID}.");
-                await Clients.Client(signalRClients.ConnectionID).SendAsync("ReceiveMessage", "System", "Manual Override");
+                                        .Count();
+                if (signalRClientsCount > 0){
+                    var signalRClients = _context.SignalRClient
+                                            .Where(c => c.ActiveSignalID == activeSignalIdInt && c.ClientType == "Python")
+                                            .OrderByDescending(c => c.LastUpdated)
+                                            .FirstOrDefault();
+                    await Clients.Client(signalRClients.ConnectionID).SendAsync("ReceiveMessage", "System", message);
+                }
             }
             catch (Exception e){
                 Console.WriteLine($"Error: {e.Message}");

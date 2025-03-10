@@ -589,6 +589,17 @@
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
+                        const connection = new signalR.HubConnectionBuilder()
+                            .withUrl(`/controlhub?clientType=JavaScript&activeSignalId=${parseInt(updatedData.ID)}`)
+                            .build();
+                        connection.start()
+                            .then(() => {
+                                return connection.invoke("SendMessageToClientFromJS", updatedData.ID, "Config Update");
+                            })
+                            .then(() => {
+                                return connection.stop();
+                            })
+                            .catch(err => console.error("SignalR Error:", err.toString()));
                         var grid = document.getElementById('adminSignalGrid').ej2_instances[0];
                         grid.refresh(); // Refresh grid after successful update
                         $("#editTrafficSignalModal").modal("hide");

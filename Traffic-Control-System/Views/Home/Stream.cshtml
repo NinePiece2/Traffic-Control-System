@@ -592,7 +592,7 @@
 
             document.getElementById("manualOverride").addEventListener("click", function (event) {
                 const activeSignalID = urlParams.get('ID');
-                connection.invoke("SendMessageToClientFromJS", activeSignalID).catch(function (err) {
+                connection.invoke("SendMessageToClientFromJS", activeSignalID, "Manual Override").catch(function (err) {
                     return console.error(err.toString());
                 });
                 event.preventDefault();
