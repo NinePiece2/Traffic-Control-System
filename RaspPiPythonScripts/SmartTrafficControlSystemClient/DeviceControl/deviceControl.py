@@ -105,7 +105,7 @@ class TrafficLightController:
         for tone, duration in zip(tones, durations):
             for buzzer in self.buzzers.values():
                 buzzer.frequency = tone
-                buzzer.on()
+                buzzer.value = 0.2
             time.sleep(duration)
             for buzzer in self.buzzers.values():
                 buzzer.off()
@@ -122,12 +122,11 @@ class TrafficLightController:
     def incident_detected(self):
         for buzzer in self.buzzers.values():
             buzzer.off()
-        frequencies = [1000, 2000, 1500, 2500, 3000, 2500, 1500, 2000]  # Frequencies in Hz
-        duration = 0.1  # Duration for each tone in seconds
         
-        for _ in range(10):  # Number of times to repeat the siren pattern
-            for frequency in frequencies:
-                self.play_buzzer_tone(frequency, duration)
+        self.play_jingle_in_thread(
+            [1000, 700, 1000, 700, 1000, 700],  # Repeated 3 times
+            [0.3, 0.3, 0.3, 0.3, 0.3, 0.3]  # Even timing
+        )
 
     def play_jingle_in_thread(self, tones, durations):
         """
@@ -138,15 +137,15 @@ class TrafficLightController:
 
     def start_walking_jingle(self):
         """ Jingle for when it's safe to walk """
-        self.play_jingle_in_thread([1000, 1500, 2000], [0.2, 0.2, 0.2])
+        self.play_jingle_in_thread([600, 900, 1200], [0.2, 0.2, 0.2])
 
     def prepare_to_stop_jingle(self):
         """ Jingle for when the light is about to change """
-        self.play_jingle_in_thread([2000, 1500, 2000], [0.3, 0.3, 0.3])
+        self.play_jingle_in_thread([1200, 900, 1200], [0.3, 0.3, 0.3])
 
     def do_not_walk_jingle(self):
         """ Jingle for when pedestrians should stop immediately """
-        self.play_jingle_in_thread([5000, 3000, 1000, 5000, 3000, 1000], [0.15, 0.15, 0.15, 0.15, 0.15, 0.15])
+        self.play_jingle_in_thread([1200, 800, 400, 1200, 800, 400], [0.2, 0.2, 0.2, 0.2, 0.2, 0.2])
 
     def traffic_cycle(self):
         """Main traffic light cycle that alternates between directions."""
