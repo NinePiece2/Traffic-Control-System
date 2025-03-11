@@ -312,9 +312,7 @@ namespace Traffic_Control_System.Controllers
             // Return the generated keys
             return Json(output);
         }
-
-        public IActionResult SignalRTest() { return View(); }
-
+        
         [HttpPost]
         public async Task<IActionResult> UpdateTrafficSignal([FromBody] ActiveSignals signal)
         {
