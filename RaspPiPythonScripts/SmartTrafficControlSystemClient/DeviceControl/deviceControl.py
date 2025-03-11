@@ -45,10 +45,10 @@ class TrafficLightController:
 
         # Define passive buzzers on pins 12, 13, 14, and 15 using PWMOutputDevice (Buzzers need to be attached to 3.3v)
         self.buzzers = {
-            "buzzer1": PWMOutputDevice(12),
-            "buzzer2": PWMOutputDevice(13),
-            "buzzer3": PWMOutputDevice(14),
-            "buzzer4": PWMOutputDevice(15)
+            "buzzer1": PWMOutputDevice(12, active_high=False),
+            "buzzer2": PWMOutputDevice(13, active_high=False),
+            "buzzer3": PWMOutputDevice(14, active_high=False),
+            "buzzer4": PWMOutputDevice(15, active_high=False)
         }
 
         # Track active light (default direction)
