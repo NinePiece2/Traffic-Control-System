@@ -95,6 +95,21 @@ class TrafficLightController:
         time.sleep(duration)
         for buzzer in self.buzzers.values():
             buzzer.off()
+    
+    def play_jingle(self, tones, durations):
+        """
+        Plays a sequence of tones as a jingle.
+        tones: List of frequencies in Hz.
+        durations: List of durations for each tone (seconds).
+        """
+        for tone, duration in zip(tones, durations):
+            for buzzer in self.buzzers.values():
+                buzzer.frequency = tone
+                buzzer.on()
+            time.sleep(duration)
+            for buzzer in self.buzzers.values():
+                buzzer.off()
+            time.sleep(0.1)  # Short pause between tones
 
     def play_buzzer_tone_in_thread(self, frequency, duration):
         """
