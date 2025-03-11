@@ -191,7 +191,7 @@ class TrafficLightController:
             if self.interrupt_flag.is_set():
                 print(f"Interrupt detected during {light_name} green phase.")
                 break  # Interrupt green phase, but go to yellow
-            if (remaining <= 5 and endFlag == False):
+            if (remaining <= 10 and endFlag == False):
                 self.prepare_to_stop_jingle()
                 endFlag = True
 
