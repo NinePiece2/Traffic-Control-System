@@ -231,22 +231,3 @@ class TrafficLightController:
             light["green"].off()
         for buzzer in self.buzzers.values():
             buzzer.off()
-
-
-# Example usage:
-if __name__ == "__main__":
-    # Replace with your actual SignalR client callback object that has send_message_to_client_by_deviceId() method.
-    class DummyCallback:
-        def send_message_to_client_by_deviceId(self, device_id, message):
-            print(f"[Device {device_id}]: {message}")
-
-    dummy_callback = DummyCallback()
-    traffic_controller = TrafficLightController(dummy_callback)
-    traffic_controller.start()
-
-    try:
-        while True:
-            time.sleep(1)  # Keep the main thread alive
-    except KeyboardInterrupt:
-        print("Traffic Light System Shutting Down...")
-        traffic_controller.stop()
