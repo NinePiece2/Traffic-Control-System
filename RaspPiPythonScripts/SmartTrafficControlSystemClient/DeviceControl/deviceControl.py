@@ -241,9 +241,8 @@ class TrafficLightController:
                 
 
             # Check for pressure sensor deactivation
-            if (self.last_pressure_release_detected[f"{other_light_name}_sensor1"] > start_time):
-                self.incident_detected_callback()
-            if (self.last_pressure_release_detected[f"{other_light_name}_sensor2"] > start_time):
+            if (self.last_pressure_release_detected[f"{other_light_name}_sensor1"] > start_time or
+                    self.last_pressure_release_detected[f"{other_light_name}_sensor2"] > start_time):
                 self.incident_detected_callback()
             
             if (remaining <= 10 and endFlag == False):
@@ -271,9 +270,8 @@ class TrafficLightController:
                 config.Config().get('Device_ID'),
                 f"Status: {light_name} || Colour: Red || Time: {2 - (time.time() - start_time)}"
             )
-            if (self.last_pressure_release_detected[f"{light_name}_sensor1"] > start_time):
-                self.incident_detected_callback()
-            if (self.last_pressure_release_detected[f"{light_name}_sensor2"] > start_time):
+            if (self.last_pressure_release_detected[f"{light_name}_sensor1"] > start_time or
+                    self.last_pressure_release_detected[f"{light_name}_sensor2"] > start_time):
                 self.incident_detected_callback()
 
     def start(self):

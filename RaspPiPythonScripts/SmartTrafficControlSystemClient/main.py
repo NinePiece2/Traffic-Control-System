@@ -15,6 +15,7 @@ signalR = None
 device_control_instance = None
 
 last_detected_license_plate = ""
+last_incident_time = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
 
 def get_config_data():
     cfg = config.Config()
@@ -39,6 +40,9 @@ def start_video_capture():
     video_capture_instance.start()
 
 def incident_detected():
+    if time.time() - last_incident_time < 10:
+        return
+    
     global video_capture_instance
     global api_instance
     global device_control_instance
@@ -49,7 +53,7 @@ def incident_detected():
     if video_capture_instance:
         video_capture_instance.record_clip(filename)  # Use the stored instance
         print(f"Video clip saved as {filename}")
-        api_instance.add_traffic_violation(get_config_data()['Device_ID'], last_detected_license_plate, filename)
+        api_instance.add_traffic_violation(get_config_data()['Device_ID'], last_detected_license_plate if last_detected_license_plate else "UNDEF", filename)
     else:
         print("Error: VideoCapture instance is not running!")
 
