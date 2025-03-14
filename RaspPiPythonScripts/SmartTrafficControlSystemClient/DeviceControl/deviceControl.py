@@ -55,7 +55,7 @@ class TrafficLightController:
             "light_dir_1_sensor1": Button(5),
             "light_dir_1_sensor2": Button(6),
             "light_dir_2_sensor1": Button(13),
-            "light_dir_2_sensor2": Button(19)
+            "light_dir_2_sensor2": Button(16)
         }
 
         self.last_pressure_detected = {
