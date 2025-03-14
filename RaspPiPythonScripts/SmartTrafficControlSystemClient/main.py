@@ -42,6 +42,7 @@ def start_video_capture():
 def incident_detected():
     if time.time() - last_incident_time < 10:
         return
+    last_incident_time = time.time()
     
     global video_capture_instance
     global api_instance
