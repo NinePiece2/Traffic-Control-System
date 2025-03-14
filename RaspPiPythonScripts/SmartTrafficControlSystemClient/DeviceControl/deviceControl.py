@@ -93,12 +93,12 @@ class TrafficLightController:
     def pressure_sensor_pressed(self, sensor_name):
         """Handles pressure sensor press event for the given sensor."""
         self.last_pressure_detected[sensor_name] = time.time()
-        print(f"Pressure sensor {sensor_name} pressed {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}.")
+        #print(f"Pressure sensor {sensor_name} pressed {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}.")
 
     def pressure_sensor_released(self, sensor_name):
         """Handles pressure sensor release event for the given sensor."""
         self.last_pressure_release_detected[sensor_name] = time.time()
-        print(f"Pressure sensor {sensor_name} released {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}.")
+        #print(f"Pressure sensor {sensor_name} released {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}.")
 
     def update_config(self):
         """Updates the config dynamically and interrupts the current cycle."""
@@ -233,6 +233,19 @@ class TrafficLightController:
             if self.interrupt_flag.is_set():
                 print(f"Interrupt detected during {light_name} green phase.")
                 break  # Interrupt green phase, but go to yellow
+
+            if (self.last_pressure_detected[f"{other_light_name}_sensor1"] > start_time or
+                    self.last_pressure_detected[f"{other_light_name}_sensor2"] > start_time):
+                green_time = 25 # 25 seconds to change so cars can pass
+                start_time = time.time()
+                
+
+            # Check for pressure sensor deactivation
+            if (self.last_pressure_release_detected[f"{other_light_name}_sensor1"] > start_time):
+                self.incident_detected_callback()
+            if (self.last_pressure_release_detected[f"{other_light_name}_sensor2"] > start_time):
+                self.incident_detected_callback()
+            
             if (remaining <= 10 and endFlag == False):
                 self.prepare_to_stop_jingle()
                 endFlag = True
@@ -258,8 +271,9 @@ class TrafficLightController:
                 config.Config().get('Device_ID'),
                 f"Status: {light_name} || Colour: Red || Time: {2 - (time.time() - start_time)}"
             )
-            if (self.last_pressure_release_detected["light_dir_1_sensor1"] > self.last_pressure_detected["light_dir_1_sensor1"]):
-                #self.incident_detected()
+            if (self.last_pressure_release_detected[f"{light_name}_sensor1"] > start_time):
+                self.incident_detected_callback()
+            if (self.last_pressure_release_detected[f"{light_name}_sensor2"] > start_time):
                 self.incident_detected_callback()
 
     def start(self):

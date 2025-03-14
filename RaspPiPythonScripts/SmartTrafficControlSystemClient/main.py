@@ -14,6 +14,8 @@ api_instance = None
 signalR = None
 device_control_instance = None
 
+last_detected_license_plate = ""
+
 def get_config_data():
     cfg = config.Config()
     return cfg.get_all()
@@ -22,11 +24,17 @@ def set_config_data(key, value):
     cfg = config.Config()
     cfg.set(key, value)
 
+def license_plate_recognition_callback(license_plate):
+    global last_detected_license_plate
+    if license_plate != last_detected_license_plate:
+        last_detected_license_plate = license_plate
+
 def start_video_capture():
     global video_capture_instance
     # Initialize video stream in a separate thread
     video_capture_instance = video.VideoCapture(
-        f"{get_config_data()['Stream_URL']}{get_config_data()['Device_ID']}?key={get_config_data()['Stream_Key']}"
+        f"{get_config_data()['Stream_URL']}{get_config_data()['Device_ID']}?key={get_config_data()['Stream_Key']}",
+        license_plate_recognition_callback
     )
     video_capture_instance.start()
 
@@ -41,7 +49,7 @@ def incident_detected():
     if video_capture_instance:
         video_capture_instance.record_clip(filename)  # Use the stored instance
         print(f"Video clip saved as {filename}")
-        api_instance.add_traffic_violation(get_config_data()['Device_ID'], "Plate", filename)
+        api_instance.add_traffic_violation(get_config_data()['Device_ID'], last_detected_license_plate, filename)
     else:
         print("Error: VideoCapture instance is not running!")
 

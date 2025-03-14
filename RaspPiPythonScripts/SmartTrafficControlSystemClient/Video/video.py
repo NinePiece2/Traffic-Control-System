@@ -312,9 +312,10 @@ class Recorder:
 
 # ----- Video Capture Class (Modified for IMX500) -----
 class VideoCapture:
-    def __init__(self, rtmp_url):
+    def __init__(self, rtmp_url, license_plate_recognition_callback):
         self.rtmp_url = rtmp_url
         self.running = True
+        self.license_plate_recognition_callback = license_plate_recognition_callback
 
         if platform.system() == 'Linux':
             self.use_picamera2 = True
@@ -411,6 +412,7 @@ class VideoCapture:
                             cv2.putText(frame, lp_text, (plate_x, plate_y - 10),
                                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
                             print(f"Detected License Plate {time.strftime('%Y-%m-%d %H:%M:%S')}:", lp_text, '\n')
+                            self.license_plate_recognition_callback(lp_text)
             return True, frame
         else:
             return self.cap.read()
