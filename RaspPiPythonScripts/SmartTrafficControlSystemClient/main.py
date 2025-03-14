@@ -40,6 +40,7 @@ def start_video_capture():
     video_capture_instance.start()
 
 def incident_detected():
+    global last_incident_time
     if time.time() - last_incident_time < 10:
         return
     last_incident_time = time.time()
