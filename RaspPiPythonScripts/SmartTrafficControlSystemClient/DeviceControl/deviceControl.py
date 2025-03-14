@@ -243,6 +243,8 @@ class TrafficLightController:
             # Check for pressure sensor deactivation
             if (self.last_pressure_release_detected[f"{other_light_name}_sensor1"] > start_time or
                     self.last_pressure_release_detected[f"{other_light_name}_sensor2"] > start_time):
+                self.last_pressure_release_detected[f"{other_light_name}_sensor1"] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
+                self.last_pressure_release_detected[f"{other_light_name}_sensor2"] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
                 self.incident_detected_callback()
             
             if (remaining <= 10 and endFlag == False):
@@ -273,6 +275,8 @@ class TrafficLightController:
             if (self.last_pressure_release_detected[f"{light_name}_sensor1"] > start_time or
                     self.last_pressure_release_detected[f"{light_name}_sensor2"] > start_time):
                 self.incident_detected_callback()
+                self.last_pressure_release_detected[f"{light_name}_sensor1"] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
+                self.last_pressure_release_detected[f"{light_name}_sensor2"] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
 
     def start(self):
         """Starts the traffic light system in a separate thread."""
