@@ -33,9 +33,11 @@ def start_video_capture():
 def incident_detected():
     global video_capture_instance
     global api_instance
+    global device_control_instance
     video_GUID = api_instance.get_guid()
     currentDateTime = time.strftime("%Y-%m-%d %H:%M:%S")
     filename = f"incident-{video_GUID}-{currentDateTime}.mp4"
+    device_control_instance.incident_detected()
     if video_capture_instance:
         video_capture_instance.record_clip(filename)  # Use the stored instance
         print(f"Video clip saved as {filename}")
@@ -45,7 +47,7 @@ def incident_detected():
 
 def start_device_control():
     global device_control_instance
-    device_control_instance = deviceControl.TrafficLightController(signalR)
+    device_control_instance = deviceControl.TrafficLightController(signalR, incident_detected)
     device_control_instance.traffic_cycle()
 
 def update_config():

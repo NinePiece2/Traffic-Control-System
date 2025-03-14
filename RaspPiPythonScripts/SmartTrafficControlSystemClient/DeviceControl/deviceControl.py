@@ -15,12 +15,13 @@ else:
 
 
 class TrafficLightController:
-    def __init__(self, signalR_client_callback):
+    def __init__(self, signalR_client_callback, incident_detected_callback):
         """
         Initializes the traffic light controller with configuration.
         """
         self.interrupt_flag = threading.Event()
         self.signalR_client_callback = signalR_client_callback
+        self.incident_detected_callback = incident_detected_callback
 
         # Define traffic lights for two directions
         self.traffic_lights = {
@@ -92,13 +93,11 @@ class TrafficLightController:
     def pressure_sensor_pressed(self, sensor_name):
         """Handles pressure sensor press event for the given sensor."""
         self.last_pressure_detected[sensor_name] = time.time()
-        #self.last_pressure_release_detected[sensor_name] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
         print(f"Pressure sensor {sensor_name} pressed {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}.")
 
     def pressure_sensor_released(self, sensor_name):
         """Handles pressure sensor release event for the given sensor."""
         self.last_pressure_release_detected[sensor_name] = time.time()
-        #self.last_pressure_detected[sensor_name] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
         print(f"Pressure sensor {sensor_name} released {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}.")
 
     def update_config(self):
@@ -259,6 +258,9 @@ class TrafficLightController:
                 config.Config().get('Device_ID'),
                 f"Status: {light_name} || Colour: Red || Time: {2 - (time.time() - start_time)}"
             )
+            if (self.last_pressure_release_detected["light_dir_1_sensor1"] > self.last_pressure_detected["light_dir_1_sensor1"]):
+                #self.incident_detected()
+                self.incident_detected_callback()
 
     def start(self):
         """Starts the traffic light system in a separate thread."""
