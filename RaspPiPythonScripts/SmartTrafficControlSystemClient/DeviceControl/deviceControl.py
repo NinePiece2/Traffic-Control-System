@@ -46,10 +46,41 @@ class TrafficLightController:
         # Define passive buzzers on pins 12, 13, 14, and 15 using PWMOutputDevice (Buzzers need to be attached to 3.3v)
         self.buzzers = {
             "buzzer1": PWMOutputDevice(12, active_high=False),
-            "buzzer2": PWMOutputDevice(13, active_high=False),
-            "buzzer3": PWMOutputDevice(14, active_high=False),
-            "buzzer4": PWMOutputDevice(15, active_high=False)
+            # "buzzer2": PWMOutputDevice(13, active_high=False),
+            # "buzzer3": PWMOutputDevice(14, active_high=False),
+            # "buzzer4": PWMOutputDevice(15, active_high=False)
         }
+
+        self.pressure_sensors = {
+            "light_dir_1_sensor1": Button(5),
+            "light_dir_1_sensor2": Button(6),
+            "light_dir_2_sensor1": Button(13),
+            "light_dir_2_sensor2": Button(19)
+        }
+
+        self.last_pressure_detected = {
+            "light_dir_1_sensor1": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1)),
+            "light_dir_1_sensor2": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1)),
+            "light_dir_2_sensor1": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1)),
+            "light_dir_2_sensor2": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
+        }
+
+        self.last_pressure_release_detected = {
+            "light_dir_1_sensor1": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1)),
+            "light_dir_1_sensor2": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1)),
+            "light_dir_2_sensor1": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1)),
+            "light_dir_2_sensor2": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
+        }
+
+        self.pressure_sensors["light_dir_1_sensor1"].when_pressed = lambda: self.pressure_sensor_pressed("light_dir_1_sensor1")
+        self.pressure_sensors["light_dir_1_sensor2"].when_pressed = lambda: self.pressure_sensor_pressed("light_dir_1_sensor2")
+        self.pressure_sensors["light_dir_2_sensor1"].when_pressed = lambda: self.pressure_sensor_pressed("light_dir_2_sensor1")
+        self.pressure_sensors["light_dir_2_sensor2"].when_pressed = lambda: self.pressure_sensor_pressed("light_dir_2_sensor2")
+
+        self.pressure_sensors["light_dir_1_sensor1"].when_released = lambda: self.pressure_sensor_released("light_dir_1_sensor1")
+        self.pressure_sensors["light_dir_1_sensor2"].when_released = lambda: self.pressure_sensor_released("light_dir_1_sensor2")
+        self.pressure_sensors["light_dir_2_sensor1"].when_released = lambda: self.pressure_sensor_released("light_dir_2_sensor1")
+        self.pressure_sensors["light_dir_2_sensor2"].when_released = lambda: self.pressure_sensor_released("light_dir_2_sensor2")
 
         # Track active light (default direction)
         self.active_light = "light_dir_1"
@@ -57,6 +88,18 @@ class TrafficLightController:
     def pedestrian_pressed(self, light_name):
         """Handles pedestrian button press event for the given direction."""
         self.pedestrian_button_pressed[light_name] = True
+    
+    def pressure_sensor_pressed(self, sensor_name):
+        """Handles pressure sensor press event for the given sensor."""
+        self.last_pressure_detected[sensor_name] = time.time()
+        self.last_pressure_release_detected[sensor_name] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
+        print(f"Pressure sensor {sensor_name} pressed.")
+
+    def pressure_sensor_released(self, sensor_name):
+        """Handles pressure sensor release event for the given sensor."""
+        self.last_pressure_release_detected[sensor_name] = time.time()
+        self.last_pressure_detected[sensor_name] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
+        print(f"Pressure sensor {sensor_name} released.")
 
     def update_config(self):
         """Updates the config dynamically and interrupts the current cycle."""
