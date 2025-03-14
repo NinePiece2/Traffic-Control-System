@@ -76,7 +76,8 @@ namespace Traffic_Control_System_API.Controllers
                     Direction2 = activeSignal.Direction2,
                     Direction1Time = activeSignal.Direction1Green,
                     Direction2Time = activeSignal.Direction2Green,
-                    PedestrianWalkTime = activeSignal.PedestrianWalkTime
+                    PedestrianWalkTime = activeSignal.PedestrianWalkTime,
+                    BuzzerVolume = activeSignal.BuzzerVolume
                 });
             }
             catch (Exception ex)

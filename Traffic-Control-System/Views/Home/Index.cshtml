@@ -170,7 +170,7 @@
                     </div>
                     <div class="form-group">
                         <label for="signalGreen">Green Light Time (Direction 1):</label>
-                        <input type="text" class="form-control" id="signalGreen" placeholder="Enter green light time" value="60" required>
+                        <input type="number" class="form-control" id="signalGreen" placeholder="Enter green light time" value="60" required>
                     </div>
                     <div class="form-group">
                         <label for="signalDirection2">Direction2:</label>
@@ -178,11 +178,15 @@
                     </div>
                     <div class="form-group">
                         <label for="signalGreen2">Green Light Time (Direction 2):</label>
-                        <input type="text" class="form-control" id="signalGreen2" placeholder="Enter green light time" value="60" required>
+                        <input type="number" class="form-control" id="signalGreen2" placeholder="Enter green light time" value="60" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pedestrianWalkTime">Pedestrian Walk Time:</label>
+                        <input type="number" class="form-control" id="pedestrianWalkTime" placeholder="Enter Pedestrian Walk Wait Time" value="30" required>
                     </div>
                     <div class="form-group mb-4">
-                        <label for="pedestrianWalkTime">Pedestrian Walk Time:</label>
-                        <input type="text" class="form-control" id="pedestrianWalkTime" placeholder="Enter Pedestrian Walk Wait Time" value="30" required>
+                        <label for="buzzerVolume">Buzzer Volume (0-1) Decimal:</label>
+                        <input type="number" step="0.1" class="form-control" id="buzzerVolume" placeholder="Enter bBzzer Volume" value="0.2" required>
                     </div>
                     <button type="button" class="btn btn-primary" id="saveTrafficSignal">Save, Next Page</button>
                 </form>
@@ -290,6 +294,10 @@
                         <label for="updatedPedestrianWalkTime">Updated Pedestrian Walk Time:</label>
                         <input type="number" class="form-control" id="updatedPedestrianWalkTime" required>
                     </div>
+                    <div class="form-group">
+                        <label for="updatedBuzzerVolume">Updated Buzzer Volume (0-1) Decimal:</label>
+                        <input type="number" step="0.1" class="form-control" id="updatedBuzzerVolume" required>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -396,6 +404,7 @@
                 var green1 = $('#signalGreen').val().trim();
                 var green2 = $('#signalGreen2').val().trim();
                 var pedestrianWalkTime = $('#pedestrianWalkTime').val().trim();
+                var buzzerVolume = $('#buzzerVolume').val().trim();
 
                 // Regular expression to check if input is a valid number
                 var isInteger = /^\d+$/;
@@ -429,6 +438,11 @@
                     return;
                 }
 
+                if(buzzerVolume < 0 || buzzerVolume > 1){
+                    alert("Error: Buzzer Volume must be a decimal between 0 and 1.");
+                    return;
+                }
+
                 // Prepare data object
                 var signalData = {
                     Address: address,
@@ -436,7 +450,8 @@
                     Direction2: direction2,
                     Direction1Green: parseInt(green1),
                     Direction2Green: parseInt(green2),
-                    PedestrianWalkTime: parseInt(pedestrianWalkTime)
+                    PedestrianWalkTime: parseInt(pedestrianWalkTime),
+                    BuzzerVolume: parseFloat(buzzerVolume)
                 };
 
                 // Proceed with AJAX request
@@ -497,6 +512,7 @@
                 $("#updatedPedestrianWalkTime").val(args.data.pedestrianWalkTime ?? "");
                 $("#updatedDeviceStreamUID").val(args.data.deviceStreamUID ?? ""); 
                 $("#updatedIsActive").prop("checked", args.data.isActive ?? false); // Ensure checkbox is correctly set
+                $("#updatedBuzzerVolume").val(args.data.buzzerVolume ?? "");
 
                 // Log values after fields are populated
                 @* console.log("Modal fields populated with data:", {
@@ -543,6 +559,8 @@
 
             var isInteger = /^\d+$/;
 
+            var buzzerVolume = $("#updatedBuzzerVolume").val().trim();
+
             // Validation
             if (!address || !isNaN(address)) {
                 alert("Error: Address must be a valid string.");
@@ -568,6 +586,10 @@
                 alert("Error: Pedestrian Walk Time must be a valid positive integer.");
                 return;
             }
+            if(buzzerVolume < 0 || buzzerVolume > 1){
+                alert("Error: Buzzer Volume must be a decimal between 0 and 1.");
+                return;
+            }
 
             var updatedData = {
                 ID: id, // Now we have a valid ID
@@ -576,7 +598,8 @@
                 Direction1Green: parseInt(green1),
                 Direction2: direction2,
                 Direction2Green: parseInt(green2),
-                PedestrianWalkTime: parseInt(pedestrianWalkTime)
+                PedestrianWalkTime: parseInt(pedestrianWalkTime),
+                BuzzerVolume: parseFloat(buzzerVolume)
             };
 
             //console.log("Updated data being sent:", updatedData);

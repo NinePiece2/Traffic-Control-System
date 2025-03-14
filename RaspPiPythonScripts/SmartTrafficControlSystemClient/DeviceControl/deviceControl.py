@@ -72,15 +72,15 @@ class TrafficLightController:
             "light_dir_2_sensor2": time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
         }
 
-        self.pressure_sensors["light_dir_1_sensor1"].when_pressed = lambda: self.pressure_sensor_pressed("light_dir_1_sensor1")
-        self.pressure_sensors["light_dir_1_sensor2"].when_pressed = lambda: self.pressure_sensor_pressed("light_dir_1_sensor2")
-        self.pressure_sensors["light_dir_2_sensor1"].when_pressed = lambda: self.pressure_sensor_pressed("light_dir_2_sensor1")
-        self.pressure_sensors["light_dir_2_sensor2"].when_pressed = lambda: self.pressure_sensor_pressed("light_dir_2_sensor2")
+        self.pressure_sensors["light_dir_1_sensor1"].when_released = lambda: self.pressure_sensor_pressed("light_dir_1_sensor1")
+        self.pressure_sensors["light_dir_1_sensor2"].when_released = lambda: self.pressure_sensor_pressed("light_dir_1_sensor2")
+        self.pressure_sensors["light_dir_2_sensor1"].when_released = lambda: self.pressure_sensor_pressed("light_dir_2_sensor1")
+        self.pressure_sensors["light_dir_2_sensor2"].when_released = lambda: self.pressure_sensor_pressed("light_dir_2_sensor2")
 
-        self.pressure_sensors["light_dir_1_sensor1"].when_released = lambda: self.pressure_sensor_released("light_dir_1_sensor1")
-        self.pressure_sensors["light_dir_1_sensor2"].when_released = lambda: self.pressure_sensor_released("light_dir_1_sensor2")
-        self.pressure_sensors["light_dir_2_sensor1"].when_released = lambda: self.pressure_sensor_released("light_dir_2_sensor1")
-        self.pressure_sensors["light_dir_2_sensor2"].when_released = lambda: self.pressure_sensor_released("light_dir_2_sensor2")
+        self.pressure_sensors["light_dir_1_sensor1"].when_held = lambda: self.pressure_sensor_released("light_dir_1_sensor1")
+        self.pressure_sensors["light_dir_1_sensor2"].when_held = lambda: self.pressure_sensor_released("light_dir_1_sensor2")
+        self.pressure_sensors["light_dir_2_sensor1"].when_held = lambda: self.pressure_sensor_released("light_dir_2_sensor1")
+        self.pressure_sensors["light_dir_2_sensor2"].when_held = lambda: self.pressure_sensor_released("light_dir_2_sensor2")
 
         # Track active light (default direction)
         self.active_light = "light_dir_1"
@@ -92,14 +92,14 @@ class TrafficLightController:
     def pressure_sensor_pressed(self, sensor_name):
         """Handles pressure sensor press event for the given sensor."""
         self.last_pressure_detected[sensor_name] = time.time()
-        self.last_pressure_release_detected[sensor_name] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
-        print(f"Pressure sensor {sensor_name} pressed.")
+        #self.last_pressure_release_detected[sensor_name] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
+        print(f"Pressure sensor {sensor_name} pressed {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}.")
 
     def pressure_sensor_released(self, sensor_name):
         """Handles pressure sensor release event for the given sensor."""
         self.last_pressure_release_detected[sensor_name] = time.time()
-        self.last_pressure_detected[sensor_name] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
-        print(f"Pressure sensor {sensor_name} released.")
+        #self.last_pressure_detected[sensor_name] = time.mktime((1970, 1, 1, 0, 0, 0, 0, 1, -1))
+        print(f"Pressure sensor {sensor_name} released {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}.")
 
     def update_config(self):
         """Updates the config dynamically and interrupts the current cycle."""
@@ -134,7 +134,7 @@ class TrafficLightController:
         print(f"Playing tone at {frequency}Hz for {duration} seconds on buzzers.")
         for buzzer in self.buzzers.values():
             buzzer.frequency = frequency
-            buzzer.value = 0.2  # 20% duty cycle (adjust for loudness)
+            buzzer.value = config.Config().get('BuzzerVolume')  # 20% duty cycle (adjust for loudness)
         time.sleep(duration)
         for buzzer in self.buzzers.values():
             buzzer.off()
@@ -148,7 +148,7 @@ class TrafficLightController:
         for tone, duration in zip(tones, durations):
             for buzzer in self.buzzers.values():
                 buzzer.frequency = tone
-                buzzer.value = 0.2
+                buzzer.value = config.Config().get('BuzzerVolume')
             time.sleep(duration)
             for buzzer in self.buzzers.values():
                 buzzer.off()

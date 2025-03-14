@@ -29,6 +29,7 @@ class Config:
                 "Direction_1_Green_Time": 60,
                 "Direction_2_Green_Time": 60,
                 "Pedestrian_Walk_Time": 30,
+                "BuzzerVolume": 0.2,
                 "WebcamID": "0"
             }
             # Create config file within ConfigFile folder

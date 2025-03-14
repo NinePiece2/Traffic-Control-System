@@ -360,6 +360,7 @@ namespace Traffic_Control_System.Controllers
                 existingSignal.Direction1Green = signal.Direction1Green;
                 existingSignal.Direction2Green = signal.Direction2Green;
                 existingSignal.PedestrianWalkTime = signal.PedestrianWalkTime;
+                existingSignal.BuzzerVolume = signal.BuzzerVolume;
 
                 // Update the entity in the database
                 _applicationDbContext.ActiveSignals.Update(existingSignal);

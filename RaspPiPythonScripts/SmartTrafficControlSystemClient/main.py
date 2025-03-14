@@ -60,6 +60,7 @@ def update_config():
     set_config_data('Direction_1_Green_Time', dir_and_time['direction1Time'])
     set_config_data('Direction_2_Green_Time', dir_and_time['direction2Time'])
     set_config_data('Pedestrian_Walk_Time', dir_and_time['pedestrianWalkTime'])
+    set_config_data('BuzzerVolume', dir_and_time['buzzerVolume'])
 
 def signalR_recieved_callback(msg):
     global device_control_instance
