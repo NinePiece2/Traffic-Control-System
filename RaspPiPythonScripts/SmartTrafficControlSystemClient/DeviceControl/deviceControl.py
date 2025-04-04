@@ -234,8 +234,8 @@ class TrafficLightController:
                 print(f"Interrupt detected during {light_name} green phase.")
                 break  # Interrupt green phase, but go to yellow
 
-            if (self.last_pressure_detected[f"{other_light_name}_sensor1"] > start_time or
-                    self.last_pressure_detected[f"{other_light_name}_sensor2"] > start_time):
+            if ((self.last_pressure_detected[f"{other_light_name}_sensor1"] > start_time or
+                    self.last_pressure_detected[f"{other_light_name}_sensor2"] > start_time) and remaining > 25):
                 green_time = 25 # 25 seconds to change so cars can pass
                 start_time = time.time()
                 
