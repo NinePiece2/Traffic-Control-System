@@ -121,7 +121,14 @@ To make the physical design look cohesive, a custom Printed Circut Board was des
 
 #### Design Assembly Render Video
 
-<video src="images/Dual_Traffic_Light_Variant_2_Assembly_Render_v3_Animation_2.mp4" autoplay muted loop playsinline width="800"></video>
+<!-- <video src="images/Dual_Traffic_Light_Variant_2_Assembly_Render_v3_Animation_2.mp4" autoplay muted loop playsinline width="800"></video> -->
+
+Click to Watch:
+
+<a href="images/Dual_Traffic_Light_Variant_2_Assembly_Render_v3_Animation_2.mp4">
+  <img src="images/Dual_Traffic_Light_Variant_2_Assembly_Render_Front.png" height="450" alt="Video Preview" />
+</a>
+
 
 #### Physical Design Photo
 
