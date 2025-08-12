@@ -373,6 +373,7 @@ ffprobe.exe
 /Traffic-Control-System-Video/wwwroot/hls
 /Traffic-Control-System-Video/hls
 *.mp4
+!images/Dual_Traffic_Light_Variant_2_Assembly_Render_v3_Animation_2.mp4
 .DS_Store
 ffmpeg
 .vs/*
