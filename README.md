@@ -123,9 +123,9 @@ To make the physical design look cohesive, a custom Printed Circut Board was des
 
 <!-- <video src="images/Dual_Traffic_Light_Variant_2_Assembly_Render_v3_Animation_2.mp4" autoplay muted loop playsinline width="800"></video> -->
 
-Click to Watch:
+Click to download the video:
 
-<a href="images/Dual_Traffic_Light_Variant_2_Assembly_Render_v3_Animation_2.mp4">
+<a href="https://github.com/NinePiece2/Traffic-Control-System/raw/refs/heads/master/images/Dual_Traffic_Light_Variant_2_Assembly_Render_v3_Animation_2.mp4">
   <img src="images/Dual_Traffic_Light_Variant_2_Assembly_Render_Front.png" height="450" alt="Video Preview" />
 </a>
 
