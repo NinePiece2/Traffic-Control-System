@@ -9,6 +9,8 @@
     - [Rationale](#rationale)
     - [Scope](#scope)
   - [Design Specifications](#design-specifications)
+    - [Pedestrian Detection and Safety](#pedestrian-detection-and-safety)
+    - [Real-Time Video Streaming](#real-time-video-streaming)
     - [Hand Drawn Schematic of the Physical Design](#hand-drawn-schematic-of-the-physical-design)
     - [Microservice Architecture Design Diagram](#microservice-architecture-design-diagram)
     - [Early Design Mockup](#early-design-mockup)
@@ -71,6 +73,15 @@ The Traffic Light Control System is designed to improve traffic management and p
 -	Remote Control and Data Access: The system uses a user friendly GUI, which, when connected to the internet, allows for monitoring the intersection at real time. Other features include recording and storing violations, and also manually adjusting the lights using an override.
 -	Operation Modes: The user can change  traffic signal timings in accordance to different times of the day. this is useful for when there is an unexpected scenario, or an increase or decrease in traffic.
 -	Power and Processing Requirements: A 5V power supply supports a Raspberry Pi single-board computer. The Raspberry Pi's integrated GPIO pins are used to interface with sensors, cameras, and traffic signal components, making it a very easy to use platform for this application.
+
+### Pedestrian Detection and Safety
+
+The SSD-MobileNetV2-FPNLite model is used to properly identify and classify pedestrians, vehicles and other objects. For pedestrian safety, buzzers are used to sound for when there is a traffic violation detected, which is used alongside a pressure sensor. Lastly, other audio beeps are used for when a pedestrian requests to cross, and then they are sounded to make both the pedestrian and driver alerted of the shortened signal timings.
+
+### Real-Time Video Streaming
+
+RTMP ensures smooth video streaming from the CMOS camera to the GUI. This allows the user to be able to control traffic remotely, and make any changes necessary. They can also monitor the live intersection, and look at recorded traffic violations, should they deem necessary.
+
 
 ### Hand Drawn Schematic of the Physical Design
 
