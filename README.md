@@ -76,7 +76,7 @@ The Traffic Light Control System is designed to improve traffic management and p
 
 ### Pedestrian Detection and Safety
 
-The SSD-MobileNetV2-FPNLite model is used to properly identify and classify pedestrians, vehicles and other objects. For pedestrian safety, buzzers are used to sound for when there is a traffic violation detected, which is used alongside a pressure sensor. Lastly, other audio beeps are used for when a pedestrian requests to cross, and then they are sounded to make both the pedestrian and driver alerted of the shortened signal timings.
+The SSD-MobileNetV2-FPNLite model is used to properly identify and classify pedestrians, vehicles and other objects. Pytesseract is used to extract license plates from vehicles that have commited traffic violations. For pedestrian safety, buzzers are used to sound for when there is a traffic violation detected, which is used alongside a pressure sensor. Lastly, other audio beeps are used for when a pedestrian requests to cross, and then they are sounded to make both the pedestrian and driver alerted of the shortened signal timings.
 
 ### Real-Time Video Streaming
 
