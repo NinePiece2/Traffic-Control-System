@@ -30,7 +30,7 @@ jobs:
         shell: bash
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Wait for all builds to complete
         uses: actions/github-script@v6
