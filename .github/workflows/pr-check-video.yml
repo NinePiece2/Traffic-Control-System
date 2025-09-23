@@ -1,0 +1,33 @@
+name: PR Build & Test Video
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - Traffic-Control-System-Video/**
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Traffic-Control-System-Video
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+    #   - name: Run tests
+    #     run: dotnet test --no-build --configuration Release --verbosity normal

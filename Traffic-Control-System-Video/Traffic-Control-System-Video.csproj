@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Traffic_Control_System_Video</RootNamespace>
@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentFTP" Version="52.0.0" />
+    <PackageReference Include="FluentFTP" Version="53.0.1" />
     <PackageReference Include="LiveStreamingServerNet" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.Flv" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.Networking" Version="0.21.0" />
@@ -19,8 +19,8 @@
     <PackageReference Include="LiveStreamingServerNet.StreamProcessor" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.StreamProcessor.AspNetCore" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.Utilities" Version="0.21.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
   </ItemGroup>
 
   <ItemGroup>

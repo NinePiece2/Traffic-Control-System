@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 RUN apt-get update && apt-get install -y ffmpeg
 
 USER $APP_UID
@@ -23,7 +23,7 @@ USER root
 #RUN chmod +x /app/ffmpegBins/ffmpeg
 #RUN chmod +x /app/ffmpegBins/ffprobe
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 

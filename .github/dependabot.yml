@@ -1,0 +1,75 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/Traffic-Control-System"
+    schedule:
+      interval: "daily"
+      time: "11:00"
+      timezone: "America/Toronto"
+    commit-message:
+      prefix: "deps(Traffic-Control-System)"
+    reviewers:
+      - "ninepiece2"
+    groups:
+      microsoft-dependencies:
+        patterns:
+          - "Microsoft.*"
+      newtonsoft-dependencies:
+        patterns:
+          - "Newtonsoft.*"
+    reviewers:
+      - "ninepiece2"
+
+  - package-ecosystem: "nuget"
+    directory: "/Traffic-Control-System-API"
+    schedule:
+      interval: "daily"
+      time: "11:00"
+      timezone: "America/Toronto"
+    commit-message:
+      prefix: "deps(Traffic-Control-System-API)"
+    reviewers:
+      - "ninepiece2"
+    groups:
+      microsoft-dependencies:
+        patterns:
+          - "Microsoft.*"
+      newtonsoft-dependencies:
+        patterns:
+          - "Newtonsoft.*"
+    reviewers:
+      - "ninepiece2"
+
+  - package-ecosystem: "nuget"
+    directory: "/Traffic-Control-System-Video"
+    schedule:
+      interval: "daily"
+      time: "11:00"
+      timezone: "America/Toronto"
+    commit-message:
+      prefix: "deps(Traffic-Control-System-Video)"
+    reviewers:
+      - "ninepiece2"
+    groups:
+      microsoft-dependencies:
+        patterns:
+          - "Microsoft.*"
+      newtonsoft-dependencies:
+        patterns:
+          - "Newtonsoft.*"
+    reviewers:
+      - "ninepiece2"
+    ignore:
+      - dependency-name: "LiveStreamingServerNet"
+        versions: ["*"]
+  
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "11:00"
+      timezone: "America/Toronto"
+    commit-message:
+      prefix: "deps(github-actions)"
+    reviewers:
+      - "ninepiece2"
