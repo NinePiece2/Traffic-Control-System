@@ -14,11 +14,11 @@
     <PackageReference Include="FluentFTP" Version="53.0.1" />
     <PackageReference Include="LiveStreamingServerNet" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.Flv" Version="0.21.0" />
-    <PackageReference Include="LiveStreamingServerNet.Networking" Version="0.21.0" />
+    <PackageReference Include="LiveStreamingServerNet.Networking" Version="0.33.1" />
     <PackageReference Include="LiveStreamingServerNet.Rtmp" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.StreamProcessor" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.StreamProcessor.AspNetCore" Version="0.21.0" />
-    <PackageReference Include="LiveStreamingServerNet.Utilities" Version="0.21.0" />
+    <PackageReference Include="LiveStreamingServerNet.Utilities" Version="0.33.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
   </ItemGroup>
