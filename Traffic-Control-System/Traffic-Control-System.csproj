@@ -27,7 +27,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
-    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="27.1.51" />
+    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="32.2.3" />
   </ItemGroup>
 
 </Project>
