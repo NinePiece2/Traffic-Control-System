@@ -1,5 +1,10 @@
 # **Traffic Control System** 🚦  
 
+## NOTE
+
+This project has been archived and all deployments have been termianted. 
+If you want to deploy the project use the docker compose file.
+
 ## Table of Contents
 - [**Traffic Control System** 🚦](#traffic-control-system-)
   - [Table of Contents](#table-of-contents)
