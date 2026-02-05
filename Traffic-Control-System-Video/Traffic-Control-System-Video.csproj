@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="FluentFTP" Version="53.0.1" />
     <PackageReference Include="LiveStreamingServerNet" Version="0.21.0" />
-    <PackageReference Include="LiveStreamingServerNet.Flv" Version="0.21.0" />
+    <PackageReference Include="LiveStreamingServerNet.Flv" Version="0.33.1" />
     <PackageReference Include="LiveStreamingServerNet.Networking" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.Rtmp" Version="0.21.0" />
     <PackageReference Include="LiveStreamingServerNet.StreamProcessor" Version="0.21.0" />
